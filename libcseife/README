@@ -1,0 +1,36 @@
+this is <README>
+============================================================================
+cseife
+------
+$Id$
+============================================================================
+
+This directory contains source code for the library cseife. It was exportet
+from TF_Software to DENISE. DENISE is hosted in the Trac-/svn-project
+FWI_elastic (http://gpitrsvn.gpi.uni-karlsruhe.de/repos/FWI_elastic/DENISE). 
+
+
+
+The copyright of the source code is held by different persons:
+ 
+ * cseife.c, cseife.h:
+   Copyright (c) 2005 by Thomas Forbriger (BFO Schiltach) 
+ 
+ * cseife_deriv.c, cseife_gauss.c, cseife_rekfl.c, cseife_rfk.c and 
+   cseife_tides.c:
+   Copyright 1984 by Erhard Wielandt
+   This algorithm was part of seife.f. A current version of seife.f can be
+   obtained from http://www.software-for-seismometry.de/
+   
+
+
+Exports:
+   Each time this source code is exported to DENISE the current version is
+   tagged. The directory containing the tagged version is named by the day 
+   of the export (yyyymmdd) and can be found in 
+   http://gpitrsvn.gpi.uni-karlsruhe.de/repos/TFSoftware/export/cseife.
+   
+   10/06/2011   First export of the version tagged in 20110610
+  
+   
+----- END OF README ----- 
