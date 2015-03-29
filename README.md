@@ -1,7 +1,7 @@
 # DENISE-Black-Edition
 DENISE Black Edition
 
-2D time-domain isotropic (visco)elastic finite-difference modeling and inversion code for P/SV-waves, which I developed together with André Kurzmann and Denise De Nil.
+2D time-domain isotropic (visco)elastic finite-difference modeling and inversion code for P/SV-waves, which I developed together with André Kurzmann, Denise De Nil and Thomas Bohlen.
 
 Since then the code has been extended by Lisa Groos, Sven Heider, Martin Schäfer and Linbin Zhang.
 
