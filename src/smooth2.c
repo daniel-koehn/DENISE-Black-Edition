@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------
- *   Apply LSQR-smooth2 filter from Seismic Unix to gradient
+ *   Apply smooth2 filter to gradient
  *   
  *   Daniel Koehn
  *   Kiel, the 4th of January 2014 

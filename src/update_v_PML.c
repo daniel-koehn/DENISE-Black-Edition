@@ -131,7 +131,7 @@ void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
 
-                           if(GRAD_FORM==2){
+                           if((GRAD_FORM==2)&&(GRAD_FORM==3)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;    
@@ -234,7 +234,7 @@ void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
 
-                           if(GRAD_FORM==2){
+                           if((GRAD_FORM==2)&&(GRAD_FORM==3)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;    
@@ -342,7 +342,7 @@ void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
 
-                           if(GRAD_FORM==2){
+                           if((GRAD_FORM==2)&&(GRAD_FORM==3)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;    
@@ -456,7 +456,7 @@ for (j=ny1;j<=ny2;j++){
 
                            }
                            
-                           if(GRAD_FORM==2){
+                           if((GRAD_FORM==2)&&(GRAD_FORM==3)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;

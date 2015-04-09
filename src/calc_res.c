@@ -169,7 +169,7 @@ for(i=1;i<=ntr;i++){
 			     if(RTM==1){intseis += DT*(sectiondata[i][j]);}
                           }
 
-                          if(GRAD_FORM==2){
+                          if((GRAD_FORM==2)||(GRAD_FORM==3)){
                              if(RTM==0){intseis = section[i][j]-sectiondata[i][j];}
                              if(RTM==1){intseis = sectiondata[i][j];}
                           }

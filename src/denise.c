@@ -8,7 +8,7 @@
  *  Copyright (c) A. Kurzmann (step length estimation)
  *  Copyright (c) T. Bohlen   (FD Forward Code) 
  *  
- * 
+ *  
  * In case of questions contact the author:
  *	Dr. Daniel Koehn, Kiel University, Institute of Geoscience,
  *	Otto-Hahn-Platz 1, D-24098 Kiel, Germany, ph: +49 431 880 4566,
@@ -32,8 +32,6 @@
  *  
  *  Thank you for your co-operation, 
  *  Daniel Koehn
- *
- *  Known problems:
  * 
  *  ---------------------------------------------------------------------------------------*/
 
@@ -96,7 +94,7 @@ float *cip=NULL, *cjm=NULL, ***d=NULL, ***e=NULL, ***pr=NULL, ***pp=NULL, ***pq=
 
 /* Variables for step length calculation */
 int step1, step2, step3=0, itests, iteste, countstep;
-float eps_true, tmp;
+float eps_true, tmp, tmp1;
 
 /* Variables for Pseudo-Hessian calculation */
 int RECINC, ntr1;
@@ -317,13 +315,18 @@ if(N_STREAMER==0){
 
    /* Memory for seismic data */
    sectionread=matrix(1,ntr_glob,1,ns);
-   sectionvxdata=matrix(1,ntr,1,ns);
-   sectionvxdiff=matrix(1,ntr,1,ns);
-   sectionvxdiffold=matrix(1,ntr,1,ns);
    
-   sectionvydata=matrix(1,ntr,1,ns);
-   sectionvydiff=matrix(1,ntr,1,ns);
-   sectionvydiffold=matrix(1,ntr,1,ns);
+   if((QUELLTYPB==1)||(QUELLTYPB==3)){
+      sectionvxdata=matrix(1,ntr,1,ns);
+      sectionvxdiff=matrix(1,ntr,1,ns);
+      sectionvxdiffold=matrix(1,ntr,1,ns);
+   }
+   
+   if((QUELLTYPB==1)||(QUELLTYPB==2)){
+      sectionvydata=matrix(1,ntr,1,ns);
+      sectionvydiff=matrix(1,ntr,1,ns);
+      sectionvydiffold=matrix(1,ntr,1,ns);
+   }
 
 }
 
@@ -516,8 +519,9 @@ if(INVMAT==10){
 }
 
 /* Define gradient formulation */
-/* GRAD_FORM = 1 - stress-displacemnet */
-/* GRAD_FORM = 2 - stress-velocity */
+/* GRAD_FORM = 1 - stress-displacement */
+/* GRAD_FORM = 2 - stress-velocity with compliance matrix (Vigh etal. 2014) */
+/* GRAD_FORM = 3 - stress-velocity */
 GRAD_FORM = 1;
 
 /* Parameters for gravity modeling/inversion */
@@ -1025,13 +1029,18 @@ if(N_STREAMER>0){
 
    /* Memory for seismic data */
    sectionread=matrix(1,ntr_glob,1,ns);
-   sectionvxdata=matrix(1,ntr,1,ns);
-   sectionvxdiff=matrix(1,ntr,1,ns);
-   sectionvxdiffold=matrix(1,ntr,1,ns);
    
-   sectionvydata=matrix(1,ntr,1,ns);
-   sectionvydiff=matrix(1,ntr,1,ns);
-   sectionvydiffold=matrix(1,ntr,1,ns);
+   if((QUELLTYPB==1)||(QUELLTYPB==3)){
+      sectionvxdata=matrix(1,ntr,1,ns);
+      sectionvxdiff=matrix(1,ntr,1,ns);
+      sectionvxdiffold=matrix(1,ntr,1,ns);
+   }
+   
+   if((QUELLTYPB==1)||(QUELLTYPB==2)){
+      sectionvydata=matrix(1,ntr,1,ns);
+      sectionvydiff=matrix(1,ntr,1,ns);
+      sectionvydiffold=matrix(1,ntr,1,ns);
+   }
 
 }
 
@@ -1499,7 +1508,7 @@ if(nt==hin1){
             }
 	    
 	    /* gradients without data integration */
-	    if(GRAD_FORM==2){
+	    if((GRAD_FORM==2)||(GRAD_FORM==3)){
                forward_prop_x[imat]=ux[j][i];
 	       forward_prop_y[imat]=uy[j][i];
 	    }
@@ -1518,7 +1527,7 @@ if(nt==hin1){
 	    }
 
 	    /* gradients without data integration */
-            if(GRAD_FORM==2){
+            if((GRAD_FORM==2)||(GRAD_FORM==3)){
 	      forward_prop_u[imat2]=uxy[j][i];
             }
 
@@ -1957,10 +1966,10 @@ for (nt=1;nt<=NT;nt++){
 	        for (j=1;j<=NY;j=j+IDYI){ 
                                            
 		   	waveconv_rho_shot[j][i]+=(pvxp1[j][i]*forward_prop_rho_x[imat])+(pvyp1[j][i]*forward_prop_rho_y[imat]);
-		   	waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);  
-		   
+			waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);  		   
+			
 		   	/* mu-gradient with data integration */
-		   	if(GRAD_FORM==1){
+		   	if(GRAD_FORM==1){			  
 
                            if(INVMAT1==1){
 			       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -1979,8 +1988,17 @@ for (nt=1;nt<=NT;nt++){
 			   }
                         }
 
-			/* mu-gradient without data integration */
+			/* Vs-gradient without data integration (stress-velocity with compliance tensor after Vigh et al. 2014) */
                         if(GRAD_FORM==2){
+
+			  if(pu[j][i]>0.0){
+		             waveconv_u_shot[j][i] += ((forward_prop_x[imat]*psxx[j][i]) + (forward_prop_y[imat]*psyy[j][i])) + 2.0 * (forward_prop_u[imat] * psxy[j][i]);
+			  }  
+                          
+                        }
+			
+			/* mu-gradient without data integration (stress-velocity with elastic tensor) */
+			if(GRAD_FORM==3){
 
 		          waveconv_u_shot[j][i]+= 2.0*((forward_prop_x[imat]*psxx[j][i]) + (forward_prop_y[imat]*psyy[j][i])) + (forward_prop_u[imat] * psxy[j][i]);
                           
@@ -2150,12 +2168,19 @@ if(N_STREAMER>0){
 
    free_matrix(sectionread,1,ntr_glob,1,ns);
    free_ivector(recswitch,1,ntr);
-   free_matrix(sectionvxdata,1,ntr,1,ns);
-   free_matrix(sectionvxdiff,1,ntr,1,ns);
-   free_matrix(sectionvydata,1,ntr,1,ns);
-   free_matrix(sectionvydiff,1,ntr,1,ns);
-   free_matrix(sectionvydiffold,1,ntr,1,ns);
-   free_matrix(sectionvxdiffold,1,ntr,1,ns);
+   
+   if((QUELLTYPB==1)||(QUELLTYPB==3)){
+      free_matrix(sectionvxdata,1,ntr,1,ns);
+      free_matrix(sectionvxdiff,1,ntr,1,ns);
+      free_matrix(sectionvxdiffold,1,ntr,1,ns);
+   }
+   
+   if((QUELLTYPB==1)||(QUELLTYPB==2)){   
+      free_matrix(sectionvydata,1,ntr,1,ns);
+      free_matrix(sectionvydiff,1,ntr,1,ns);
+      free_matrix(sectionvydiffold,1,ntr,1,ns);
+   }
+   
  
 }
 
@@ -2305,12 +2330,19 @@ interpol(IDXI,IDYI,waveconv,1);
 
 		   /* calculate Vp gradient */ 
 		   if(GRAD_FORM==1){
-                     muss = prho[j][i] * pu[j][i] * pu[j][i];
-		     lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
+                                   muss = prho[j][i] * pu[j][i] * pu[j][i];
+		                  lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
 		     waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
+		         waveconv[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
                    }
 
-		   waveconv[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
+		   if(GRAD_FORM==2){                             	
+		         waveconv[j][i] = (2.0 * ppi[j][i] / (prho[j][i]*(3.0*(ppi[j][i]*ppi[j][i])-4.0*(pu[j][i]*pu[j][i]))*(3.0*(ppi[j][i]*ppi[j][i])-4.0*(pu[j][i]*pu[j][i])))) * waveconv_lam[j][i];
+                   }
+		   
+		   if(GRAD_FORM==3){                             	
+		         waveconv[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
+	           } 		   
 		 	
 		   if(RTMOD==1){
 		      waveconv[j][i] = -waveconv_lam[j][i];
@@ -2346,8 +2378,22 @@ interpol(IDXI,IDYI,waveconv_u,1);
 		 waveconv_mu[j][i] = - DT * waveconv_u[j][i];
 		 
 		 if(INVMAT1==1){
-		 /* calculate Vs gradient */		 
-		 waveconv_u[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];
+		 
+		    /* calculate Vs gradient */		 
+		    if(GRAD_FORM==1){
+		      waveconv_u[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];
+		    }
+		    
+		    if(GRAD_FORM==2){
+		    
+		      if(pu[j][i]>0.0){		     
+		        tmp = (4.0 * ppi[j][i] * ppi[j][i] * pu[j][i] * pu[j][i] - 8.0 * pu[j][i] * pu[j][i] * pu[j][i] * pu[j][i] - 3.0 * ppi[j][i] * ppi[j][i] * ppi[j][i] * ppi[j][i]);
+			tmp1 = (4.0 * pu[j][i] * pu[j][i] - 3.0 * ppi[j][i] * ppi[j][i]) * (4.0 * pu[j][i] * pu[j][i] - 3.0 * ppi[j][i] * ppi[j][i]);
+		      	waveconv_u[j][i] = (- (tmp/tmp1) * waveconv_lam[j][i] + waveconv_mu[j][i])/(prho[j][i] * pu[j][i] * pu[j][i] * pu[j][i]);
+		      }
+		      
+		    }
+		 
 		 }
 		 
 		 if(INVMAT1==2){
@@ -2383,10 +2429,14 @@ interpol(IDXI,IDYI,waveconv_rho,1);
 
                 if(GRAD_FORM==2){
                 waveconv_rho_s[j][i]= DT * waveconv_rho[j][i];}
+		
+		if(GRAD_FORM==3){
+                waveconv_rho_s[j][i]= DT * waveconv_rho[j][i];}
+		
 		 
 		 if(INVMAT1==1){
 		 /* calculate density gradient */
-		 waveconv_rho[j][i] = ((((ppi[j][i] * ppi[j][i])-(2.0 * pu[j][i] * pu[j][i])) * waveconv_lam[j][i]) + (pu[j][i] * pu[j][i] * waveconv_mu[j][i]) + waveconv_rho_s[j][i]);		 
+		 waveconv_rho[j][i] = ((((ppi[j][i] * ppi[j][i])-(2.0 * pu[j][i] * pu[j][i])) * waveconv_lam[j][i]) + (pu[j][i] * pu[j][i] * waveconv_mu[j][i]) + waveconv_rho_s[j][i]);
 		 }
 		 
 		 if(INVMAT1==3){
@@ -2793,12 +2843,19 @@ if (nsrc_loc>0){
 
     free_matrix(sectionread,1,ntr_glob,1,ns);
     free_ivector(recswitch,1,ntr);
-    free_matrix(sectionvxdata,1,ntr,1,ns);
-    free_matrix(sectionvxdiff,1,ntr,1,ns);
-    free_matrix(sectionvydata,1,ntr,1,ns);
-    free_matrix(sectionvydiff,1,ntr,1,ns);
-    free_matrix(sectionvydiffold,1,ntr,1,ns);
-    free_matrix(sectionvxdiffold,1,ntr,1,ns);
+    
+    if((QUELLTYPB==1)||(QUELLTYPB==3)){
+       free_matrix(sectionvxdata,1,ntr,1,ns);
+       free_matrix(sectionvxdiff,1,ntr,1,ns);
+       free_matrix(sectionvxdiffold,1,ntr,1,ns);
+    }
+
+    if((QUELLTYPB==1)||(QUELLTYPB==3)){    
+       free_matrix(sectionvydata,1,ntr,1,ns);
+       free_matrix(sectionvydiff,1,ntr,1,ns);
+       free_matrix(sectionvydiffold,1,ntr,1,ns);
+    }
+    
  
  }
 
