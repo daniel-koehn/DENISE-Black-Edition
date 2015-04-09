@@ -22,8 +22,10 @@ EXEC= ../bin
 
 # On Linux RZ-cluster with Intel-MPI
 CC=mpiicc
-LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-CFLAGS=-O3 
+# LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+# CFLAGS=-O3 
+LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
+CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict
 SFLAGS=-L./../libcseife -L$//sfs/fs4/work-sh2/sungw331/fftw-3.3.4/lib
 IFLAGS=-I./../libcseife -I$//sfs/fs4/work-sh2/sungw331/fftw-3.3.4/include
 
