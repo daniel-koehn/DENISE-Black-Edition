@@ -10,7 +10,7 @@ number_of_processors_in_y-direction_(NPROCY) = 3
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
-FD_ORDER = 8
+FD_ORDER = 12
 # Maximum relative group velocity error E
 # (minimum number of grid points per shortest wavelength is defined by FD_ORDER and E)
 # values: 0 = Taylor coefficients
@@ -18,7 +18,7 @@ FD_ORDER = 8
 #	  2 =                 E = 0.5 %
 #	  3 =                 E = 1.0 %
 #         4 =                 E = 3.0 %
-max_relative_error = 0
+max_relative_error = 1
 #-------------------- 2-D Grid -----------------------------------
 number_of_gridpoints_in_x-direction_(NX) = 500
 number_of_gridpoints_in_y-direction_(NY) = 174
@@ -40,7 +40,7 @@ dip_of_plane_wave_from_vertical_(in_degrees)_(PHI) = 0.0
 SIGNAL_FILE = ./wavelet/wavelet_plexiglas
 duration_of_Klauder_wavelet_(in_seconds)_(TS) = 8.0
 read_source_positions_from_SOURCE_FILE_(yes=1)_(SRCREC) = 1
-SOURCE_FILE = ./source/source_streamer_tow.dat 
+SOURCE_FILE = ./source/source_OBC_VSP.dat 
 run_multiple_shots_defined_in_SOURCE_FILE_(yes=1)_(RUN_MULTIPLE_SHOTS) = 1
 corner_frequency_of_highpass_filtered_spike_(FC_SPIKE_1) = -5.0
 corner_frequency_of_lowpass_filtered_spike_(FC_SPIKE_2) = 15.0
@@ -49,7 +49,7 @@ order_of_Butterworth_filter_(ORDER_SPIKE) = 5
 #
 #--------------------- Model -------------------------------------
 read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
-MFILE = start/marmousi_II_marine
+MFILE = start/marmousi_II_smooth2
 #
 #---------------------Q-approximation-----------------------------
 Number_of_relaxation_mechanisms_(L) = 0
@@ -91,7 +91,7 @@ output_of_seismograms_(SEISMO) = 1
 # SEISMO=3: curl and div
 # SEISMO=4: everything
 read_receiver_positions_from_file_(yes=1)_(READREC) = 1
-REC_FILE = ./receiver/receiver_OBS.dat
+REC_FILE = ./receiver/receiver_OBC.dat
 reference_point_for_receiver_coordinate_system_(REFREC) = 0.0 , 0.0
 # if READREC=1 the following three lines are ignored 
 position_of_first_receiver_(in_m)_(XREC1,YREC1) =  6.0 , 0.2
@@ -138,7 +138,7 @@ taper_length_(in_rec_numbers)_(TAPERLENGTH) = 4
 Inverse_Type_(gradient=1/complete=2)_(INVTYPE) = 2
 gradient_taper_geometry_(GRADT1,GRADT2,GRADT3,GRADT4) = 21, 25, 490, 500
 type_of_material_parameters_to_invert_(Vp,Vs,rho=1/Zp,Zs,rho=2/lam,mu,rho=3)_(INVMAT1) = 1
-forward_modelling_only_(yes=10)_FWT_(yes=0)_(INVMAT) = 10
+forward_modelling_only_(yes=10)_FWT_(yes=0)_(INVMAT) = 0
 point_source_backpropagation_(x_and_y_components=1/y_comp=2/x_comp=3)_(QUELLTYPB) = 1
 #
 #

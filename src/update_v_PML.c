@@ -480,29 +480,114 @@ for (j=ny1;j<=ny2;j++){
 	case 10:
 		for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
-				vx[j][i]+= (  hc[1]*(sxx[j][i+1]-sxx[j][i]  )
+				
+			   sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i])
 					    + hc[2]*(sxx[j][i+2]-sxx[j][i-1])
 					    + hc[3]*(sxx[j][i+3]-sxx[j][i-2])
 					    + hc[4]*(sxx[j][i+4]-sxx[j][i-3])
-					    + hc[5]*(sxx[j][i+5]-sxx[j][i-4])
-					    + hc[1]*(sxy[j][i]  -sxy[j-1][i])
-					    + hc[2]*(sxy[j+1][i]-sxy[j-2][i])
-					    + hc[3]*(sxy[j+2][i]-sxy[j-3][i])
-					    + hc[4]*(sxy[j+3][i]-sxy[j-4][i])
-					    + hc[5]*(sxy[j+4][i]-sxy[j-5][i])
-					   )*dtdh*rip[j][i];
-						
-				vy[j][i]+= (  hc[1]*(syy[j+1][i]-syy[j][i]  )
-					    + hc[2]*(syy[j+2][i]-syy[j-1][i])
-					    + hc[3]*(syy[j+3][i]-syy[j-2][i])
-					    + hc[4]*(syy[j+4][i]-syy[j-3][i])
-					    + hc[5]*(syy[j+5][i]-syy[j-4][i])
-					    + hc[1]*(sxy[j][i]  -sxy[j][i-1])
+					    + hc[5]*(sxx[j][i+5]-sxx[j][i-4]);
+
+                           sxy_x = hc[1]*(sxy[j][i]-sxy[j][i-1])
 					    + hc[2]*(sxy[j][i+1]-sxy[j][i-2])
 					    + hc[3]*(sxy[j][i+2]-sxy[j][i-3])
 					    + hc[4]*(sxy[j][i+3]-sxy[j][i-4])
-					    + hc[5]*(sxy[j][i+4]-sxy[j][i-5])
-					   )*dtdh*rjp[j][i];
+					    + hc[5]*(sxy[j][i+4]-sxy[j][i-5]);
+
+		           sxy_y =  hc[1]*(sxy[j][i]-sxy[j-1][i])
+					    + hc[2]*(sxy[j+1][i]-sxy[j-2][i])
+					    + hc[3]*(sxy[j+2][i]-sxy[j-3][i])
+					    + hc[4]*(sxy[j+3][i]-sxy[j-4][i])
+					    + hc[5]*(sxy[j+4][i]-sxy[j-5][i]);
+
+                           syy_y = hc[1]*(syy[j+1][i]-syy[j][i])
+					    + hc[2]*(syy[j+2][i]-syy[j-1][i])
+					    + hc[3]*(syy[j+3][i]-syy[j-2][i])
+					    + hc[4]*(syy[j+4][i]-syy[j-3][i])
+					    + hc[5]*(syy[j+5][i]-syy[j-4][i]);
+                          
+
+	/* left boundary */                                         
+        if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
+			         
+                           psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
+                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];
+
+                           psi_sxy_x[j][i] = b_x[i] * psi_sxy_x[j][i] + a_x[i] * sxy_x;                                                
+                           sxy_x = sxy_x / K_x[i] + psi_sxy_x[j][i];
+              
+         }
+
+        /* right boundary */                                         
+        if((!BOUNDARY) && (POS[1]==NPROCX-1) && (i>=nx2-FW+1)){
+
+                           h1 = (i-nx2+2*FW);
+                            h=i; 
+                                
+                           /*psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
+                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];*/
+                           
+                           psi_sxx_x[j][h1] = b_x_half[h1] * psi_sxx_x[j][h1] + a_x_half[h1] * sxx_x;                                                
+			   sxx_x = sxx_x / K_x_half[h1] + psi_sxx_x[j][h1];
+
+                           psi_sxy_x[j][h1] = b_x[h1] * psi_sxy_x[j][h1] + a_x[h1] * sxy_x;                                                
+                           sxy_x = sxy_x / K_x[h1] + psi_sxy_x[j][h1];
+         }
+
+         
+	  /* top boundary */                                         
+        if((POS[2]==0) && (!(FREE_SURF)) && (j<=FW)){
+					   
+		           psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
+                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i]; 
+                        
+                           psi_sxy_y[j][i] = b_y[j] * psi_sxy_y[j][i] + a_y[j] * sxy_y;                                                
+                           sxy_y = sxy_y / K_y[j] + psi_sxy_y[j][i]; 
+         }
+		
+
+	  /* bottom boundary */                                         
+        if((POS[2]==NPROCY-1) && (j>=ny2-FW+1)){
+                        
+                           h1 = (j-ny2+2*FW);
+		            h = j;
+		            			   
+       		           /*psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
+                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i];*/
+                           
+                           psi_syy_y[h1][i] = b_y_half[h1] * psi_syy_y[h1][i] + a_y_half[h1] * syy_y;                                                
+			   syy_y = syy_y / K_y_half[h1] + psi_syy_y[h1][i];
+                           
+                           psi_sxy_y[h1][i] = b_y[h1] * psi_sxy_y[h1][i] + a_y[h1] * sxy_y;                                                
+                           sxy_y = sxy_y / K_y[h1] + psi_sxy_y[h1][i]; 
+
+        }                       
+                           if(GRAD_FORM==1){
+
+                              if(sw==0){
+                                 vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;                 
+                                 vyp1[j][i] = rjp[j][i]*(sxy_x+syy_y)/DH;}                 
+
+                              if(sw==1){ 
+                                 vxp1[j][i] += DT*vx[j][i];
+                                 vyp1[j][i] += DT*vy[j][i];}
+
+                           }
+                           
+                           if((GRAD_FORM==2)&&(GRAD_FORM==3)){
+
+                              if(sw==0){
+                                 vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;
+                                 vyp1[j][i] = rjp[j][i]*(sxy_x+syy_y)/DH;}
+                           
+                              if(sw==1){
+			         vxp1[j][i] = vx[j][i];
+			         vyp1[j][i] = vy[j][i];}
+
+                           }
+
+                           vx[j][i] += DT*rip[j][i]*(sxx_x+sxy_y)/DH;
+		           vy[j][i] += DT*rjp[j][i]*(sxy_x+syy_y)/DH; 
+				
 			}
 		}
 		break;
@@ -510,33 +595,119 @@ for (j=ny1;j<=ny2;j++){
 	case 12:
 		for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
-				vx[j][i]+= (  hc[1]*(sxx[j][i+1]-sxx[j][i]  )
+			
+			   sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i])
 					    + hc[2]*(sxx[j][i+2]-sxx[j][i-1])
 					    + hc[3]*(sxx[j][i+3]-sxx[j][i-2])
 					    + hc[4]*(sxx[j][i+4]-sxx[j][i-3])
 					    + hc[5]*(sxx[j][i+5]-sxx[j][i-4])
-					    + hc[6]*(sxx[j][i+6]-sxx[j][i-5])
-					    + hc[1]*(sxy[j][i]  -sxy[j-1][i])
-					    + hc[2]*(sxy[j+1][i]-sxy[j-2][i])
-					    + hc[3]*(sxy[j+2][i]-sxy[j-3][i])
-					    + hc[4]*(sxy[j+3][i]-sxy[j-4][i])
-					    + hc[5]*(sxy[j+4][i]-sxy[j-5][i])
-					    + hc[6]*(sxy[j+5][i]-sxy[j-6][i])
-					   )*dtdh*rip[j][i];
-						
-				vy[j][i]+= (  hc[1]*(syy[j+1][i]-syy[j][i]  )
-					    + hc[2]*(syy[j+2][i]-syy[j-1][i])
-					    + hc[3]*(syy[j+3][i]-syy[j-2][i])
-					    + hc[4]*(syy[j+4][i]-syy[j-3][i])
-					    + hc[5]*(syy[j+5][i]-syy[j-4][i])
-					    + hc[6]*(syy[j+6][i]-syy[j-5][i])
-					    + hc[1]*(sxy[j][i]  -sxy[j][i-1])
+					    + hc[6]*(sxx[j][i+6]-sxx[j][i-5]);
+
+                           sxy_x = hc[1]*(sxy[j][i]-sxy[j][i-1])
 					    + hc[2]*(sxy[j][i+1]-sxy[j][i-2])
 					    + hc[3]*(sxy[j][i+2]-sxy[j][i-3])
 					    + hc[4]*(sxy[j][i+3]-sxy[j][i-4])
 					    + hc[5]*(sxy[j][i+4]-sxy[j][i-5])
-					    + hc[6]*(sxy[j][i+5]-sxy[j][i-6])
-					   )*dtdh*rjp[j][i];
+					    + hc[6]*(sxy[j][i+5]-sxy[j][i-6]);
+
+		           sxy_y =  hc[1]*(sxy[j][i]-sxy[j-1][i])
+					    + hc[2]*(sxy[j+1][i]-sxy[j-2][i])
+					    + hc[3]*(sxy[j+2][i]-sxy[j-3][i])
+					    + hc[4]*(sxy[j+3][i]-sxy[j-4][i])
+					    + hc[5]*(sxy[j+4][i]-sxy[j-5][i])
+					    + hc[6]*(sxy[j+5][i]-sxy[j-6][i]);
+
+                           syy_y = hc[1]*(syy[j+1][i]-syy[j][i])
+					    + hc[2]*(syy[j+2][i]-syy[j-1][i])
+					    + hc[3]*(syy[j+3][i]-syy[j-2][i])
+					    + hc[4]*(syy[j+4][i]-syy[j-3][i])
+					    + hc[5]*(syy[j+5][i]-syy[j-4][i])
+					    + hc[6]*(syy[j+6][i]-syy[j-5][i]);
+                          
+
+	/* left boundary */                                         
+        if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
+			         
+                           psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
+                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];
+
+                           psi_sxy_x[j][i] = b_x[i] * psi_sxy_x[j][i] + a_x[i] * sxy_x;                                                
+                           sxy_x = sxy_x / K_x[i] + psi_sxy_x[j][i];
+              
+         }
+
+        /* right boundary */                                         
+        if((!BOUNDARY) && (POS[1]==NPROCX-1) && (i>=nx2-FW+1)){
+
+                           h1 = (i-nx2+2*FW);
+                            h=i; 
+                                
+                           /*psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
+                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];*/
+                           
+                           psi_sxx_x[j][h1] = b_x_half[h1] * psi_sxx_x[j][h1] + a_x_half[h1] * sxx_x;                                                
+			   sxx_x = sxx_x / K_x_half[h1] + psi_sxx_x[j][h1];
+
+                           psi_sxy_x[j][h1] = b_x[h1] * psi_sxy_x[j][h1] + a_x[h1] * sxy_x;                                                
+                           sxy_x = sxy_x / K_x[h1] + psi_sxy_x[j][h1];
+         }
+
+         
+	  /* top boundary */                                         
+        if((POS[2]==0) && (!(FREE_SURF)) && (j<=FW)){
+					   
+		           psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
+                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i]; 
+                        
+                           psi_sxy_y[j][i] = b_y[j] * psi_sxy_y[j][i] + a_y[j] * sxy_y;                                                
+                           sxy_y = sxy_y / K_y[j] + psi_sxy_y[j][i]; 
+         }
+		
+
+	  /* bottom boundary */                                         
+        if((POS[2]==NPROCY-1) && (j>=ny2-FW+1)){
+                        
+                           h1 = (j-ny2+2*FW);
+		            h = j;
+		            			   
+       		           /*psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
+                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i];*/
+                           
+                           psi_syy_y[h1][i] = b_y_half[h1] * psi_syy_y[h1][i] + a_y_half[h1] * syy_y;                                                
+			   syy_y = syy_y / K_y_half[h1] + psi_syy_y[h1][i];
+                           
+                           psi_sxy_y[h1][i] = b_y[h1] * psi_sxy_y[h1][i] + a_y[h1] * sxy_y;                                                
+                           sxy_y = sxy_y / K_y[h1] + psi_sxy_y[h1][i]; 
+
+        }                       
+                           if(GRAD_FORM==1){
+
+                              if(sw==0){
+                                 vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;                 
+                                 vyp1[j][i] = rjp[j][i]*(sxy_x+syy_y)/DH;}                 
+
+                              if(sw==1){ 
+                                 vxp1[j][i] += DT*vx[j][i];
+                                 vyp1[j][i] += DT*vy[j][i];}
+
+                           }
+                           
+                           if((GRAD_FORM==2)&&(GRAD_FORM==3)){
+
+                              if(sw==0){
+                                 vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;
+                                 vyp1[j][i] = rjp[j][i]*(sxy_x+syy_y)/DH;}
+                           
+                              if(sw==1){
+			         vxp1[j][i] = vx[j][i];
+			         vyp1[j][i] = vy[j][i];}
+
+                           }
+
+                           vx[j][i] += DT*rip[j][i]*(sxx_x+sxy_y)/DH;
+		           vy[j][i] += DT*rjp[j][i]*(sxy_x+syy_y)/DH; 
+			
+			
 			}
 		}
 		break;
