@@ -16,5 +16,5 @@
 . /opt/modules/Modules/3.2.6/init/ksh                          # Initialisierung des Module-Konzeptes
 #
 # 
-cd $WORK/DENISE_PSV/trunk/par
-mpirun $NQSII_MPIOPTS -np 15 ../bin/denise DENISE_marm_OBS.inp FWI_workflow_marmousi.inp > DENISE.out
+cd $WORK/DENISE-Black-Edition/par
+mpirun $NQSII_MPIOPTS -np 15 ../bin/denise DENISE_marm_OBC.inp FWI_workflow_marmousi.inp > DENISE.out
