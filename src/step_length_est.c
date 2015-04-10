@@ -15,9 +15,9 @@ float step_length_est(FILE *fprec, float ** waveconv, float ** waveconv_rho, flo
 	float ** utty, float ** absorb_coeff, float *hc, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half, float * K_y, float * a_y, float * b_y,  
 	float * K_y_half, float * a_y_half, float * b_y_half, float ** uxy, float ** uyx, int ntr, int **recpos_loc, float **sectionvx, float **sectionvy, float **sectionp, float **sectioncurl, 
 	float **sectiondiv, float **sectionread, int ntr_glob, float ** sectionvxdata, float ** sectionvxdiff, float ** sectionvxdiffold, float ** sectionvydata, float ** sectionvydiff, 
-	float ** sectionvydiffold, float * epst1, float * L2t, float L2sum, float energy_sum, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-	float ** buffertop_to_bot, float ** bufferbot_to_top, float **pu, float **punp1, int itest,int nsrc_glob, int nsrc_loc, MPI_Request * req_send, MPI_Request * req_rec, float ***pr, 
-        float ***pp, float ***pq, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, float **ptaup, float **ptaus, 
+	float ** sectionvydiffold, float ** sectionpdata, float ** sectionpdiff, float ** sectionpdiffold, float * epst1, float * L2t, float L2sum, float energy_sum, float ** bufferlef_to_rig, 
+        float ** bufferrig_to_lef, float ** buffertop_to_bot, float ** bufferbot_to_top, float **pu, float **punp1, int itest,int nsrc_glob, int nsrc_loc, MPI_Request * req_send, MPI_Request * req_rec, 
+        float ***pr, float ***pp, float ***pq, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, float **ptaup, float **ptaus, 
         float *etajm, float *peta, float *etaip, float **ptausipjp, int **recpos, int *step1, int *step3, float C_vp, float **gradg, float FC, 
 	int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int * recswitch, FILE *FP, int ntr_loc){
 
@@ -55,7 +55,7 @@ for (itest=itests;itest<=iteste;itest++){ /* calculate 3 L2 values */
 forward_mod(fprec,waveconv,waveconv_rho,waveconv_u,prho,prhonp1,ppi,ppinp1,iter,eps_scale,nfstart,nsrc,puipjp,prip,prjp,L2,partest,srcpos_loc,srcpos,srcpos1,signals,ns,
 	    nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pvxm1,pvym1,uttx,utty,absorb_coeff,hc,K_x, 
 	    a_x,b_x,K_x_half,a_x_half,b_x_half,K_y,a_y,b_y,K_y_half,a_y_half,b_y_half,uxy,uyx,ntr,recpos_loc,sectionvx,sectionvy,sectionp,sectioncurl,sectiondiv,sectionread,ntr_glob,
-	    sectionvxdata,sectionvxdiff,sectionvxdiffold,sectionvydata,sectionvydiff,sectionvydiffold,epst1,L2t,L2sum,energy_sum,bufferlef_to_rig,bufferrig_to_lef, 
+	    sectionvxdata,sectionvxdiff,sectionvxdiffold,sectionvydata,sectionvydiff,sectionvydiffold,sectionpdata,sectionpdiff,sectionpdiffold,epst1,L2t,L2sum,energy_sum,bufferlef_to_rig,bufferrig_to_lef, 
 	    buffertop_to_bot,bufferbot_to_top,pu,punp1,itest,nsrc_glob,nsrc_loc,req_send,req_rec,pr,pp,pq,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,etaip,ptausipjp,recpos,FC,recswitch,FP,ntr_loc);
 
 if(GRAVITY==2){

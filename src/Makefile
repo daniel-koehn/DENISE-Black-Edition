@@ -20,7 +20,7 @@ EXEC= ../bin
 # On CRAY T3E
 # CC=cc
 
-# On Linux RZ-cluster with Intel-MPI
+# On Linux NEC-cluster with Intel-MPI
 CC=mpiicc
 # LFLAGS=-lm -lcseife -lfftw3 -lstdc++
 # CFLAGS=-O3 

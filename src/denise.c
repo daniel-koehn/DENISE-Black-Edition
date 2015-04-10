@@ -1,24 +1,39 @@
 /*------------------------------------------------------------------------
- *  DENISE: 2D elastic time domain FWT Code 
+ *  DENISE Black Edition: 2D isotropic elastic time domain FWI Code 
  *
- *  Version 1.0 release
  *
- *  Copyright (c) D. Koehn    (FWT Code)
- *  Copyright (c) L. Rehor    (FWT Code optimization)
- *  Copyright (c) A. Kurzmann (step length estimation)
- *  Copyright (c) T. Bohlen   (FD Forward Code) 
+ *  Authors:
+ *  -----------  
+ * 
+ *  D. Koehn    (FWI code + updates)
+ *  D. De Nil   (FWI code + updates)
+ *  L. Rehor    (viscoelastic modelling, Butterworth-filter)
+ *  A. Kurzmann (original step length estimation)
+ *  M. Schaefer (source wavelet inversion)
+ *  S. Heider   (time-windowing)
+ *  T. Bohlen   (original FD forward code) 
+ *  L. Zhang    (towed streamer, pressure inversion)
  *  
  *  
- * In case of questions contact the author:
+ *  In case of questions contact the author:
  *	Dr. Daniel Koehn, Kiel University, Institute of Geoscience,
  *	Otto-Hahn-Platz 1, D-24098 Kiel, Germany, ph: +49 431 880 4566,
  *	mailto:dkoehn@geophysik.uni-kiel.de,
  *	Homepage: http://www.geophysik.uni-kiel.de/~dkoehn
  *
  *
- *  Do not freely distribute the program. In case of interest of other
- *  people in obtaining the source code please refer them to the authors.
- *  I would like to keep track where the program is used and modified.
+ *  DENISE Black Edition is free software: you can redistribute it and/or modify 
+ *  it under the terms of the GNU General Public License as published by 
+ *  the Free Software Foundation, version 2.0 of the License only. 
+ *  
+ *  DENISE Black Edition is distributed in the hope that it will be useful, 
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ *  GNU General Public License for more details. 
+ *  
+ *  You should have received a copy of the GNU General Public License 
+ *  along with DENISE Black Edition (see file LICENSE.md) 
+ *
  *  If you show modelling/inversion results in a paper or presentation please 
  *  give a reference to the following papers:
  *
@@ -75,6 +90,7 @@ float  ** sectionvx=NULL, ** sectionvy=NULL, ** sectionp=NULL, ** sectionpnp1=NU
 	** sectioncurl=NULL, ** sectiondiv=NULL, ** sectionvxdata=NULL, ** sectionvxdiff=NULL, ** sectionvxdiffold=NULL, ** sectionvydiffold=NULL,
 	** sectionvydiff=NULL, ** sectionvydata=NULL, ** sectionpn=NULL, ** sectionread=NULL, ** sectionvy_conv=NULL, ** sectionvy_obs=NULL,** sectionvx_conv=NULL,** sectionvx_obs=NULL,
 	* source_time_function=NULL;
+float ** sectionpdata=NULL, ** sectionpdiff=NULL, ** sectionpdiffold=NULL;	
 float  **  absorb_coeff, ** taper_coeff, * epst1, * epst2,  * epst3;
 float  ** srcpos=NULL, **srcpos_loc=NULL, ** srcpos1=NULL, **srcpos_loc_back=NULL, ** signals=NULL, ** signals_rec=NULL, *hc=NULL, ** dsignals=NULL;
 int   ** recpos=NULL, ** recpos_loc=NULL;
@@ -326,6 +342,12 @@ if(N_STREAMER==0){
       sectionvydata=matrix(1,ntr,1,ns);
       sectionvydiff=matrix(1,ntr,1,ns);
       sectionvydiffold=matrix(1,ntr,1,ns);
+   }
+   
+   if(QUELLTYPB==4){
+     sectionpdata=matrix(1,ntr,1,ns);
+     sectionpdiff=matrix(1,ntr,1,ns);
+     sectionpdiffold=matrix(1,ntr,1,ns);
    }
 
 }
@@ -1041,6 +1063,12 @@ if(N_STREAMER>0){
       sectionvydiff=matrix(1,ntr,1,ns);
       sectionvydiffold=matrix(1,ntr,1,ns);
    }
+   
+   if(QUELLTYPB==4){
+     sectionpdata=matrix(1,ntr,1,ns);
+     sectionpdiff=matrix(1,ntr,1,ns);
+     sectionpdiffold=matrix(1,ntr,1,ns);
+   }
 
 }
 
@@ -1182,7 +1210,7 @@ for (nt=1;nt<=NT;nt++){
 
     /* explosive source */
    if ((!CHECKPTREAD)&&(QUELLTYP==1)) 	
-   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc);
+   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc,0);
 
    if ((FREE_SURF) && (POS[2]==0)){
    	if (L)    /* viscoelastic */
@@ -1445,7 +1473,7 @@ for (nt=1;nt<=NT;nt++){
 
     /* explosive source */
    if ((!CHECKPTREAD)&&(QUELLTYP==1)) 	
-   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc);
+   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc,0);
 
    if ((FREE_SURF) && (POS[2]==0)){
    	if (L)    /* viscoelastic */
@@ -1790,6 +1818,75 @@ energy_all_shots=calc_energy(sectionvydata,ntr,ns,energy_all_shots, ntr_glob, re
 
 } /* end QUELLTYPB */
 
+/* read seismic data from SU file p */
+/* --------------------------------- */
+if(QUELLTYPB==4){ /* if QUELLTYPB */
+
+inseis(fprec,ishot,sectionread,ntr_glob,ns,11,iter);
+
+/* calculate envelope (Chi, Dong & Liu, 2014) */
+if (ENV==1){
+
+   calc_envelope(sectionread,sectionread,ns,ntr_glob);
+   calc_envelope(sectionp,sectionp,ns,ntr);
+
+}
+
+if (TIME_FILT){
+
+   timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
+
+   if(TIME_FILT==2){ /* apply band-pass */
+     timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
+   }
+
+}
+
+h=1;
+for(i=1;i<=ntr;i++){
+   for(j=1;j<=ns;j++){
+           sectionpdata[h][j]=sectionread[recpos_loc[3][i]][j];
+   }
+   h++;
+}
+
+/* Calculate v_mod(t1) - v_mod(t0) if TIMELAPSE == 1 */
+/* ------------------------------------------------- */
+if(TIMELAPSE==1){
+
+    /* read synthetic seismic data at time step t0 vy */
+    inseis(fprec,ishot,sectionread,ntr_glob,ns,15,iter);
+
+    if (TIME_FILT){
+
+       timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
+
+       if(TIME_FILT==2){ /* apply band-pass */
+         timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
+       }
+
+    }
+
+    /* calculate p_mod(t1) - p_mod(t0) */
+    h=1;
+    for(i=1;i<=ntr;i++){
+       for(j=1;j<=ns;j++){
+             sectionp[h][j]=sectionp[h][j]-sectionread[recpos_loc[3][i]][j];
+       }
+       h++;
+    }
+
+} /* end of TIMELAPSE */
+
+L2=calc_res(sectionpdata,sectionp,sectionpdiff,sectionpdiffold,ntr,ns,LNORM,L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
+if(swstestshot==1){energy=calc_energy(sectionpdata,ntr,ns,energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
+
+L2_all_shots=calc_misfit(sectionpdiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
+energy_all_shots=calc_energy(sectionpdata,ntr,ns,energy_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
+
+
+} /* end QUELLTYPB == 4*/
+
 
 } /* end HESSIAN != 1 */
 
@@ -1800,13 +1897,36 @@ if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
 
 if ((SEISMO)&&(iter==1)&&(INVMAT==0)&&(ishot==1)){
 
-   catseis(sectionvxdiff, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
-   catseis(sectionvydiff, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
+   if((QUELLTYPB==1)||(QUELLTYPB==3)){
+   
+      catseis(sectionvxdiff, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
       
       if (MYID==0){
-         saveseis_glob(FP,fulldata_vx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
-         /* saveseis_glob(FP,fulldata_vx,sectionread,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); */
+         saveseis_glob(FP,fulldata_vx,sectionvy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
       }
+      
+   }
+   
+   if((QUELLTYPB==1)||(QUELLTYPB==2)){
+   
+      catseis(sectionvydiff, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
+      
+      if (MYID==0){
+         saveseis_glob(FP,sectionvx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+      }
+      
+   }
+   
+   if(QUELLTYPB==4){
+   
+      catseis(sectionpdiff, fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
+      
+      if (MYID==0){
+         saveseis_glob(FP,sectionvx,sectionvy,fulldata_p,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+      }
+      
+   }   
+           
 }
                   
 	    		    
@@ -1904,7 +2024,8 @@ for (nt=1;nt<=NT;nt++){
    	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, absorb_coeff, prho, hc, infoout,
          	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);  
 
-			
+   /* Backpropagate pressure wavefield */	
+   psource(nt,psxx,psyy,srcpos_loc_back,sectionpdiff,ntr1,1);
 
      if ((FREE_SURF) && (POS[2]==0)){
    	if (L)    /* viscoelastic */
@@ -2179,6 +2300,12 @@ if(N_STREAMER>0){
       free_matrix(sectionvydata,1,ntr,1,ns);
       free_matrix(sectionvydiff,1,ntr,1,ns);
       free_matrix(sectionvydiffold,1,ntr,1,ns);
+   }
+   
+   if(QUELLTYPB==4){   
+      free_matrix(sectionpdata,1,ntr,1,ns);
+      free_matrix(sectionpdiff,1,ntr,1,ns);
+      free_matrix(sectionpdiffold,1,ntr,1,ns);
    }
    
  
@@ -2511,8 +2638,8 @@ if(iter==1){min_iter_help=MIN_ITER;}
 eps_scale = step_length_est(fprec,waveconv,waveconv_rho,waveconv_u,prho,prhonp1,ppi,ppinp1,iter,nfstart,nsrc,puipjp,prip,prjp,L2,partest,srcpos_loc,srcpos,srcpos1,signals,ns,
                 nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pvxm1,pvym1,uttx,utty,absorb_coeff,hc,K_x,
                 a_x,b_x,K_x_half,a_x_half,b_x_half,K_y,a_y,b_y,K_y_half,a_y_half,b_y_half,uxy,uyx,ntr,recpos_loc,sectionvx,sectionvy,sectionp,sectioncurl,sectiondiv,sectionread,ntr_glob,
-                sectionvxdata,sectionvxdiff,sectionvxdiffold,sectionvydata,sectionvydiff,sectionvydiffold,epst1,L2t,L2sum,energy_sum,bufferlef_to_rig,bufferrig_to_lef,
-                buffertop_to_bot,bufferbot_to_top,pu,punp1,itest,nsrc_glob,nsrc_loc,req_send,req_rec,pr,pp,pq,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,etaip,
+                sectionvxdata,sectionvxdiff,sectionvxdiffold,sectionvydata,sectionvydiff,sectionvydiffold,sectionpdata,sectionpdiff,sectionpdiffold,epst1,L2t,L2sum,energy_sum,bufferlef_to_rig,
+		bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,pu,punp1,itest,nsrc_glob,nsrc_loc,req_send,req_rec,pr,pp,pq,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,etaip,
                 ptausipjp,recpos,&step1,&step3,C_vp,gradg,FC,nxgrav,nygrav,ngrav,gravpos,gz_mod,NZGRAV,recswitch,FP,ntr_loc);
 
 /* ... by line search (parabolic fitting+safeguard) */
@@ -2856,7 +2983,12 @@ if (nsrc_loc>0){
        free_matrix(sectionvydiffold,1,ntr,1,ns);
     }
     
- 
+    if(QUELLTYPB==4){    
+       free_matrix(sectionpdata,1,ntr,1,ns);
+       free_matrix(sectionpdiff,1,ntr,1,ns);
+       free_matrix(sectionpdiffold,1,ntr,1,ns);
+    }
+    
  }
 
  if(SEISMO){

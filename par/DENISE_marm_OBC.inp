@@ -10,7 +10,7 @@ number_of_processors_in_y-direction_(NPROCY) = 3
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
-FD_ORDER = 12
+FD_ORDER = 8
 # Maximum relative group velocity error E
 # (minimum number of grid points per shortest wavelength is defined by FD_ORDER and E)
 # values: 0 = Taylor coefficients
@@ -49,7 +49,7 @@ order_of_Butterworth_filter_(ORDER_SPIKE) = 5
 #
 #--------------------- Model -------------------------------------
 read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
-MFILE = start/marmousi_II_smooth2
+MFILE = start/marmousi_II_marine
 #
 #---------------------Q-approximation-----------------------------
 Number_of_relaxation_mechanisms_(L) = 0
@@ -84,7 +84,7 @@ data-format_(SNAP_FORMAT)(ASCII(2);BINARY(3)) = 3
 basic_filename_(SNAP_FILE) = ./snap/waveform_forward
 #
 #----------------------Receiver-----------------------------------
-output_of_seismograms_(SEISMO) = 1 
+output_of_seismograms_(SEISMO) = 2 
 # SEISMO=0: no seismograms
 # SEISMO=1: particle-velocities
 # SEISMO=2: pressure (hydrophones)
@@ -117,7 +117,7 @@ filename_for_Vy_(SEIS_FILE_VY) = su/DENISE_MARMOUSI_y.su
 filename_for_curl_(SEIS_FILE_CURL) = su/2layer_rot.su
 filename_for_div_(SEIS_FILE_DIV) = su/2layer_div.su
 # pressure field (hydrophones) (if SEISMO=2 or SEISMO=4)
-filename_for_pressure_(SEIS_FILE_P) = su/full_wave_forward_p.su
+filename_for_pressure_(SEIS_FILE_P) = su/DENISE_MARMOUSI_p.su
 #  
 #----------------------------------------------------------------
 # each PE is printing log-information to LOG_FILE.MYID
@@ -138,8 +138,8 @@ taper_length_(in_rec_numbers)_(TAPERLENGTH) = 4
 Inverse_Type_(gradient=1/complete=2)_(INVTYPE) = 2
 gradient_taper_geometry_(GRADT1,GRADT2,GRADT3,GRADT4) = 21, 25, 490, 500
 type_of_material_parameters_to_invert_(Vp,Vs,rho=1/Zp,Zs,rho=2/lam,mu,rho=3)_(INVMAT1) = 1
-forward_modelling_only_(yes=10)_FWT_(yes=0)_(INVMAT) = 0
-point_source_backpropagation_(x_and_y_components=1/y_comp=2/x_comp=3)_(QUELLTYPB) = 1
+forward_modelling_only_(yes=10)_FWT_(yes=0)_(INVMAT) = 10
+point_source_backpropagation_(x_and_y_components=1/y_comp=2/x_comp=3/p_comp=4)_(QUELLTYPB) = 1
 #
 #
 testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR) = 25,75,10

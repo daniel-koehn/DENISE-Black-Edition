@@ -139,8 +139,8 @@ void forward_mod(FILE *fprec, float ** waveconv, float ** waveconv_rho, float **
         float ** utty, float ** absorb_coeff, float *hc, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half, float * K_y, float * a_y, float * b_y,
         float * K_y_half, float * a_y_half, float * b_y_half, float ** uxy, float ** uyx, int ntr, int **recpos_loc, float **sectionvx, float **sectionvy, float **sectionp, float **sectioncurl,
         float **sectiondiv, float **sectionread, int ntr_glob, float ** sectionvxdata, float ** sectionvxdiff, float ** sectionvxdiffold, float ** sectionvydata, float ** sectionvydiff,
-        float ** sectionvydiffold, float * epst1, float * L2t, float L2sum, float energy_sum, float ** bufferlef_to_rig, float ** bufferrig_to_lef,
-        float ** buffertop_to_bot, float ** bufferbot_to_top, float **pu, float **punp1, int itest, int nsrc_glob, int nsrc_loc, MPI_Request * req_send, MPI_Request * req_rec, float ***pr,
+        float ** sectionvydiffold, float ** sectionpdata, float ** sectionpdiff, float ** sectionpdiffold, float * epst1, float * L2t, float L2sum, float energy_sum, float ** bufferlef_to_rig, 
+        float ** bufferrig_to_lef, float ** buffertop_to_bot, float ** bufferbot_to_top, float **pu, float **punp1, int itest, int nsrc_glob, int nsrc_loc, MPI_Request * req_send, MPI_Request * req_rec, float ***pr,
         float ***pp, float ***pq, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, float **ptaup, float **ptaus,
         float *etajm, float *peta, float *etaip, float **ptausipjp, int **recpos, float FC, int * recswitch, FILE *FP, int ntr_loc);
 
@@ -232,7 +232,7 @@ float * d_y, float * K_y, float * alpha_prime_y, float * a_y, float * b_y,
 float * d_y_half, float * K_y_half, float * alpha_prime_y_half, float * a_y_half, float * b_y_half);
 
 void psource(int nt, float ** sxx, float ** syy,
-float **  srcpos_loc, float ** signals, int nsrc);
+float **  srcpos_loc, float ** signals, int nsrc, int sw);
 
 void psource_rsg(int nt, float ** sxx, float ** syy,
 float **  srcpos_loc, float ** signals, int nsrc);
@@ -320,7 +320,7 @@ float step_length_est(FILE *fprec, float ** waveconv, float ** waveconv_rho, flo
         float ** utty, float ** absorb_coeff, float *hc, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half, float * K_y, float * a_y, float * b_y,
         float * K_y_half, float * a_y_half, float * b_y_half, float ** uxy, float ** uyx, int ntr, int **recpos_loc, float **sectionvx, float **sectionvy, float **sectionp, float **sectioncurl,
         float **sectiondiv, float **sectionread, int ntr_glob, float ** sectionvxdata, float ** sectionvxdiff, float ** sectionvxdiffold, float ** sectionvydata, float ** sectionvydiff,
-        float ** sectionvydiffold, float * epst1, float * L2t, float L2sum, float energy_sum, float ** bufferlef_to_rig, float ** bufferrig_to_lef,
+        float ** sectionvydiffold, float ** sectionpdata, float ** sectionpdiff, float ** sectionpdiffold, float * epst1, float * L2t, float L2sum, float energy_sum, float ** bufferlef_to_rig, float ** bufferrig_to_lef,
         float ** buffertop_to_bot, float ** bufferbot_to_top, float **pu, float **punp1, int itest,int nsrc_glob, int nsrc_loc, MPI_Request * req_send, MPI_Request * req_rec, float ***pr,
         float ***pp, float ***pq, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, float **ptaup, float **ptaus,
         float *etajm, float *peta, float *etaip, float **ptausipjp, int **recpos, int *step1, int *step3, float C_vp, float **gradg, float FC,

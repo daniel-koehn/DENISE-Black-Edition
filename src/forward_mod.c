@@ -15,8 +15,8 @@ void forward_mod(FILE *fprec, float ** waveconv, float ** waveconv_rho, float **
 	float ** utty, float ** absorb_coeff, float *hc, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half, float * K_y, float * a_y, float * b_y,  
 	float * K_y_half, float * a_y_half, float * b_y_half, float ** uxy, float ** uyx, int ntr, int **recpos_loc, float **sectionvx, float **sectionvy, float **sectionp, float **sectioncurl, 
 	float **sectiondiv, float **sectionread, int ntr_glob, float ** sectionvxdata, float ** sectionvxdiff, float ** sectionvxdiffold, float ** sectionvydata, float ** sectionvydiff, 
-	float ** sectionvydiffold, float * epst1, float * L2t, float L2sum, float energy_sum, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-	float ** buffertop_to_bot, float ** bufferbot_to_top, float **pu, float **punp1, int itest, int nsrc_glob, int nsrc_loc, MPI_Request * req_send, MPI_Request * req_rec, float ***pr, 
+	float ** sectionvydiffold, float ** sectionpdata, float ** sectionpdiff, float ** sectionpdiffold, float * epst1, float * L2t, float L2sum, float energy_sum, float ** bufferlef_to_rig, 
+        float ** bufferrig_to_lef, float ** buffertop_to_bot, float ** bufferbot_to_top, float **pu, float **punp1, int itest, int nsrc_glob, int nsrc_loc, MPI_Request * req_send, MPI_Request * req_rec, float ***pr, 
         float ***pp, float ***pq, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, float **ptaup, float **ptaus, 
         float *etajm, float *peta, float *etaip, float **ptausipjp, int **recpos, float FC, int * recswitch, FILE *FP, int ntr_loc){
 
@@ -125,13 +125,25 @@ if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
               /* Memory for seismic data */
               sectionread=matrix(1,ntr_glob,1,ns);
-              sectionvxdata=matrix(1,ntr,1,ns);
-              sectionvxdiff=matrix(1,ntr,1,ns);
-              sectionvydata=matrix(1,ntr,1,ns);
-              sectionvydiff=matrix(1,ntr,1,ns);
-              sectionvxdiffold=matrix(1,ntr,1,ns);
-              sectionvydiffold=matrix(1,ntr,1,ns);
-	  
+
+              if((QUELLTYPB==1)||(QUELLTYPB==3)){
+                sectionvxdata=matrix(1,ntr,1,ns);
+                sectionvxdiff=matrix(1,ntr,1,ns);
+                sectionvxdiffold=matrix(1,ntr,1,ns); 
+              }
+              
+              if((QUELLTYPB==1)||(QUELLTYPB==2)){
+                sectionvydata=matrix(1,ntr,1,ns);
+                sectionvydiff=matrix(1,ntr,1,ns);
+                sectionvydiffold=matrix(1,ntr,1,ns);
+	      }
+
+              if(QUELLTYPB==4){
+                sectionpdata=matrix(1,ntr,1,ns);
+                sectionpdiff=matrix(1,ntr,1,ns);
+                sectionpdiffold=matrix(1,ntr,1,ns);
+              }
+
           }       
  
         if(MYID==0){
@@ -233,7 +245,7 @@ for (nt=1;nt<=NT;nt++){
  
     /* explosive source */
    if ((!CHECKPTREAD)&&(QUELLTYP==1)) 	
-   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc);
+   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc,0);
 
    if ((FREE_SURF) && (POS[2]==0)){
    	if (L)    /* viscoelastic */
@@ -396,6 +408,74 @@ L2=calc_res(sectionvydata,sectionvy,sectionvydiff,sectionvydiffold,ntr,ns,LNORM,
 
 } /* end QUELLTYPB */
 
+/* read seismic data from SU file p */
+/* --------------------------------- */
+
+if(QUELLTYPB==4){ /* if QUELLTYPB */
+
+inseis(fprec,ishot,sectionread,ntr_glob,ns,11,iter);
+
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if (ENV==1){ 
+
+   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
+   calc_envelope(sectionvx,sectionvx,ns,ntr);  
+
+} 
+			
+if (TIME_FILT){
+
+   timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
+
+   if(TIME_FILT==2){ /* band-pass */
+     timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
+   }
+
+}
+
+
+/* assign input data to each PE */
+h=1;
+for(i=1;i<=ntr;i++){
+   for(j=1;j<=ns;j++){
+           sectionpdata[h][j]=sectionread[recpos_loc[3][i]][j];
+   }
+   h++;
+}
+
+/* Calculate p_mod(t1) - p_mod(t0) if TIMELAPSE == 1 */
+/* ------------------------------------------------- */
+if(TIMELAPSE==1){
+  
+    /* read synthetic seismic data at time step t0 vx */
+    inseis(fprec,ishot,sectionread,ntr_glob,ns,15,iter);
+
+    if (TIME_FILT){
+
+       timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
+
+       if(TIME_FILT==2){ /* band-pass */
+         timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
+       }
+
+    }
+       
+    /* calculate vx_mod(t1) - vx_mod(t0) */
+    h=1;
+    for(i=1;i<=ntr;i++){
+         for(j=1;j<=ns;j++){   
+	        sectionp[h][j]=sectionp[h][j]-sectionread[recpos_loc[3][i]][j];
+	 }
+	 h++;
+    } 
+                              
+} /* end of TIMELAPSE */
+
+L2=calc_res(sectionpdata,sectionp,sectionpdiff,sectionpdiffold,ntr,ns,LNORM,L2,0,1,1,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
+
+} /* end QUELLTYPB*/
+
+
 }
 
 if(N_STREAMER>0){
@@ -433,12 +513,24 @@ if(N_STREAMER>0){
 
  	free_ivector(recswitch,1,ntr);
  	free_matrix(sectionread,1,ntr_glob,1,ns);
- 	free_matrix(sectionvxdata,1,ntr,1,ns);
- 	free_matrix(sectionvxdiff,1,ntr,1,ns);
- 	free_matrix(sectionvydata,1,ntr,1,ns);
- 	free_matrix(sectionvydiff,1,ntr,1,ns);
- 	free_matrix(sectionvydiffold,1,ntr,1,ns);
- 	free_matrix(sectionvxdiffold,1,ntr,1,ns);
+
+        if((QUELLTYPB==1)||(QUELLTYPB==3)){
+ 	  free_matrix(sectionvxdata,1,ntr,1,ns);
+ 	  free_matrix(sectionvxdiff,1,ntr,1,ns);
+          free_matrix(sectionvxdiffold,1,ntr,1,ns);
+        }
+
+        if((QUELLTYPB==1)||(QUELLTYPB==2)){
+ 	  free_matrix(sectionvydata,1,ntr,1,ns);
+ 	  free_matrix(sectionvydiff,1,ntr,1,ns);
+ 	  free_matrix(sectionvydiffold,1,ntr,1,ns);
+        }
+
+        if(QUELLTYPB==4){
+          free_matrix(sectionvydata,1,ntr,1,ns);
+          free_matrix(sectionvydiff,1,ntr,1,ns);
+          free_matrix(sectionvydiffold,1,ntr,1,ns);
+        }
 
 }
 
