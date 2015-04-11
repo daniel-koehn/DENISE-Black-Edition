@@ -1009,7 +1009,7 @@ if(INVTYPE==2){
 if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
 for (ishot=1;ishot<=nshots;ishot+=SHOTINC){
-/*for (ishot=1;ishot<=1;ishot+=1){*/
+/* for (ishot=1;ishot<=1;ishot+=1){*/
 
 if(N_STREAMER>0){
 
@@ -1897,22 +1897,14 @@ if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
 
 if ((SEISMO)&&(iter==1)&&(INVMAT==0)&&(ishot==1)){
 
-   if((QUELLTYPB==1)||(QUELLTYPB==3)){
+
+   if(QUELLTYPB==1){
    
       catseis(sectionvxdiff, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
-      
-      if (MYID==0){
-         saveseis_glob(FP,fulldata_vx,sectionvy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
-      }
-      
-   }
-   
-   if((QUELLTYPB==1)||(QUELLTYPB==2)){
-   
       catseis(sectionvydiff, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
       
       if (MYID==0){
-         saveseis_glob(FP,sectionvx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+         saveseis_glob(FP,fulldata_vx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
       }
       
    }
@@ -2977,7 +2969,7 @@ if (nsrc_loc>0){
        free_matrix(sectionvxdiffold,1,ntr,1,ns);
     }
 
-    if((QUELLTYPB==1)||(QUELLTYPB==3)){    
+    if((QUELLTYPB==1)||(QUELLTYPB==2)){    
        free_matrix(sectionvydata,1,ntr,1,ns);
        free_matrix(sectionvydiff,1,ntr,1,ns);
        free_matrix(sectionvydiffold,1,ntr,1,ns);

@@ -84,7 +84,7 @@ data-format_(SNAP_FORMAT)(ASCII(2);BINARY(3)) = 3
 basic_filename_(SNAP_FILE) = ./snap/waveform_forward
 #
 #----------------------Receiver-----------------------------------
-output_of_seismograms_(SEISMO) = 2 
+output_of_seismograms_(SEISMO) = 1 
 # SEISMO=0: no seismograms
 # SEISMO=1: particle-velocities
 # SEISMO=2: pressure (hydrophones)
