@@ -21,9 +21,11 @@ float *picked_times=NULL, eps;
 float **integrated_section=NULL, **integrated_sectiondata=NULL;
 float **sectiondata_envelope=NULL, **section_envelope=NULL, **hilbert=NULL;
 float **dummy_1=NULL, **dummy_2=NULL; 
-float EPS_LNORM;
+float EPS_LNORM, tmp, tmp1;
 
-EPS_LNORM=1e-3;
+/* EPS_LNORM=1e1; */
+EPS_LNORM=1e-1;
+/* EPS_LNORM=0.0; */
 eps=1e-15;
 
 if(TIMEWIN) picked_times = vector(1,ntr);
@@ -69,31 +71,33 @@ if(TRKILL){
 RMS=0.0;
 Lcount=1;  
 
-if(LNORM==6){
+if((LNORM==5)&&(GRAD_FORM==1) ){
 
 	integrated_section = matrix(1,ntr,1,ns);
 	integrated_sectiondata = matrix(1,ntr,1,ns);
 
-/* Integration before TIMEWIN of measured and synthetic data  */
-intseis_section = 0.0;
-for(i=1;i<=ntr;i++){
-      	for(j=1;j<=ns;j++){
-		intseis_section += section[i][j];
-		integrated_section[i][j]=intseis_section*DT;
+        /* Integration of measured and synthetic data  */
+        for(i=1;i<=ntr;i++){
+                intseis_section = 0.0;
+      	        for(j=1;j<=ns;j++){
+		        intseis_section += section[i][j];
+		        integrated_section[i][j]=intseis_section;
 		}
 	}
-intseis_sectiondata = 0.0;
-for(i=1;i<=ntr;i++){
-      	for(j=1;j<=ns;j++){
-		intseis_sectiondata += sectiondata[i][j];
-		integrated_sectiondata[i][j]=intseis_sectiondata*DT;
+
+        for(i=1;i<=ntr;i++){
+               intseis_sectiondata = 0.0;
+      	       for(j=1;j<=ns;j++){
+		        intseis_sectiondata += sectiondata[i][j];
+		        integrated_sectiondata[i][j]=intseis_sectiondata;
 		}
 	}
-} /* end of if LNORM==6 */
+
+} /* end of if LNORM==5 */
 
 if((TIMEWIN==1)||(TIMEWIN==2)){
   
-  if(LNORM==6){
+  if((LNORM==5)&&(GRAD_FORM==1)){
     time_window(integrated_sectiondata, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
     time_window(integrated_section, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
   }
@@ -134,14 +138,26 @@ for(i=1;i<=ntr;i++){
 	abs_synthetics=0.0;
 	data_mult_synthetics=0.0;
 	
-	for(j=1;j<=ns;j++){
-		intseis_data=sectiondata[i][j];
-		intseis_synthetics=section[i][j];
-		abs_data+=intseis_data*intseis_data;
-		abs_synthetics+=intseis_synthetics*intseis_synthetics;
-		data_mult_synthetics+=intseis_synthetics*intseis_data;
-	}
-	
+        if((GRAD_FORM==2)||(GRAD_FORM==3)){
+	   for(j=1;j<=ns;j++){
+	      intseis_data=sectiondata[i][j];
+	      intseis_synthetics=section[i][j];
+	      abs_data+=intseis_data*intseis_data;
+	      abs_synthetics+=intseis_synthetics*intseis_synthetics;
+	      data_mult_synthetics+=intseis_synthetics*intseis_data;
+	   }
+        }
+
+        if(GRAD_FORM==1){
+           for(j=1;j<=ns;j++){
+              intseis_data=integrated_sectiondata[i][j];  
+              intseis_synthetics=integrated_section[i][j];  
+              abs_data+=intseis_data*intseis_data;  
+              abs_synthetics+=intseis_synthetics*intseis_synthetics;  
+              data_mult_synthetics+=intseis_synthetics*intseis_data;  
+           }
+        }
+
 	abs_data=sqrt(abs_data);
 	abs_synthetics=sqrt(abs_synthetics);
 	
@@ -190,19 +206,29 @@ for(i=1;i<=ntr;i++){
 
                         /* calculate global correlation norm residuals and misfit function */
 			if(LNORM==5){
-			  intseis_data = sectiondata[i][j];
-			  intseis_synthetics = section[i][j];
 
-                          if((fabs(abs_synthetics)>eps)&&(fabs(abs_data)>eps)){
-			    sectiondiff[i][invtime]=((intseis_synthetics*data_mult_synthetics)/(abs_synthetics*abs_synthetics*abs_synthetics*abs_data)) - (intseis_data/(abs_synthetics*abs_data));
-                          }else{sectiondiff[i][invtime]=0.0;}
+                          if((GRAD_FORM==2)||(GRAD_FORM==3)){
+			    intseis_data = sectiondata[i][j];
+			    intseis_synthetics = section[i][j];
+                          }
+
+                          if(GRAD_FORM==1){
+                            intseis_data = integrated_sectiondata[i][j];
+                            intseis_synthetics = integrated_section[i][j];
+                          }
+
+                          tmp = abs_synthetics*abs_synthetics*abs_synthetics*abs_data;
+                          tmp1 = abs_synthetics*abs_data;
+
+                          sectiondiff[i][invtime]=((intseis_synthetics*data_mult_synthetics)/(tmp*(1+EPS_LNORM))) - (intseis_data/(tmp1*(1+EPS_LNORM)));
 
 			}
 
                         if((LNORM==5)&&(swstestshot==1)){
-                          if((fabs(abs_synthetics)>eps)&&(fabs(abs_data)>eps)){
-	                      L2-=(intseis_data*intseis_synthetics)/(abs_data*abs_synthetics);
-                          }
+
+                          tmp = abs_data*abs_synthetics;
+                          L2-=(intseis_data*intseis_synthetics)/(tmp*(1+EPS_LNORM));
+
 	                }
 				
 			if(LNORM==6){
@@ -266,9 +292,10 @@ l2=L2;
 
 
 if(TIMEWIN) free_vector(picked_times,1,ntr);
-if(LNORM==6){
-free_matrix(integrated_section,1,ntr,1,ns);
-free_matrix(integrated_sectiondata,1,ntr,1,ns);
+
+if((LNORM==5)&&(GRAD_FORM==1)){
+  free_matrix(integrated_section,1,ntr,1,ns);
+  free_matrix(integrated_sectiondata,1,ntr,1,ns);
 }
 
 if(TRKILL){
