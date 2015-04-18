@@ -54,7 +54,7 @@ if (SWS_TAPER_GRAD_SOURCES){   /*cylindrical taper around sources is applied*/
  
 /* apply Hessian^-1 and save in gradp*/
 if (SWS_TAPER_FILE){ 
-  taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,5);
+  taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,4);
 }
 
 /* apply median filter at source positions */
