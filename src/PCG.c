@@ -182,7 +182,8 @@ if(iter>1){
      MPI_Allreduce(&betan,&betar,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
      betan = betar;
      
-     beta = betaz/betan;
+     beta = 0.0f;
+     if(betan !=0.0f) beta = betaz/betan;
      
      /* direction reset */
      if(beta<0.0){beta = 0.0;}
@@ -421,7 +422,8 @@ if(iter>1){
      MPI_Allreduce(&betan,&betar,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
      betan = betar;
      
-     beta = betaz/betan;
+     beta = 0.0f;
+     if(betan !=0.0f) beta = betaz/betan;
      
      /* direction reset */
      if(beta<0.0){beta = 0.0;}
@@ -660,7 +662,8 @@ if(iter>1){
      MPI_Allreduce(&betan,&betar,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
      betan = betar;
      
-     beta = betaz/betan;
+     beta = 0.0f;
+     if(betan !=0.0f) beta = betaz/betan;
      
      /* direction reset */
      if(beta<0.0){beta = 0.0;}
