@@ -1,0 +1,15 @@
+Quickstart to run the elastic Marmousi-II benchmark example in XX easy steps
+Details are described in the manual
+
+Minimum Requirements:
+---------------------
+Intel Core i7 or similar AMD CPU with 8 cores
+8 GB RAM
+1-2 days computation time
+
+C-Compiler: GCC, ICC (recommended)
+MPI-library: OpenMPI, Intel-MPI (recommended)
+other libraries: Fastest Fourier Transform in the West (FFTW) - https://github.com/FFTW/fftw3
+
+Seismic Unix or Matlab for seismic data and model visualization 
+
