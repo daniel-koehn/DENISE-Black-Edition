@@ -1,15 +1,102 @@
-Quickstart to run the elastic Marmousi-II benchmark example in XX easy steps
-Details are described in the manual
+Quickstart to run the elastic Marmousi-II benchmark example in 14 easy steps
+Details are described in the manual - http://www.geophysik.uni-kiel.de/~dkoehn/software.htm
 
-Minimum Requirements:
+Minimum requirements:
 ---------------------
 Intel Core i7 or similar AMD CPU with 8 cores
 8 GB RAM
 1-2 days computation time
 
-C-Compiler: GCC, ICC (recommended)
+C-Compiler: gcc, icc (recommended)
 MPI-library: OpenMPI, Intel-MPI (recommended)
 other libraries: Fastest Fourier Transform in the West (FFTW) - https://github.com/FFTW/fftw3
 
 Seismic Unix or Matlab for seismic data and model visualization 
 
+1. Clone DENISE-Black-Edition on your local machine
+
+git clone https://github.com/daniel-koehn/DENISE-Black-Edition
+
+2. Compile the library cseife in /libcseife with
+
+make 
+
+3. In /src adapt the compiler options in the Makefile to your system and compile the DENISE code with
+
+make denise
+
+4. Clone DENISE-Benchmark on your local machine 
+
+git clone https://github.com/daniel-koehn/DENISE-Benchmark
+
+5. Copy source, receiver and model files for the Marmousi-II model from DENISE-Benchmark to DENISE-Black-Edition 
+
+cp DENISE-Benchmark/Marmousi-II/start/marmousi_II_* DENISE-Black-Edition/par/start/
+cp DENISE-Benchmark/Marmousi-II/receiver/receiver_OBC DENISE-Black-Edition/par/receiver/
+cp DENISE-Benchmark/Marmousi-II/source/source_OBC_VSP.dat DENISE-Black-Edition/par/source/
+
+6. In DENISE-Black-Edition/par/DENISE_marm_OBC.inp check if the following parameters are set correctly
+
+MFILE = start/marmousi_II_marine
+INVMAT = 10
+
+7. Generate synthetic Marmousi-II data for an OBC acquisition geometry by running DENISE on e.g. 15 cores of 
+your CPU from the /par directory:
+
+mpirun -np 15 ../bin/denise DENISE_marm_OBC.inp FWI_workflow_marmousi.inp 
+
+If you want to use a different number of cores change NPROCX and NPROCY in DENISE_marm_OBC.inp according to your 
+needs. The total number of cores = NPROCX * NPROCY.
+
+8. Check if the modelling results are plausible, e.g. with Seismic Unix
+
+sugain qbal=1 < su/DENISE_MARMOUSI_y.su.shot1.it1 | suximage &
+
+9. In DENISE-Black-Edition/par/su generate the directory MARMOUSI_spike
+
+mkdir MARMOUSI_spike
+
+10. Move the data from /su to /su/MARMOUSI_spike with the shell script move_x_y.sh
+
+./move_x_y.sh
+
+11. In DENISE-Black-Edition/par/DENISE_marm_OBC.inp change the following parameters
+
+MFILE = start/marmousi_II_smooth2
+INVMAT = 0
+
+12. Start the 2D elastic FWI with 
+
+mpirun -np 15 ../bin/denise DENISE_marm_OBC.inp FWI_workflow_marmousi.inp
+
+As defined in FWI_workflow_marmousi.inp the FWI runs a sequential frequency inversion using low-pass filtered data 
+with maximum frequencies of 2 Hz, 5 Hz, 10 Hz and 20 Hz, respectively. 
+
+The Vp, Vs and density models of the current iteration are saved in:
+
+model/modelTest_vp.bin
+model/modelTest_vs.bin
+model/modelTest_rho.bin
+
+13. Wait a few hours ...
+
+The intermediate results after the FWI of each frequency range are saved seperatly in  
+
+model/modelTest_vs_stage_1.bin
+model/modelTest_vs_stage_2.bin
+model/modelTest_vs_stage_3.bin
+model/modelTest_vs_stage_4.bin
+
+You can visualize the results with Seismic Unix
+
+ximage n1=174 < model/modelTest_vs_stage_2.bin 
+
+or with the Matlab code 
+
+marmousi_II_marine_result_vel_result_lecture.m
+
+in DENISE-Benchmark/Marmousi-II
+
+14. Wait 1-2 days until the FWI is finished ...
+
+Congratulation, you just finished your first time-domain elastic FWI with DENISE Black Edition.  
