@@ -150,6 +150,7 @@ testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR)
 apply_vertical_taper_(yes=1)_(SWS_TAPER_GRAD_VERT) = 0
 # Horizontal taper
 apply_horizontal_taper_(yes=1)_(SWS_TAPER_GRAD_HOR) = 1
+exponent_of_depth_scaling_for_preconditioning_(EXP_TAPER_GRAD_HOR) = 2.0
 # Circular taper around all sources (not at receiver positions)
 apply_cylindrical_taper_(yes=1)_(SWS_TAPER_GRAD_SOURCES) = 0
 apply_cylindrical_taper_per_shot_(yes=1)_(SWS_TAPER_CIRCULAR_PER_SHOT) = 0

@@ -35,8 +35,8 @@ void write_par(FILE *fp){
 	extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR; 
 	extern int SWS_TAPER_GRAD_VERT, SWS_TAPER_GRAD_HOR, SWS_TAPER_GRAD_SOURCES, SWS_TAPER_CIRCULAR_PER_SHOT, SRTSHAPE, FILTSIZE;
 	extern int SWS_TAPER_FILE;
-	extern float SRTRADIUS;
-	extern int MIN_ITER;;
+	extern float SRTRADIUS, EXP_TAPER_GRAD_HOR;
+	extern int MIN_ITER;
 	extern char INV_MODELFILE[STRING_SIZE];
 	extern int nfstart, nf;
 	extern int nfstart_jac, nf_jac;
@@ -364,7 +364,7 @@ void write_par(FILE *fp){
 	
 	if (SWS_TAPER_GRAD_HOR==1){
 		fprintf(fp," SWS_TAPER_GRAD_HOR=%d: Horizontal taper applied.\n",SWS_TAPER_GRAD_HOR);
-		fprintf(fp," (GRADT1=%d, GRADT2=%d, GRADT3=%d, GRADT4=%d)\n\n",GRADT1,GRADT2,GRADT3,GRADT4);} 
+		fprintf(fp," (GRADT1=%d, GRADT2=%d, GRADT3=%d, GRADT4=%d, EXP_TAPER_GRAD_HOR=%f)\n\n",GRADT1,GRADT2,GRADT3,GRADT4,EXP_TAPER_GRAD_HOR);} 
 	else	fprintf(fp," SWS_TAPER_GRAD_HOR=%d: No horizontal taper applied.\n\n",SWS_TAPER_GRAD_HOR);
 	
 	if (SWS_TAPER_GRAD_SOURCES==1){

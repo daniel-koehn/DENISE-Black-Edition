@@ -26,7 +26,7 @@ void taper_grad(float ** waveconv,float ** taper_coeff, float **srcpos, int nsho
 	float amp, a, *window, grad_tap, **waveconvtmp;
 	char modfile[STRING_SIZE];
 	
-	extern float SRTRADIUS;
+	extern float SRTRADIUS, EXP_TAPER_GRAD_HOR;
 	extern int SRTSHAPE, FILTSIZE;
         float **m, **edgemat, **mm, **msum, minm, maxm, x, y, rad, **taper_coeff_glob;
         float maxrad;
@@ -220,6 +220,8 @@ void taper_grad(float ** waveconv,float ** taper_coeff, float **srcpos, int nsho
 			  
 			  /*grad_tap=((float)((j*j)/(GRADT2*GRADT2)));*/
 			  /*grad_tap=1.0;*/
+
+                          grad_tap=pow((float)(j*DH),EXP_TAPER_GRAD_HOR);
 
                         }
                         

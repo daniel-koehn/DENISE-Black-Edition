@@ -34,7 +34,7 @@ void exchange_par(void){
 	extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR; 
 	extern int SWS_TAPER_GRAD_VERT, SWS_TAPER_GRAD_HOR, SWS_TAPER_GRAD_SOURCES, SWS_TAPER_CIRCULAR_PER_SHOT, SRTSHAPE, FILTSIZE;
 	extern int SWS_TAPER_FILE;
-	extern float SRTRADIUS, WD_DAMP;
+	extern float SRTRADIUS, WD_DAMP, EXP_TAPER_GRAD_HOR;
 	extern int SPATFILTER, SPAT_FILT_SIZE, SPAT_FILT_1, SPAT_FILT_ITER;
 	extern int INV_RHO_ITER, INV_VP_ITER, INV_VS_ITER;
 	extern int MIN_ITER;
@@ -127,7 +127,7 @@ void exchange_par(void){
 	fdum[43]  = FC_HESS_INC;
 	
 	fdum[44] = FC_SPIKE_2;	
-	
+        fdum[45] = EXP_TAPER_GRAD_HOR;
 	                                                                                                                                                                                                                                                             
         idum[1]  = NPROCX;                                                                             
         idum[2]  = NPROCY;                                                                             
@@ -326,6 +326,7 @@ void exchange_par(void){
 	FC_HESS_INC = fdum[43];	
 	
 	FC_SPIKE_2 = fdum[44];
+        EXP_TAPER_GRAD_HOR = fdum[45];
 
 	NPROCX = idum[1];
 	NPROCY = idum[2];
