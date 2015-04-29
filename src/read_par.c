@@ -38,7 +38,7 @@ extern int SWS_TAPER_FILE;
 extern float SRTRADIUS, EXP_TAPER_GRAD_HOR;
 extern int SPATFILTER, SPAT_FILT_SIZE, SPAT_FILT_1, SPAT_FILT_ITER;
 extern int INV_RHO_ITER, INV_VP_ITER, INV_VS_ITER;
-extern int MIN_ITER;
+extern int MIN_ITER, RTMOD;
 extern char INV_MODELFILE[STRING_SIZE];
 extern int nfstart, nf;
 extern int nfstart_jac, nf_jac;
@@ -435,7 +435,10 @@ if (MYID == 0){
             break;       
          case 113 :
            fscanf(fp_in,"%s =%i",s,&RTM);
-           break; 
+           break;
+         case 114 :
+           fscanf(fp_in,"%s =%i",s,&RTMOD);
+           break;  
 	 default:
 	    break;
 	 }

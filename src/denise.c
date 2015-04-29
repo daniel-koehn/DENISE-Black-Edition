@@ -570,9 +570,6 @@ if(GRAVITY){
 
 }
 
-/* Activate Reverse Time modelling */
-RTMOD=0;
-
 if(RTMOD==1){
   RTM=1;
 }

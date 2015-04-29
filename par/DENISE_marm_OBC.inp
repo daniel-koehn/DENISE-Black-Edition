@@ -230,3 +230,5 @@ seismograms_of_synthetic_data_at_t0_(DATA_DIR_T0) = su/CAES_spike_time_0/DENISE_
 # ----- Elastic Reverse Time Migration ------------------------- #
 apply_reverse_time_migration_(yes=1)_(RTM) = 0
 #
+# ----- Reverse Time Modelling ------------------------- #
+apply_reverse_time_modelling_(yes=1)_(RTMOD) = 1

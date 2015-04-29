@@ -61,7 +61,7 @@ void exchange_par(void){
         extern float FC_SPIKE_1, FC_SPIKE_2;
         extern int ORDER_SPIKE;
         extern int RTM, NLBFGS;
-        extern int N_STREAMER;
+        extern int N_STREAMER, RTMOD;
         extern float REC_INCR_X, REC_INCR_Y;
         
 	/* definition of local variables */
@@ -238,6 +238,7 @@ void exchange_par(void){
 	idum[90]  = RTM;
         idum[91]  = NLBFGS;
         idum[92]  = N_STREAMER;
+        idum[93]  = RTMOD;
 	
 	} /** if (MYID == 0) **/
 	
@@ -437,7 +438,8 @@ void exchange_par(void){
 
         NLBFGS = idum[91];
         N_STREAMER = idum[92];
-	  
+        RTMOD = idum[93];	
+  
 	MPI_Bcast(&FL[1],L,MPI_FLOAT,0,MPI_COMM_WORLD);
 
 }
