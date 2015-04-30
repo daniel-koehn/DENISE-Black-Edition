@@ -253,6 +253,7 @@ DENISE= \
 	checkfd_ssg_visc.c \
 	conv_FD.c \
 	psource.c \
+        msource.c \
 	hessian_out.c \
 	holbergcoeff.c \
         householder.c \

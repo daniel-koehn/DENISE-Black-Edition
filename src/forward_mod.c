@@ -246,6 +246,10 @@ for (nt=1;nt<=NT;nt++){
     /* explosive source */
    if ((!CHECKPTREAD)&&(QUELLTYP==1)) 	
    psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc,0);
+   
+   /* moment tensor source */
+   if ((!CHECKPTREAD)&&(QUELLTYP==5)) 	
+   msource(nt,psxx,psyy,psxy,srcpos_loc,signals,nsrc_loc,0);
 
    if ((FREE_SURF) && (POS[2]==0)){
    	if (L)    /* viscoelastic */

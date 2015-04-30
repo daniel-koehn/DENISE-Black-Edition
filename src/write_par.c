@@ -42,7 +42,7 @@ void write_par(FILE *fp){
 	extern int nfstart_jac, nf_jac;
 	extern float VPUPPERLIM, VPLOWERLIM, VSUPPERLIM, VSLOWERLIM, RHOUPPERLIM, RHOLOWERLIM;
 	
-	extern int DTINV;
+	extern int DTINV, RTMOD;
 	extern int STEPMAX, TRKILL;
 	extern float EPS_SCALE, SCALEFAC;
 	extern char  TRKILL_FILE[STRING_SIZE];
@@ -141,7 +141,10 @@ void write_par(FILE *fp){
 		break;
 	case 4 :
 		fprintf(fp," rotated point source with directive force in x- and y-direction\n");
-		break;	                                 	
+		break;
+        case 5 :
+                fprintf(fp," source defined by moment tensor\n");
+                break;	                                 	
 	default :
 		err(" Sorry, wrong source type specification ! ");
 	}
@@ -451,6 +454,16 @@ void write_par(FILE *fp){
 	if (RTM==1){
 	   fprintf(fp," RTM=%d: Reverse Time Migration will be applied.\n",RTM);
 	}
+
+        fprintf(fp,"\n\n");
+        fprintf(fp," --------------- Reverse Time Modelling -------------------\n");
+        if (RTMOD==0){
+           fprintf(fp," RTMOD=%d: No Reverse Time Modelling applied.\n",RTMOD);
+        }
+        if (RTMOD==1){
+           fprintf(fp," RTMOD=%d: Reverse Time Modelling will be applied.\n",RTMOD);
+        }
+
 	                                                        
 	fprintf(fp,"\n");
 	fprintf(fp," **************************************************************\n");

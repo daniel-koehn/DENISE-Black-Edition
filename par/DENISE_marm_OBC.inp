@@ -1,8 +1,8 @@
 #-----------------------------------------------------------------
-#      PARAMETER FILE FOR FDVEPS (parallel version 1.3)
+#      PARAMETER FILE FOR DENISE BLACK-EDITION
 #-----------------------------------------------------------------
 # description:
-# description/name of the model: 2 layer example, model grid created by ../genmod/2layer.c
+# description/name of the model: Marmousi-II
 #
 #-------------- Domain Decomposition -----------------------------
 number_of_processors_in_x-direction_(NPROCX) = 5
@@ -33,7 +33,7 @@ timestep_(in_seconds)_(DT) = 2.0e-3
 #--------------------Source---------------------------------------
 # Shape_of_source-signal:
 (ricker=1;fumue=2;from_SOURCE_FILE=3;SIN**3=4;Gaussian_deriv=5;Spike=6;Klauder=7)_(QUELLART) = 6
-point_source_(explosive=1;force_in_x=2;force_in_y=3;rotated_force=4)_(QUELLTYP) = 1
+point_source_(explosive=1;force_in_x=2;force_in_y=3;rotated_force=4;moment_tensor=5)_(QUELLTYP) = 1
 angle_of_rotated_directed_source_relative_to_y_direction_(in_degree)_(ANGLE) = 0.0
 depth_of_plane_wave_excitation_(no<=0)_(in_meter)_(PLANE_WAVE_DEPTH) = 0.0
 dip_of_plane_wave_from_vertical_(in_degrees)_(PHI) = 0.0

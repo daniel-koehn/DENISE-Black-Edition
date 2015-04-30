@@ -203,6 +203,8 @@ void merge2(int nsnap, int type);
 
 void mergemod(char modfile[STRING_SIZE], int format);
 
+void msource(int nt, float ** sxx, float ** syy, float ** sxy, float **  srcpos_loc, float ** signals, int nsrc, int sw);
+
 void note(FILE *fp);
 
 void  outseis(FILE *fp, FILE *fpdata, int comp, float **section,
