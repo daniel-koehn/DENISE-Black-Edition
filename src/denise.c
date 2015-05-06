@@ -2504,7 +2504,7 @@ interpol(IDXI,IDYI,waveconv_u,1);
 		 if(INVMAT1==1){
 		 
 		    /* calculate Vs gradient */		 
-		    if(GRAD_FORM==1){
+		    if((GRAD_FORM==1)||(GRAD_FORM==3)){
 		      waveconv_u[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];
 		    }
 		    
