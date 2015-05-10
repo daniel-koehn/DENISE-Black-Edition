@@ -542,7 +542,7 @@ if(INVMAT==10){
 
 /* Define gradient formulation */
 /* GRAD_FORM = 1 - stress-displacement */
-/* GRAD_FORM = 2 - stress-velocity in pseudo-conservative form */
+/* GRAD_FORM = 2 - stress-velocity in non-conservative form (Castellanos, 2014) */
 /* GRAD_FORM = 3 - stress-velocity */
 GRAD_FORM = 1;
 
@@ -2084,11 +2084,10 @@ for (nt=1;nt<=NT;nt++){
 	        for (j=1;j<=NY;j=j+IDYI){ 
                                            
 		   	waveconv_rho_shot[j][i]+=(pvxp1[j][i]*forward_prop_rho_x[imat])+(pvyp1[j][i]*forward_prop_rho_y[imat]);
+                        waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
 			
 		   	/* mu-gradient with data integration */
 		   	if(GRAD_FORM==1){			  
-
-                           waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
 
                            if(INVMAT1==1){
 			       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -2108,10 +2107,8 @@ for (nt=1;nt<=NT;nt++){
 			   
                         }
 
-			/* Vs-gradient without data integration (stress-velocity in pseudo-conservative form) */
+			/* Vs-gradient without data integration (stress-velocity in non-conservative form) */
                         if(GRAD_FORM==2){
-
-                        waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
 
                            if(INVMAT1==1){
 			       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -2267,6 +2264,7 @@ for (i=1;i<=NX;i=i+IDX){
 	   
 	      muss = prho[j][i] * pu[j][i] * pu[j][i];
 	      lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
+              waveconv_lam[j][i] = (1.0/((3.0*lamss+2.0*muss) * (3.0*lamss+2.0*muss))) * waveconv_lam[j][i];
 	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i]; 
 	      
             }
