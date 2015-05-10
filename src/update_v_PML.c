@@ -755,11 +755,22 @@ for (j=ny1;j<=ny2;j++){
 		    i=(int)srcpos_loc[1][l];
 		    j=(int)srcpos_loc[2][l];
 		    
-		    if(QUELLTYPB==1){vx[j][i] += signals[l][nt];    /* single force in x */
-		                     vy[j][i] += signals1[l][nt];}  /* + single force in y */
+                    if(GRAD_FORM==1){
+		       if(QUELLTYPB==1){vx[j][i] += signals[l][nt];    /* single force in x */
+		                        vy[j][i] += signals1[l][nt];}  /* + single force in y */
 
-		    if(QUELLTYPB==2){vy[j][i] += signals1[l][nt];}  /* single force in y */
-		    if(QUELLTYPB==3){vx[j][i] += signals[l][nt];}   /* single force in x */
+		       if(QUELLTYPB==2){vy[j][i] += signals1[l][nt];}  /* single force in y */
+		       if(QUELLTYPB==3){vx[j][i] += signals[l][nt];}   /* single force in x */
+                    }
+
+                    if(GRAD_FORM==2){
+                       if(QUELLTYPB==1){vx[j][i] += rip[j][i]*signals[l][nt];    /* single force in x */
+                                        vy[j][i] += rjp[j][i]*signals1[l][nt];}  /* + single force in y */
+
+                       if(QUELLTYPB==2){vy[j][i] += rjp[j][i]*signals1[l][nt];}  /* single force in y */
+                       if(QUELLTYPB==3){vx[j][i] += rip[j][i]*signals[l][nt];}   /* single force in x */
+                    }
+
 
 		}}                         
 			

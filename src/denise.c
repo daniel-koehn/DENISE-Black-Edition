@@ -542,7 +542,7 @@ if(INVMAT==10){
 
 /* Define gradient formulation */
 /* GRAD_FORM = 1 - stress-displacement */
-/* GRAD_FORM = 2 - stress-velocity with compliance matrix (Vigh etal. 2014) */
+/* GRAD_FORM = 2 - stress-velocity in pseudo-conservative form */
 /* GRAD_FORM = 3 - stress-velocity */
 GRAD_FORM = 1;
 
@@ -1561,7 +1561,7 @@ if(nt==hin1){
 
 	    /* gradients without data integration */
             if((GRAD_FORM==2)||(GRAD_FORM==3)){
-	      forward_prop_u[imat2]=uxy[j][i];
+ 	      forward_prop_u[imat2]=uxy[j][i];
             }
 
 	    imat2++;
@@ -2084,10 +2084,11 @@ for (nt=1;nt<=NT;nt++){
 	        for (j=1;j<=NY;j=j+IDYI){ 
                                            
 		   	waveconv_rho_shot[j][i]+=(pvxp1[j][i]*forward_prop_rho_x[imat])+(pvyp1[j][i]*forward_prop_rho_y[imat]);
-			waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);  		   
 			
 		   	/* mu-gradient with data integration */
 		   	if(GRAD_FORM==1){			  
+
+                           waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
 
                            if(INVMAT1==1){
 			       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -2104,14 +2105,29 @@ for (nt=1;nt<=NT;nt++){
                                   + ((1.0/4.0) * ((forward_prop_x[imat] + forward_prop_y[imat]) * (psxx[j][i] + psyy[j][i])) / ((lamss+muss)*(lamss+muss)))  
                                   + ((1.0/4.0) * ((forward_prop_x[imat] - forward_prop_y[imat]) * (psxx[j][i] - psyy[j][i])) / (muss*muss));
 			   }
+			   
                         }
 
-			/* Vs-gradient without data integration (stress-velocity with compliance tensor after Vigh et al. 2014) */
+			/* Vs-gradient without data integration (stress-velocity in pseudo-conservative form) */
                         if(GRAD_FORM==2){
 
-			  if(pu[j][i]>0.0){
-		             waveconv_u_shot[j][i] += ((forward_prop_x[imat]*psxx[j][i]) + (forward_prop_y[imat]*psyy[j][i])) + 2.0 * (forward_prop_u[imat] * psxy[j][i]);
-			  }  
+                        waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
+
+                           if(INVMAT1==1){
+			       muss = prho[j][i] * pu[j][i] * pu[j][i];
+			       lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 * muss;
+			   }
+	           
+			   if(INVMAT1==3){
+			       muss = pu[j][i];
+			       lamss = ppi[j][i]; 
+			   } 
+	                        
+			   if(pu[j][i]>0.0){
+			      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * psxy[j][i])) 
+                                  + (((6.0*(lamss*lamss)+4.0*(muss*muss)+8.0*lamss*muss) * (forward_prop_x[imat] * psxx[j][i] + forward_prop_y[imat] * psyy[j][i]))  
+                                  - ((3.0*(lamss*lamss)+4.0*lamss*muss) * (forward_prop_y[imat] * psxx[j][i] + forward_prop_x[imat] * psyy[j][i]))) / (2.0*muss*muss*(3.0*lamss+2*muss)*(3*lamss+2*muss));
+			   } 
                           
                         }
 			
@@ -2213,6 +2229,136 @@ sprintf(jac,"%s_u.shot%i.%i%i",JACOBIAN,ishot,POS[1],POS[2]);*/
 fclose(FP3);
 }*/
 
+/* calculate gradient for lambda, Vp or Zp */
+/* --------------------------------------- */
+	
+for (i=1;i<=NX;i=i+IDX){
+   for (j=1;j<=NY;j=j+IDY){
+
+       /* calculate lambda gradient */           
+       waveconv_lam[j][i] = - DT * waveconv_shot[j][i];
+		 
+       if(INVMAT1==3){
+
+         if(GRAD_FORM==1){
+	 
+	     muss = pu[j][i];
+            lamss = ppi[j][i];
+            waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
+	    
+          }
+
+          waveconv_shot[j][i] = waveconv_lam[j][i];
+	}
+		 
+        if(INVMAT1==1){
+
+	   /* calculate Vp gradient */ 
+	   if(GRAD_FORM==1){
+	   
+              muss = prho[j][i] * pu[j][i] * pu[j][i];
+              lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
+	      waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
+	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
+	      
+           }
+
+           if(GRAD_FORM==2){                             	
+	   
+	      muss = prho[j][i] * pu[j][i] * pu[j][i];
+	      lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
+	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i]; 
+	      
+            }
+		   
+	    if(GRAD_FORM==3){                             	
+	    
+	       waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
+	       
+	    } 		   
+		 	
+            if(RTMOD==1){
+	      waveconv_shot[j][i] = -waveconv_lam[j][i];
+	    }
+		
+	}
+		 
+        if(INVMAT1==2){
+	
+	   /* calculate Zp gradient */
+           waveconv_shot[j][i] = 2.0 * ppi[j][i] * waveconv_lam[j][i];
+	   
+	}
+		                                                                       
+   }
+}
+
+/* calculate gradient for mu, Vs or Zs */
+/* ----------------------------------- */
+
+for (i=1;i<=NX;i=i+IDX){
+   for (j=1;j<=NY;j=j+IDY){
+		 
+      /* calculate mu gradient */ 
+      waveconv_mu[j][i] = - DT * waveconv_u_shot[j][i];
+		 
+      if(INVMAT1==1){
+		 
+         /* calculate Vs gradient */		 
+         if((GRAD_FORM==1)||(GRAD_FORM==3)){
+	    waveconv_u_shot[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];
+         }
+		    
+         if(GRAD_FORM==2){ 
+            waveconv_u_shot[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];                   
+         }
+		 
+      }
+		 
+      if(INVMAT1==2){
+        /* calculate Zs gradient */
+        waveconv_u_shot[j][i] = (- 4.0 * pu[j][i] * waveconv_lam[j][i]) + (2.0 * pu[j][i] * waveconv_mu[j][i]);
+      }
+		 
+      if(INVMAT1==3){
+        /* calculate u gradient */
+        waveconv_u_shot[j][i] = waveconv_mu[j][i];
+      }
+		                                                                       
+   }
+}
+
+/* calculate gradient for density */
+/* ------------------------------ */
+for (i=1;i<=NX;i=i+IDX){
+    for (j=1;j<=NY;j=j+IDY){
+
+       /* calculate density gradient rho' */
+       if(GRAD_FORM==1){
+          waveconv_rho_s[j][i]= - DT * waveconv_rho_shot[j][i];
+       }
+
+       if(GRAD_FORM==2){
+          waveconv_rho_s[j][i]= DT * waveconv_rho_shot[j][i];
+       }
+		
+       if(GRAD_FORM==3){
+          waveconv_rho_s[j][i]= DT * waveconv_rho_shot[j][i];
+       }
+		 
+       if(INVMAT1==1){
+          /* calculate density gradient */
+          waveconv_rho_shot[j][i] = ((((ppi[j][i] * ppi[j][i])-(2.0 * pu[j][i] * pu[j][i])) * waveconv_lam[j][i]) + (pu[j][i] * pu[j][i] * waveconv_mu[j][i]) + waveconv_rho_s[j][i]);
+       }
+		 
+       if(INVMAT1==3){
+          /* calculate density gradient */
+          waveconv_rho_shot[j][i] = waveconv_rho_s[j][i];
+       }
+	 
+    }
+}
+
 if((EPRECOND==1)||(EPRECOND==3)){
   /* calculate energy weights */
   eprecond1(We,Ws,Wr);
@@ -2220,10 +2366,12 @@ if((EPRECOND==1)||(EPRECOND==3)){
   /* scale gradient with energy weights*/
   for(i=1;i<=NX;i=i+IDX){
       for(j=1;j<=NY;j=j+IDY){
-          waveconv_shot[j][i] = waveconv_shot[j][i]/(We[j][i]*C_vp*C_vp);
-	  waveconv_u_shot[j][i] = waveconv_u_shot[j][i]/(We[j][i]*C_vs*C_vs);
-          if(C_vs==0.0){waveconv_u_shot[j][i] = 0.0;}
-	  waveconv_rho_shot[j][i] = waveconv_rho_shot[j][i]/(We[j][i]*C_rho*C_rho);
+
+             waveconv_shot[j][i] = waveconv_shot[j][i]/(We[j][i]*C_vp*C_vp);
+	     waveconv_u_shot[j][i] = waveconv_u_shot[j][i]/(We[j][i]*C_vs*C_vs);
+             if(C_vs==0.0){waveconv_u_shot[j][i] = 0.0;}
+	     waveconv_rho_shot[j][i] = waveconv_rho_shot[j][i]/(We[j][i]*C_rho*C_rho);
+
       }
   }
 }
@@ -2422,196 +2570,62 @@ if(GRAVITY==2){
 
 }
   
-if((HESSIAN!=1)&&(INVMAT==0)){
-/* calculate gradient direction pi */
-/* ------------------------------- */
+if(INVMAT==0){
 
-/* interpolate unknown values */
-if((IDXI>1)||(IDYI>1)){
-interpol(IDXI,IDYI,waveconv,1);
-}
+   /* Interpolate missing spatial gradient values in case IDXI > 1 || IDXY > 1 */
+   /* ------------------------------------------------------------------------ */
 
-/* calculate complete gradient */
+   if((IDXI>1)||(IDYI>1)){
+
+      interpol(IDXI,IDYI,waveconv,1);
+      interpol(IDXI,IDYI,waveconv_u,1);
+      interpol(IDXI,IDYI,waveconv_rho,1);
+
+   }
+
+
+   /* Add gravity gradient to FWI density gradient */
+   /* -------------------------------------------- */
 	
-        for (i=1;i<=NX;i=i+IDX){
-           for (j=1;j<=NY;j=j+IDY){
-
-                 /* calculate lambda gradient */           
-		 waveconv_lam[j][i] = - DT * waveconv[j][i];
-		 
-		 if(INVMAT1==3){
-
-                   if(GRAD_FORM==1){
-		      muss = pu[j][i];
-		      lamss = ppi[j][i];
-		      waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
-                   }
-
-		   waveconv[j][i] = waveconv_lam[j][i];
-		 }
-		 
-		 if(INVMAT1==1){
-
-		   /* calculate Vp gradient */ 
-		   if(GRAD_FORM==1){
-                                   muss = prho[j][i] * pu[j][i] * pu[j][i];
-		                  lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
-		     waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
-		         waveconv[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
-                   }
-
-		   if(GRAD_FORM==2){                             	
-		         waveconv[j][i] = (2.0 * ppi[j][i] / (prho[j][i]*(3.0*(ppi[j][i]*ppi[j][i])-4.0*(pu[j][i]*pu[j][i]))*(3.0*(ppi[j][i]*ppi[j][i])-4.0*(pu[j][i]*pu[j][i])))) * waveconv_lam[j][i];
-                   }
-		   
-		   if(GRAD_FORM==3){                             	
-		         waveconv[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
-	           } 		   
-		 	
-		   if(RTMOD==1){
-		      waveconv[j][i] = -waveconv_lam[j][i];
-		   }
-		
-		 }
-		 
-		 if(INVMAT1==2){
-		 /* calculate Zp gradient */
-		 waveconv[j][i] = 2.0 * ppi[j][i] * waveconv_lam[j][i];}
-		                                                                       
-           }
-        }
-
-}
-
-
-if((HESSIAN!=1)&&(INVMAT==0)){
-/* calculate gradient direction u */
-/* -------------------------------- */
-
-/* interpolate unknown values */
-if((IDXI>1)||(IDYI>1)){
-interpol(IDXI,IDYI,waveconv_u,1);
-}
-
-/* calculate complete gradient */
-
-        for (i=1;i<=NX;i=i+IDX){
-           for (j=1;j<=NY;j=j+IDY){
-		 
-	         /* calculate mu gradient */ 
-		 waveconv_mu[j][i] = - DT * waveconv_u[j][i];
-		 
-		 if(INVMAT1==1){
-		 
-		    /* calculate Vs gradient */		 
-		    if((GRAD_FORM==1)||(GRAD_FORM==3)){
-		      waveconv_u[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];
-		    }
-		    
-		    if(GRAD_FORM==2){
-		    
-		      if(pu[j][i]>0.0){		     
-		        tmp = (4.0 * ppi[j][i] * ppi[j][i] * pu[j][i] * pu[j][i] - 8.0 * pu[j][i] * pu[j][i] * pu[j][i] * pu[j][i] - 3.0 * ppi[j][i] * ppi[j][i] * ppi[j][i] * ppi[j][i]);
-			tmp1 = (4.0 * pu[j][i] * pu[j][i] - 3.0 * ppi[j][i] * ppi[j][i]) * (4.0 * pu[j][i] * pu[j][i] - 3.0 * ppi[j][i] * ppi[j][i]);
-		      	waveconv_u[j][i] = (- (tmp/tmp1) * waveconv_lam[j][i] + waveconv_mu[j][i])/(prho[j][i] * pu[j][i] * pu[j][i] * pu[j][i]);
-		      }
-		      
-		    }
-		 
-		 }
-		 
-		 if(INVMAT1==2){
-		 /* calculate Zs gradient */
-		 waveconv_u[j][i] = (- 4.0 * pu[j][i] * waveconv_lam[j][i]) + (2.0 * pu[j][i] * waveconv_mu[j][i]);}
-		 
-		 if(INVMAT1==3){
-		 /* calculate u gradient */
-		 waveconv_u[j][i] = waveconv_mu[j][i];}
-		                                                                       
-           }
-        }
-
-}
-
-if((HESSIAN!=1)&&(INVMAT==0)){
-/* calculate gradient direction rho */
-/* -------------------------------- */
-
-/* interpolate unknown values */
-if((IDXI>1)||(IDYI>1)){
-interpol(IDXI,IDYI,waveconv_rho,1);
-}
-
-/* calculate complete gradient */
-
-        for (i=1;i<=NX;i=i+IDX){
-           for (j=1;j<=NY;j=j+IDY){
-
-	        /* calculate density gradient rho' */
-                if(GRAD_FORM==1){
-                waveconv_rho_s[j][i]= - DT * waveconv_rho[j][i];}
-
-                if(GRAD_FORM==2){
-                waveconv_rho_s[j][i]= DT * waveconv_rho[j][i];}
-		
-		if(GRAD_FORM==3){
-                waveconv_rho_s[j][i]= DT * waveconv_rho[j][i];}
-		
-		 
-		 if(INVMAT1==1){
-		 /* calculate density gradient */
-		 waveconv_rho[j][i] = ((((ppi[j][i] * ppi[j][i])-(2.0 * pu[j][i] * pu[j][i])) * waveconv_lam[j][i]) + (pu[j][i] * pu[j][i] * waveconv_mu[j][i]) + waveconv_rho_s[j][i]);
-		 }
-		 
-		 if(INVMAT1==3){
-		 /* calculate density gradient */
-		 waveconv_rho[j][i] = waveconv_rho_s[j][i];}
-
-		 
-           }
-        }
-	
-	if(GRAVITY==2){
+   if(GRAVITY==2){
 		 		 
-		 /* calculate maximum values of waveconv_rho and grad_grav */
-		 FWImax = 0.0;
-	         GRAVmax = 0.0;
+     /* calculate maximum values of waveconv_rho and grad_grav */
+     FWImax = 0.0;
+     GRAVmax = 0.0;
 	
-	    	for (i=1;i<=NX;i++){
-			for (j=1;j<=NY;j++){
+     for (i=1;i<=NX;i++){
+        for (j=1;j<=NY;j++){
 		
-			   if(fabs(waveconv_rho[j][i])>FWImax){FWImax=fabs(waveconv_rho[j][i]);}
-			   if(fabs(grad_grav[j][i])>GRAVmax){GRAVmax=fabs(grad_grav[j][i]);}
-		
-		        }
-	        }
-	
-	        MPI_Allreduce(&FWImax,&FWImax_all,  1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
-                MPI_Allreduce(&GRAVmax,&GRAVmax_all,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
-		
-		LAM_GRAV_GRAD = GAMMA_GRAV * FWImax_all/GRAVmax_all;
-		 
-                    /* add gravity gradient to seismic density gradient */
-		    for (i=1;i<=NX;i++){
-			  for (j=1;j<=NY;j++){
-			
-                	      waveconv_rho[j][i] += LAM_GRAV_GRAD * grad_grav[j][i];
-				
-			  }
-		    }
+	    if(fabs(waveconv_rho[j][i])>FWImax){FWImax=fabs(waveconv_rho[j][i]);}
+	    if(fabs(grad_grav[j][i])>GRAVmax){GRAVmax=fabs(grad_grav[j][i]);}
 		
         }
+     }
+	
+     MPI_Allreduce(&FWImax,&FWImax_all,  1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+     MPI_Allreduce(&GRAVmax,&GRAVmax_all,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+		
+     LAM_GRAV_GRAD = GAMMA_GRAV * FWImax_all/GRAVmax_all;
+		 
+     /* add gravity gradient to seismic density gradient */
+     for (i=1;i<=NX;i++){
+        for (j=1;j<=NY;j++){
+			
+            waveconv_rho[j][i] += LAM_GRAV_GRAD * grad_grav[j][i];
+				
+        }
+     }
+		
+   }
 
 }
 
 if((HESSIAN==0)&&(GRAD_METHOD==1)&&(INVMAT==0)){
-	PCG(waveconv, taper_coeff, nsrc, srcpos, recpos, ntr_glob, iter, C_vp, gradp, nfstart_jac, waveconv_u, C_vs, gradp_u, waveconv_rho, C_rho, gradp_rho);
+  PCG(waveconv, taper_coeff, nsrc, srcpos, recpos, ntr_glob, iter, C_vp, gradp, nfstart_jac, waveconv_u, C_vs, gradp_u, waveconv_rho, C_rho, gradp_rho);
 }
 
 if((HESSIAN==0)&&(GRAD_METHOD==2)&&(INVMAT==0)){
-    
   LBFGS1(taper_coeff, nsrc, srcpos, recpos, ntr_glob, iter, nfstart_jac, waveconv, C_vp, gradp, waveconv_u, C_vs, gradp_u, waveconv_rho, C_rho, gradp_rho, y_LBFGS, s_LBFGS, rho_LBFGS, alpha_LBFGS, ppi, pu, prho, nxnyi, q_LBFGS, r_LBFGS, beta_LBFGS, LBFGS_pointer, NLBFGS, NLBFGS_vec);
-                
 }
 
 opteps_vp=0.0;
