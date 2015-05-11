@@ -62,9 +62,6 @@ void calc_envelope(float ** datatrace, float ** envelope, int ns, int ntr);
 
 void calc_hilbert(float ** datatrace, float ** envelope, int ns, int ntr);
 
-void calc_mat_change(float  **  waveconv, float ** waveconv_rho, float ** waveconv_u, float  **  rho, float  **  rhonp1, float **  pi, float **  pinp1, float **  u,
-float **  unp1, int iter, int epstest, int calcneweps, float eps_scale_vp, float eps_scale_vs);
-
 float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  pi, float **  pinp1, float **  u, float **  unp1, int iter, int epstest, int INVMAT, float eps_scale, int itest, int nfstart);
 
 double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, float L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter);

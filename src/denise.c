@@ -616,37 +616,31 @@ if(GRAD_METHOD==2){
   
 }
 
-if((INVMAT==1)||(INVMAT==0)){
+if(INVMAT==0){
 
-forward_prop_x =  vector(1,nxnyi*(NTDTINV));
-forward_prop_y =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_x =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_y =  vector(1,nxnyi*(NTDTINV));
 
-gradg = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-gradp = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  gradg = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  gradp = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
-}
+  forward_prop_rho_x =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_rho_y =  vector(1,nxnyi*(NTDTINV));
 
-if((INVMAT==2)||(INVMAT==0)){
+  gradg_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  gradp_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  waveconv_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  waveconv_rho_s = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  waveconv_rho_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
-forward_prop_rho_x =  vector(1,nxnyi*(NTDTINV));
-forward_prop_rho_y =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_u =  vector(1,nxnyi*(NTDTINV));
 
-gradg_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-gradp_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-waveconv_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-waveconv_rho_s = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-waveconv_rho_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-}
+  gradg_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  gradp_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  waveconv_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  waveconv_mu = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  waveconv_u_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
-if((INVMAT==3)||(INVMAT==0)){
-
-forward_prop_u =  vector(1,nxnyi*(NTDTINV));
-
-gradg_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-gradp_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-waveconv_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-waveconv_mu = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-waveconv_u_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 }
 
 if((EPRECOND==1)||(EPRECOND==3)){
@@ -982,16 +976,9 @@ exchange_par();
 for (i=1;i<=NX;i=i+IDX){ 
 	for (j=1;j<=NY;j=j+IDY){
 	
-	   
-	   if((INVMAT==1)||(INVMAT==0)){
+	   if(INVMAT==0){
 	     waveconv[j][i]=0.0;
-	   }
-	   
-	   if((INVMAT==2)||(INVMAT==0)){
 	     waveconv_rho[j][i]=0.0;
-	   }
-	
-	   if((INVMAT==3)||(INVMAT==0)){
 	     waveconv_u[j][i]=0.0;    
            }
           
@@ -1379,25 +1366,20 @@ if (L){
 
 
 /*initialize gradient matrices for each shot with zeros*/
-if((INVMAT==1)||(INVMAT==0)){
+if(INVMAT==0){
+
 	for(i=1;i<=NX;i=i+IDX){
 		for(j=1;j<=NY;j=j+IDY){
 			waveconv_shot[j][i]=0.0;
 		}
 	}
-}
 
-
-if((INVMAT==2)||(INVMAT==0)){
 	for(i=1;i<=NX;i=i+IDX){
 		for(j=1;j<=NY;j=j+IDY){
 			waveconv_rho_shot[j][i]=0.0;
 		}
 	}
-}
 
-
-if((INVMAT==3)||(INVMAT==0)){
 	for(i=1;i<=NX;i=i+IDX){
 		for(j=1;j<=NY;j=j+IDY){
 			waveconv_u_shot[j][i]=0.0;
@@ -1520,54 +1502,55 @@ for (nt=1;nt<=NT;nt++){
 
 if(nt==hin1){
 
-    if((INVMAT==2)||(INVMAT==0)){
+    if(INVMAT==0){
+    
         for (i=1;i<=NX;i=i+IDXI){
 	    for (j=1;j<=NY;j=j+IDYI){
 		 forward_prop_rho_x[imat1]=pvxp1[j][i];
 		 forward_prop_rho_y[imat1]=pvyp1[j][i];
                  imat1++;                                   
-		 }
-    }}   
-
-    /* save snapshots from forward model */  
-    if((INVMAT==1)||(INVMAT==0)){
-    for (i=1;i<=NX;i=i+IDXI){ 
-	for (j=1;j<=NY;j=j+IDYI){
-	    
-	    /* gradients with data integration */
-            if(GRAD_FORM==1){
-	       forward_prop_x[imat]=psxx[j][i];
-	       forward_prop_y[imat]=psyy[j][i];
-            }
-	    
-	    /* gradients without data integration */
-	    if((GRAD_FORM==2)||(GRAD_FORM==3)){
-               forward_prop_x[imat]=ux[j][i];
-	       forward_prop_y[imat]=uy[j][i];
 	    }
+        }   
+
+        for (i=1;i<=NX;i=i+IDXI){ 
+	    for (j=1;j<=NY;j=j+IDYI){
 	    
-	    imat++;
-        }
-     }}
+	        /* gradients with data integration */
+                if(GRAD_FORM==1){
+	           forward_prop_x[imat]=psxx[j][i];
+	           forward_prop_y[imat]=psyy[j][i];
+                }
+	    
+	        /* gradients without data integration */
+	        if((GRAD_FORM==2)||(GRAD_FORM==3)){
+                   forward_prop_x[imat]=ux[j][i];
+	           forward_prop_y[imat]=uy[j][i];
+	        }
+	    
+	        imat++;
+            }
+         }
     
-    if((INVMAT==3)||(INVMAT==0)){
-    for (i=1;i<=NX;i=i+IDXI){ 
-	for (j=1;j<=NY;j=j+IDYI){
-	    
-	    /* gradients with data integration */
-            if(GRAD_FORM==1){
- 	      forward_prop_u[imat2]=psxy[j][i];
-	    }
 
-	    /* gradients without data integration */
-            if((GRAD_FORM==2)||(GRAD_FORM==3)){
- 	      forward_prop_u[imat2]=uxy[j][i];
+        for (i=1;i<=NX;i=i+IDXI){ 
+	    for (j=1;j<=NY;j=j+IDYI){
+	    
+	        /* gradients with data integration */
+                if(GRAD_FORM==1){
+ 	          forward_prop_u[imat2]=psxy[j][i];
+	        }
+
+	        /* gradients without data integration */
+                if((GRAD_FORM==2)||(GRAD_FORM==3)){
+ 	          forward_prop_u[imat2]=uxy[j][i];
+                }
+
+	        imat2++;
+	    
             }
-
-	    imat2++;
-	    
         }
-	}}
+	
+    }
    
     if((EPRECOND==1)||(EPRECOND==3)){
       eprecond(Ws,pvx,pvy);
@@ -2175,14 +2158,14 @@ for (nt=1;nt<=NT;nt++){
 	saveseis(FP,sectionpdiff,sectionvy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr,srcpos1,ishot,ns,0);
 }*/
 
-/*if((INVMAT==1)||(INVMAT==0)){
+/*if(INVMAT==0){
 if(MYID==0){
   printf("Output of zero lag x-correlation pi\n");
   printf("----------------------------------- \n");	 
 }
 
 
-/*if((INVMAT==2)||(INVMAT==0)){
+/*if(INVMAT==0){
 if(MYID==0){
   printf("Output of zero lag x-correlation rho \n");
   printf("------------------------------------ \n");	 
@@ -2204,7 +2187,7 @@ sprintf(jac,"%s_rho.shot%i.%i%i",JACOBIAN,ishot,POS[1],POS[2]);*/
 fclose(FP3);
 }
 
-if((INVMAT==3)||(INVMAT==0)){
+if(INVMAT==0){
 if(MYID==0){
   printf("Output of zero lag x-correlation u \n");
   printf("------------------------------------ \n");	 
@@ -2840,7 +2823,7 @@ free_matrix(waveconvtmp,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_shot,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(wcpart,1,3,1,3);
 
-if((INVMAT==1)||(INVMAT==0)){
+if(INVMAT==0){
 free_matrix(gradg,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(gradp,-nd+1,NY+nd,-nd+1,NX+nd);
 }
@@ -2896,12 +2879,11 @@ free_matrix(bufferbot_to_top,1,NX,1,fdo3);
 
 free_vector(hc,0,6);
 
-if((INVMAT==1)||(INVMAT==0)){
+if(INVMAT==0){
+
 free_vector(forward_prop_x,1,NY*NX*NT);
 free_vector(forward_prop_y,1,NY*NX*NT);
-}
 
-if((INVMAT==2)||(INVMAT==0)){
 free_vector(forward_prop_rho_x,1,NY*NX*NT);
 free_vector(forward_prop_rho_y,1,NY*NX*NT);
 free_matrix(gradg_rho,-nd+1,NY+nd,-nd+1,NX+nd);
@@ -2909,15 +2891,14 @@ free_matrix(gradp_rho,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_rho,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_rho_s,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_rho_shot,-nd+1,NY+nd,-nd+1,NX+nd);
-}
 
-if((INVMAT==3)||(INVMAT==0)){
 free_vector(forward_prop_u,1,NY*NX*NT);
 free_matrix(gradg_u,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(gradp_u,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_u,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_mu,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_u_shot,-nd+1,NY+nd,-nd+1,NX+nd);
+
 }
 
 if (nsrc_loc>0){	
