@@ -98,7 +98,8 @@ if(TIMEWIN==2){
 for(i=1;i<=ntr;i++){
       for(j=1;j<=ns;j++){
       
-         if((TIMEWIN==1)||(TIMEWIN==2)){time = (float)(j * DT);}
+         /* if((TIMEWIN==1)||(TIMEWIN==2)){time = (float)(j * DT);} */
+         if((TIMEWIN==1)||(TIMEWIN==2)){time = (float)((ns-j+1) * DT);}
          if((TIMEWIN==3)||(TIMEWIN==4)){time = (float)((ns-j+1) * DT);}
 
          dump = (time-picked_times[i]);

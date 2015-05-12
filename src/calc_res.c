@@ -101,8 +101,6 @@ if((TIMEWIN==1)||(TIMEWIN==2)){
     time_window(integrated_section, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
   }
   
-  time_window(sectiondata, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
-  time_window(section, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
 }
                   
 /* calculate weighted data residuals and reverse time direction */
@@ -245,6 +243,12 @@ if(TIMEWIN==3){
 
 if(TIMEWIN==4){
   time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
+}
+
+if((TIMEWIN==1)||(TIMEWIN==2)){
+  
+  time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
+ 
 }    
 
 
