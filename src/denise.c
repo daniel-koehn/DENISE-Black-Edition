@@ -116,6 +116,11 @@ float eps_true, tmp, tmp1;
 int RECINC, ntr1;
 float ** hessian_lam=NULL, ** hessian_mu=NULL, ** hessian_rho=NULL;
 
+/* Variables for Laplace-domain inversion */
+float  ** forward_propl_x, ** forward_propl_y, ** forward_propl_rho_x, ** forward_propl_u, ** forward_propl_rho_y;
+float  ** back_prop_x, ** back_prop_y, ** back_prop_rho_x, ** back_prop_u, ** back_prop_rho_y;
+float time;
+
 /* Variables for the L-BFGS method */
 float * rho_LBFGS, * alpha_LBFGS, * beta_LBFGS; 
 float * y_LBFGS, * s_LBFGS, * q_LBFGS, * r_LBFGS;
@@ -616,30 +621,48 @@ if(GRAD_METHOD==2){
   
 }
 
-if(INVMAT==0){
-
-  forward_prop_x =  vector(1,nxnyi*(NTDTINV));
-  forward_prop_y =  vector(1,nxnyi*(NTDTINV));
+if(INVMAT<=1){
 
   gradg = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   gradp = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-
-  forward_prop_rho_x =  vector(1,nxnyi*(NTDTINV));
-  forward_prop_rho_y =  vector(1,nxnyi*(NTDTINV));
-
+  
   gradg_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   gradp_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   waveconv_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   waveconv_rho_s = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   waveconv_rho_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
-  forward_prop_u =  vector(1,nxnyi*(NTDTINV));
-
   gradg_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   gradp_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   waveconv_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   waveconv_mu = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
   waveconv_u_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+
+}
+
+if(INVMAT==0){
+
+  forward_prop_x =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_y =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_rho_x =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_rho_y =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_u =  vector(1,nxnyi*(NTDTINV));
+
+}
+
+if(INVMAT==1){
+
+  forward_propl_x = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  forward_propl_y = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  forward_propl_rho_x = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  forward_propl_rho_y = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  forward_propl_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+
+  back_prop_x = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  back_prop_y = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  back_prop_rho_x = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  back_prop_rho_y = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+  back_prop_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
 }
 
@@ -976,7 +999,7 @@ exchange_par();
 for (i=1;i<=NX;i=i+IDX){ 
 	for (j=1;j<=NY;j=j+IDY){
 	
-	   if(INVMAT==0){
+	   if(INVMAT<=1){
 	     waveconv[j][i]=0.0;
 	     waveconv_rho[j][i]=0.0;
 	     waveconv_u[j][i]=0.0;    
@@ -1057,7 +1080,7 @@ if(N_STREAMER>0){
 }
 
 /* estimate source time function by Wiener deconvolution */
-if((INV_STF)&&(iter==1)&&(INVMAT==0)){
+if((INV_STF)&&(iter==1)&&(INVMAT<=1)){
 
         fprintf(FP,"\n==================================================================================\n");
         fprintf(FP,"\n MYID=%d *****  Starting simulation (STF) for shot %d of %d  ********** \n",MYID,ishot,nshots);
@@ -1366,7 +1389,7 @@ if (L){
 
 
 /*initialize gradient matrices for each shot with zeros*/
-if(INVMAT==0){
+if(INVMAT<=1){
 
 	for(i=1;i<=NX;i=i+IDX){
 		for(j=1;j<=NY;j=j+IDY){
@@ -1392,7 +1415,29 @@ if(INVMAT==0){
 		}
 	}
 }
-                                                         
+
+/*initialize Laplace-domain wavefields for each shot with zeros*/
+if(INVMAT==1){
+
+   for(i=1;i<=NX;i=i+IDX){
+      for(j=1;j<=NY;j=j+IDY){
+      
+         forward_propl_rho_x[j][i]=0.0;
+         forward_propl_rho_y[j][i]=0.0;
+         forward_propl_u[j][i]=0.0;
+         forward_propl_x[j][i]=0.0;
+         forward_propl_y[j][i]=0.0;
+
+         back_prop_rho_x[j][i]=0.0;
+         back_prop_rho_y[j][i]=0.0;
+         back_prop_u[j][i]=0.0;
+         back_prop_x[j][i]=0.0;
+         back_prop_y[j][i]=0.0;
+   
+      }
+   }
+
+}                                                         
      
 /*----------------------  loop over timesteps (forward model) ------------------*/
 
@@ -1502,6 +1547,7 @@ for (nt=1;nt<=NT;nt++){
 
 if(nt==hin1){
 
+    /* save forward wavefields for time-domain inversion */
     if(INVMAT==0){
     
         for (i=1;i<=NX;i=i+IDXI){
@@ -1588,6 +1634,38 @@ DTINV_help[nt]=1;
 
 }
 
+   /* save forward wavefields for time-Laplace domain inversion */   
+   if(INVMAT==1){
+     
+     time = (float)(nt*DT);
+     tmp = exp(-GAMMA*(time+DT)*(time+DT));
+
+        for (i=1;i<=NX;i=i+IDXI){ 
+	    for (j=1;j<=NY;j=j+IDYI){
+
+	        forward_propl_rho_x[j][i]+=pvxp1[j][i]*tmp;
+		forward_propl_rho_y[j][i]+=pvyp1[j][i]*tmp;
+
+	        /* gradients with data integration */
+                if(GRAD_FORM==1){
+ 	          forward_propl_u[j][i]+=psxy[j][i]*tmp;
+		  forward_propl_x[j][i]+=psxx[j][i]*tmp;
+	          forward_propl_y[j][i]+=psyy[j][i]*tmp;
+	        }
+
+	        /* gradients without data integration */
+                if((GRAD_FORM==2)||(GRAD_FORM==3)){
+ 	          forward_propl_u[j][i]+=uxy[j][i]*tmp;
+		  forward_propl_x[j][i]+=ux[j][i]*tmp;
+	          forward_propl_y[j][i]+=uy[j][i]*tmp;
+                }
+		
+            }
+        }
+	
+    }
+
+
    /* WRITE SNAPSHOTS TO DISK */
    if ((SNAP) && (nt==lsnap) && (nt<=TSNAP2/DT)){
 
@@ -1655,7 +1733,7 @@ if ((SEISMO==4)&&(INVMAT==10)){
 }
 
 
-if(INVMAT==0){
+if(INVMAT<=1){
 
 if (MYID==0){
 printf("-------------------  \n");
@@ -1883,7 +1961,7 @@ if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
        itestshot+=TESTSHOT_INCR;
 }
 
-if ((SEISMO)&&(iter==1)&&(INVMAT==0)&&(ishot==1)){
+if ((SEISMO)&&(iter==1)&&(INVMAT<=1)&&(ishot==1)){
 
 
    if(QUELLTYPB==1){
@@ -2061,8 +2139,10 @@ for (nt=1;nt<=NT;nt++){
    if((RTMOD==0)&&(DTINV_help[NT-nt+1]==1)){
     
         if(HESSIAN==0){imat=((nxnyi*(NTDTINV)) - hin*nxnyi)+1;}
-	              
+	
+	/* save backpropagated wavefields for time-domain inversion and partially assemble gradients */                 
         if((HESSIAN==0)&&(INVMAT==0)){
+	
 	    for (i=1;i<=NX;i=i+IDXI){   
 	        for (j=1;j<=NY;j=j+IDYI){ 
                                            
@@ -2122,14 +2202,44 @@ for (nt=1;nt<=NT;nt++){
 		   }
 	    }
 		
-		   if(EPRECOND==1){
-	              eprecond(Wr,pvx,pvy);
-		   }
-
+		
+	  }
+	  
+	  
+	  if(EPRECOND==1){
+	     eprecond(Wr,pvx,pvy);
 	  }
                                                                                                                                
     hin++;
     }
+    
+    	  /* save backpropagated wavefields for time-Laplace domain inversion */   
+          if(INVMAT==1){
+
+             for (i=1;i<=NX;i=i+IDXI){ 
+	        for (j=1;j<=NY;j=j+IDYI){
+	    
+	            back_prop_rho_x[j][i]+=pvxp1[j][i];
+		    back_prop_rho_y[j][i]+=pvyp1[j][i];
+
+	            /* gradients with data integration */
+                    if(GRAD_FORM==1){
+ 	              back_prop_u[j][i]+=psxy[j][i];
+		      back_prop_x[j][i]+=psxx[j][i];
+	              back_prop_y[j][i]+=psyy[j][i];
+	            }
+
+	            /* gradients without data integration */
+                    if((GRAD_FORM==2)||(GRAD_FORM==3)){
+ 	              back_prop_u[j][i]+=uxy[j][i];
+		      back_prop_x[j][i]+=ux[j][i];
+	              back_prop_y[j][i]+=uy[j][i];
+                    }
+		
+                 }
+             }
+	
+          }
 
      /*fclose(FP2);*/
      
@@ -2158,56 +2268,69 @@ for (nt=1;nt<=NT;nt++){
 	saveseis(FP,sectionpdiff,sectionvy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr,srcpos1,ishot,ns,0);
 }*/
 
-/*if(INVMAT==0){
-if(MYID==0){
-  printf("Output of zero lag x-correlation pi\n");
-  printf("----------------------------------- \n");	 
+
+/* partially assemble Laplace-domain gradients */                 
+if(INVMAT==1){
+	
+   for (i=1;i<=NX;i=i+IDXI){   
+       for (j=1;j<=NY;j=j+IDYI){ 
+                                           
+	   waveconv_rho_shot[j][i] = ((back_prop_rho_x[j][i]*forward_propl_rho_x[j][i])+(back_prop_rho_y[j][i]*forward_propl_rho_y[j][i]));
+           waveconv_shot[j][i] = (forward_propl_x[j][i]+forward_propl_y[j][i])*(back_prop_x[j][i]+back_prop_y[j][i]);
+			
+           /* mu-gradient with data integration */
+	   if(GRAD_FORM==1){			  
+
+               if(INVMAT1==1){
+                 muss = prho[j][i] * pu[j][i] * pu[j][i];
+	         lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 * muss;
+	       }
+	           
+	       if(INVMAT1==3){
+	         muss = pu[j][i];
+	         lamss = ppi[j][i]; 
+	       } 
+	                        
+	       if(pu[j][i]>0.0){
+	         waveconv_u_shot[j][i]= (((1.0/(muss*muss))*(forward_propl_u[j][i] * back_prop_u[j][i])) 
+                     + ((1.0/4.0) * ((forward_propl_x[j][i] + forward_propl_y[j][i]) * (back_prop_x[j][i] + back_prop_y[j][i])) / ((lamss+muss)*(lamss+muss)))  
+                     + ((1.0/4.0) * ((forward_propl_x[j][i] - forward_propl_y[j][i]) * (back_prop_x[j][i] - back_prop_y[j][i])) / (muss*muss)));
+	       }
+			   
+            }
+
+	    /* Vs-gradient without data integration (stress-velocity in non-conservative form) */
+            if(GRAD_FORM==2){
+
+                if(INVMAT1==1){
+		  muss = prho[j][i] * pu[j][i] * pu[j][i];
+	          lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 * muss;
+	        }
+	           
+	        if(INVMAT1==3){
+	          muss = pu[j][i];
+	          lamss = ppi[j][i]; 
+                } 
+	                        
+		if(pu[j][i]>0.0){
+		  waveconv_u_shot[j][i] = DT*DT*(((1.0/(muss*muss))*(forward_propl_u[j][i] * back_prop_u[j][i])) 
+                      + (((6.0*(lamss*lamss)+4.0*(muss*muss)+8.0*lamss*muss) * (forward_propl_x[j][i] * back_prop_x[j][i] + forward_propl_y[j][i] * back_prop_y[j][i]))  
+                      - ((3.0*(lamss*lamss)+4.0*lamss*muss) * (forward_propl_y[j][i] * back_prop_x[j][i] + forward_propl_x[j][i] * back_prop_y[j][i]))) / (2.0*muss*muss*(3.0*lamss+2*muss)*(3*lamss+2*muss)));
+	         } 
+                          
+             }
+			
+	     /* mu-gradient without data integration (stress-velocity with elastic tensor) */
+	     if(GRAD_FORM==3){
+
+	       waveconv_u_shot[j][i]+= DT*DT*(2.0*((forward_propl_x[j][i]*back_prop_x[j][i]) + (forward_propl_y[j][i]*back_prop_y[j][i])) + (forward_propl_u[j][i] * back_prop_u[j][i]));
+                          
+             }
+                      		                                                                                                             
+       }
+   }
+				
 }
-
-
-/*if(INVMAT==0){
-if(MYID==0){
-  printf("Output of zero lag x-correlation rho \n");
-  printf("------------------------------------ \n");	 
-}
-
-sprintf(jac,"%s_rho.shot%i.%i%i",JACOBIAN,ishot,POS[1],POS[2]);*/
-/*printf("%s\n",jac);*/
-/*FP3=fopen(jac,"wb");*/
-
-/* save Jacobian */
-
-/*     for (i=1;i<=NX;i=i+IDX){ 
-	for (j=1;j<=NY;j=j+IDY){
-	    dump=waveconv_rho[j][i];
-	    fwrite(&dump, sizeof(float), 1, FP3);
-        }
-     }
-     
-fclose(FP3);
-}
-
-if(INVMAT==0){
-if(MYID==0){
-  printf("Output of zero lag x-correlation u \n");
-  printf("------------------------------------ \n");	 
-}
-
-sprintf(jac,"%s_u.shot%i.%i%i",JACOBIAN,ishot,POS[1],POS[2]);*/
-/*printf("%s\n",jac);*/
-/*FP3=fopen(jac,"wb");*/
-
-/* save Jacobian */
-
-/*     for (i=1;i<=NX;i=i+IDX){ 
-	for (j=1;j<=NY;j=j+IDY){
-	    dump=waveconv_u[j][i];
-	    fwrite(&dump, sizeof(float), 1, FP3);
-        }
-     }
-     
-fclose(FP3);
-}*/
 
 /* calculate gradient for lambda, Vp or Zp */
 /* --------------------------------------- */
@@ -2551,7 +2674,7 @@ if(GRAVITY==2){
 
 }
   
-if(INVMAT==0){
+if(INVMAT<=1){
 
    /* Interpolate missing spatial gradient values in case IDXI > 1 || IDXY > 1 */
    /* ------------------------------------------------------------------------ */
@@ -2601,11 +2724,11 @@ if(INVMAT==0){
 
 }
 
-if((HESSIAN==0)&&(GRAD_METHOD==1)&&(INVMAT==0)){
+if((HESSIAN==0)&&(GRAD_METHOD==1)&&(INVMAT<=1)){
   PCG(waveconv, taper_coeff, nsrc, srcpos, recpos, ntr_glob, iter, C_vp, gradp, nfstart_jac, waveconv_u, C_vs, gradp_u, waveconv_rho, C_rho, gradp_rho);
 }
 
-if((HESSIAN==0)&&(GRAD_METHOD==2)&&(INVMAT==0)){
+if((HESSIAN==0)&&(GRAD_METHOD==2)&&(INVMAT<=1)){
   LBFGS1(taper_coeff, nsrc, srcpos, recpos, ntr_glob, iter, nfstart_jac, waveconv, C_vp, gradp, waveconv_u, C_vs, gradp_u, waveconv_rho, C_rho, gradp_rho, y_LBFGS, s_LBFGS, rho_LBFGS, alpha_LBFGS, ppi, pu, prho, nxnyi, q_LBFGS, r_LBFGS, beta_LBFGS, LBFGS_pointer, NLBFGS, NLBFGS_vec);
 }
 
@@ -2619,7 +2742,7 @@ opteps_rho=0.0;
 
 if(RTM==0){ /* only if RTM==0 */
 
-if((INVMAT==0) && (HESSIAN==0)){
+if((INVMAT<=1) && (HESSIAN==0)){
 
 /* set min_iter_help to initial global value of MIN_ITER */
 if(iter==1){min_iter_help=MIN_ITER;}
@@ -2676,7 +2799,7 @@ eps_true=calc_mat_change_test(waveconv,waveconv_rho,waveconv_u,prho,prhonp1,ppi,
 
 } /* end of if(INVMAT!=4) */
 
-if ((INVMAT==0)&&(MODEL_FILTER)){
+if ((INVMAT<=1)&&(MODEL_FILTER)){
 /* smoothing the velocity models vp and vs */
 smooth_model(ppi,pu,prho,iter);
 }
@@ -2823,11 +2946,6 @@ free_matrix(waveconvtmp,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_shot,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(wcpart,1,3,1,3);
 
-if(INVMAT==0){
-free_matrix(gradg,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(gradp,-nd+1,NY+nd,-nd+1,NX+nd);
-}
-
 free_matrix(wavejac,-nd+1,NY+nd,-nd+1,NX+nd);
 
 if(FW>0){
@@ -2879,20 +2997,15 @@ free_matrix(bufferbot_to_top,1,NX,1,fdo3);
 
 free_vector(hc,0,6);
 
-if(INVMAT==0){
+if(INVMAT<=1){
 
-free_vector(forward_prop_x,1,NY*NX*NT);
-free_vector(forward_prop_y,1,NY*NX*NT);
-
-free_vector(forward_prop_rho_x,1,NY*NX*NT);
-free_vector(forward_prop_rho_y,1,NY*NX*NT);
+free_matrix(gradg,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(gradp,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(gradg_rho,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(gradp_rho,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_rho,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_rho_s,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_rho_shot,-nd+1,NY+nd,-nd+1,NX+nd);
-
-free_vector(forward_prop_u,1,NY*NX*NT);
 free_matrix(gradg_u,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(gradp_u,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_u,-nd+1,NY+nd,-nd+1,NX+nd);
@@ -2900,6 +3013,33 @@ free_matrix(waveconv_mu,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(waveconv_u_shot,-nd+1,NY+nd,-nd+1,NX+nd);
 
 }
+
+if(INVMAT==0){
+
+free_vector(forward_prop_x,1,NY*NX*NT);
+free_vector(forward_prop_y,1,NY*NX*NT);
+free_vector(forward_prop_rho_x,1,NY*NX*NT);
+free_vector(forward_prop_rho_y,1,NY*NX*NT);
+free_vector(forward_prop_u,1,NY*NX*NT);
+
+}
+
+if(INVMAT==1){
+
+free_matrix(forward_propl_x,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(forward_propl_y,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(forward_propl_rho_x,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(forward_propl_rho_y,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(forward_propl_u,-nd+1,NY+nd,-nd+1,NX+nd);
+
+free_matrix(back_prop_x,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(back_prop_y,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(back_prop_rho_x,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(back_prop_rho_y,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(back_prop_u,-nd+1,NY+nd,-nd+1,NX+nd);
+
+}
+
 
 if (nsrc_loc>0){	
 	free_matrix(signals,1,nsrc_loc,1,NT);

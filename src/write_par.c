@@ -319,10 +319,12 @@ void write_par(FILE *fp){
 	if (INVMAT==10){
 		fprintf(fp," INVMAT=%d: Only forward modeling is applied.\n",INVMAT);}
 	else {
-		if (INVMAT==0){
-			fprintf(fp," INVMAT=%d: FWI is applied.\n",INVMAT);}
-		else{
-			fprintf(fp," INVMAT=%d\n",INVMAT);}
+		if(INVMAT==0){
+			fprintf(fp," INVMAT=%d: Time-domain FWI is applied.\n",INVMAT);}
+		if(INVMAT==1){
+			fprintf(fp," INVMAT=%d: Time-Laplace-Frequency-domain FWI is applied.\n",INVMAT);}
+                if(INVMAT>1){
+                        fprintf(fp," INVMAT=%d\n",INVMAT);}
 	}
 	
 	fprintf(fp,"\n Maximum number of iterations: %d\n",ITERMAX);
