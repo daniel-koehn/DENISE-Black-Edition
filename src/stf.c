@@ -279,7 +279,7 @@ void stf(float **sectionvy_obs, float **sectionvy, int ntr_glob, int ishot, int 
 
         /* extract real part and flip STF_vector */
         for(j=0;j<ns;j++){
-           STF_vector[j+1]=creal(D_s_td[j]);
+           STF_vector[j+1]=creal(D_s_td[j])/Npad;
         }
 
         /* FFT of STF */
