@@ -146,10 +146,7 @@ if((*step1==0)&&(L2t[1]>L2t[2])){
 
 if((*step1==0)&&(countstep>stepmax)){
   if(MYID==0){
-  printf(" Steplength estimation failed!");}
-  if(TIME_FILT==0){
-  err(" ");
-  } 
+  printf(" Steplength estimation failed!");} 
   *step3=1;
   break;
 }

@@ -8,7 +8,7 @@ double calc_res(float **sectiondata, float **section, float **sectiondiff, float
 
 /* declaration of variables */
 extern float DT, DH, OFFSETC, FC, FC_START;
-extern int REC1, REC2, MYID, ORDER;
+extern int REC1, REC2, MYID, ORDER, INVMAT;
 extern int TRKILL, TIME_FILT, GRAD_FORM;
 extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, RTM, OFFSET_MUTE;
@@ -70,7 +70,7 @@ if(TRKILL){
 RMS=0.0;
 Lcount=1;  
 
-if((LNORM==5)&&(GRAD_FORM==1) ){
+if((LNORM==5)&&(GRAD_FORM==1)){
 
 	integrated_section = matrix(1,ntr,1,ns);
 	integrated_sectiondata = matrix(1,ntr,1,ns);
@@ -92,16 +92,22 @@ if((LNORM==5)&&(GRAD_FORM==1) ){
 		}
 	}
 
+        if((TIMEWIN==1)||(TIMEWIN==2)){
+            time_window(integrated_sectiondata, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
+            time_window(integrated_section, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
+        }
+
 } /* end of if LNORM==5 */
 
-if((TIMEWIN==1)||(TIMEWIN==2)){
-  
-  if((LNORM==5)&&(GRAD_FORM==1)){
-    time_window(integrated_sectiondata, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
-    time_window(integrated_section, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
-  }
-  
-}
+/* Laplace-Fourier-domain residuals */
+/* -------------------------------- */
+if(INVMAT==1){
+   laplace_fourier_res(sectiondata,section,sectiondiff,ntr,ntr_glob,ns,ishot,nsrc_glob,iter,recpos,recpos_loc,srcpos);
+}	
+
+/* Time-domain residuals */
+/* --------------------- */
+if(INVMAT!=1){
                   
 /* calculate weighted data residuals and reverse time direction */
 for(i=1;i<=ntr;i++){	
@@ -123,7 +129,7 @@ for(i=1;i<=ntr;i++){
       if((OFFSET_MUTE==1)&&(offset>=OFFSETC)){continue;} /* mute far-offset data*/
       if((OFFSET_MUTE==2)&&(offset<=OFFSETC)){continue;} /* mute near-offset data*/
 
-    }	
+    }
 	
     invtime=ns;
     
@@ -236,23 +242,26 @@ for(i=1;i<=ntr;i++){
        } 
 }
 
-if(TIMEWIN==3){
-  stalta(sectiondiff, ntr, ns, picked_times, ishot);
-  time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
-}
 
-if(TIMEWIN==4){
-  time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
-}
+   if(TIMEWIN==3){
+     stalta(sectiondiff, ntr, ns, picked_times, ishot);
+     time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
+   }
 
-if((TIMEWIN==1)||(TIMEWIN==2)){
-  
-  time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
- 
-}    
+   if(TIMEWIN==4){
+     time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
+   }
+
+   if((TIMEWIN==1)||(TIMEWIN==2)){  
+     time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
+   }    
 
 
-/* calculate misfit functions */
+} /* end of time domain residuals */
+
+/* calculate objective functions */
+/* ----------------------------- */
+
 for(i=1;i<=ntr;i++){
 
       if((TRKILL==1)&&(kill_vector[i]==1))

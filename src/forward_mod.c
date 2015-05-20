@@ -549,7 +549,7 @@ epst1[1] = 0.0;
 
 L2sum=0.0;
 MPI_Allreduce(&L2,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-if(LNORM==2){   
+if((LNORM==2)&&(INVMAT!=1)){   
   L2t[itest] = L2sum/energy_sum;
 }
 else {L2t[itest] = L2sum;}

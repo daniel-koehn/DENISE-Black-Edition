@@ -1342,9 +1342,7 @@ if (nsrc_loc){if(QUELLART==6){
 
 /* calculate envelope (Chi, Dong & Liu, 2014) */      
 if (ENV==1){ 
-
    calc_envelope(signals,signals,ns,nsrc_loc); 
-
 } 
 
 
@@ -2579,7 +2577,7 @@ MPI_Allreduce(&L2_all_shots,&L2sum_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD)
 energy_sum_all_shots = 0.0;
 MPI_Allreduce(&energy_all_shots,&energy_sum_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
 
-if(LNORM==2){
+if((LNORM==2)&&(INVMAT!=1)){
      L2t[1]=L2sum/energy_sum;
      L2t[4]=L2sum/energy_sum;
 }
@@ -2843,14 +2841,14 @@ float diff=0.0, pro=PRO;
 diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
 
 	/* abort criterion: if diff is smaller than pro (1% ?? is this reasonable?) than the inversion abort or switch to another frequency range*/
-	if((diff<=pro)&&(TIME_FILT==0)){
+	if(diff<=pro){
 		if(MYID==0){
 		printf("\n Reached the abort criterion of pro=%e and diff=%e \n",pro,diff);
 		}
 	break;
 	}
 	
-	if(((diff<=pro)&&(TIME_FILT))||(step3==1)){
+	if((diff<=pro)||(step3==1)){
         
         	/* output of the model at the end of given corner frequency */
         	model_freq_out(ppi,prho,pu,nstage,FC);
