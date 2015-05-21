@@ -2839,14 +2839,6 @@ float diff=0.0, pro=PRO;
 
 /* calculating differnce of the actual L2 and before two iterations, dividing with L2_hist[iter-2] provide changing in procent*/
 diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
-
-	/* abort criterion: if diff is smaller than pro (1% ?? is this reasonable?) than the inversion abort or switch to another frequency range*/
-	if(diff<=pro){
-		if(MYID==0){
-		printf("\n Reached the abort criterion of pro=%e and diff=%e \n",pro,diff);
-		}
-	break;
-	}
 	
 	if((diff<=pro)||(step3==1)){
         
@@ -2864,10 +2856,10 @@ diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
 
         	if(MYID==0){
 			if(step3==1){
-			        printf("\n Steplength estimation failed step3=%d \n Changing to next corner frequency \n",step3);
+			        printf("\n Steplength estimation failed step3=%d \n Changing to next FWI stage \n",step3);
 			}
 			else{
-  				printf("\n Reached the abort criterion of pro=%e and diff=%e \n Changing to next corner frequency \n",pro,diff);
+  				printf("\n Reached the abort criterion of pro=%e and diff=%e \n Changing to next FWI stage \n",pro,diff);
 			}
 	
 		}
@@ -2875,7 +2867,7 @@ diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
 	}
 }
 
-iter ++;
+iter++;
 iter_true++;
 
 if(EPRECOND==2){
