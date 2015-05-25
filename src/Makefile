@@ -158,6 +158,7 @@ DENISE= \
 	inseis.c \
 	initproc.c \
 	interpol.c \
+        laplace_fourier_res.c \
 	LBFGS1.c \
 	LU_decomp.c \
 	smooth2.c \
