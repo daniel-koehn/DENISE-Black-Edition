@@ -1120,13 +1120,6 @@ if (nsrc_loc){if(QUELLART==6){
    }
 }
 
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if (ENV==1){ 
-
-   calc_envelope(signals,signals,ns,nsrc_loc); 
-
-} 
-
 /* time domain filtering*/
 /*if ((TIME_FILT)&&(INVMAT!=10)){*/
 
@@ -1339,12 +1332,6 @@ if (nsrc_loc){if(QUELLART==6){
    
    }
 }
-
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if (ENV==1){ 
-   calc_envelope(signals,signals,ns,nsrc_loc); 
-} 
-
 
 /* time domain filtering*/
 if ((TIME_FILT)&&(INVMAT!=10)&&(INV_STF==0)){
@@ -1750,14 +1737,6 @@ if((QUELLTYPB==1)||(QUELLTYPB==3)){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,1,iter);
 
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if (ENV==1){ 
-
-   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
-   calc_envelope(sectionvx,sectionvx,ns,ntr);  
-
-} 
-
 if (TIME_FILT){
 
    timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
@@ -1817,14 +1796,6 @@ for(i=1;i<=ntr;i++){
 if((QUELLTYPB==1)||(QUELLTYPB==2)){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,2,iter);
-
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if (ENV==1){ 
-
-   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
-   calc_envelope(sectionvy,sectionvy,ns,ntr);  
-
-} 
 
 
 if (TIME_FILT){
@@ -1888,13 +1859,6 @@ if(QUELLTYPB==4){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,11,iter);
 
-/* calculate envelope (Chi, Dong & Liu, 2014) */
-if (ENV==1){
-
-   calc_envelope(sectionread,sectionread,ns,ntr_glob);
-   calc_envelope(sectionp,sectionp,ns,ntr);
-
-}
 
 if (TIME_FILT){
 

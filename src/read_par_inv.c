@@ -101,7 +101,8 @@ if(MYID==0){
    printf("   LNORM==2 corresponds to L2 Norm\n");
    printf("   LNORM==3 corresponds to Cauchy\n");
    printf("   LNORM==4 corresponds to SECH\n");
-   printf("   LNORM==5 corresponds to global correlation\n\n");
+   printf("   LNORM==5 corresponds to global correlation\n");
+   printf("   LNORM==6 corresponds to envelope objective function\n\n");
    printf(" Used LNORM=%d\n\n",LNORM);
    
   printf("\n\n");
@@ -139,8 +140,11 @@ if(MYID==0){
   printf(" --------------- Scale density update  -------------------\n");
   printf(" SCALERHO=%f\n\n",SCALERHO);     
 
-  if(ENV){printf(" --------------- Calculate envelope of source wavelet and seismic data  -------------------\n\n");}
-  
+  if(LNORM==6){printf(" --------------- Specified type of envelope objective function (LNORM=6) -------------------\n\n");
+    if(ENV==1){printf(" ENV = 1 L2-norm envelope objective function \n");}
+    if(ENV==2){printf(" ENV = 2 Logarithmic L2-norm envelope objective function \n");}
+  }  
+
 }
 
 }
