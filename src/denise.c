@@ -2171,7 +2171,7 @@ for (nt=1;nt<=NT;nt++){
 			       lamss = ppi[j][i]; 
 			   } 
 	                        
-			   if(pu[j][i]>0.0){
+			   if(muss>0.0){
 			      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * psxy[j][i])) 
                                   + ((1.0/4.0) * ((forward_prop_x[imat] + forward_prop_y[imat]) * (psxx[j][i] + psyy[j][i])) / ((lamss+muss)*(lamss+muss)))  
                                   + ((1.0/4.0) * ((forward_prop_x[imat] - forward_prop_y[imat]) * (psxx[j][i] - psyy[j][i])) / (muss*muss));
@@ -2194,7 +2194,7 @@ for (nt=1;nt<=NT;nt++){
 			       lamss = ppi[j][i]; 
 			   } 
 	                        
-			   if(pu[j][i]>0.0){
+			   if(muss>0.0){
 			      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * psxy[j][i])) 
                                   + (((6.0*(lamss*lamss)+4.0*(muss*muss)+8.0*lamss*muss) * (forward_prop_x[imat] * psxx[j][i] + forward_prop_y[imat] * psyy[j][i]))  
                                   - ((3.0*(lamss*lamss)+4.0*lamss*muss) * (forward_prop_y[imat] * psxx[j][i] + forward_prop_x[imat] * psyy[j][i]))) / (2.0*muss*muss*(3.0*lamss+2*muss)*(3*lamss+2*muss));
@@ -2303,7 +2303,7 @@ if(INVMAT==1){
 	         lamss = ppi[j][i]; 
 	       } 
 	                        
-	       if(pu[j][i]>0.0){
+	       if(muss>0.0){
 	         waveconv_u_shot[j][i]= (((1.0/(muss*muss))*(forward_propl_u[j][i] * back_prop_u[j][i])) 
                      + ((1.0/4.0) * ((forward_propl_x[j][i] + forward_propl_y[j][i]) * (back_prop_x[j][i] + back_prop_y[j][i])) / ((lamss+muss)*(lamss+muss)))  
                      + ((1.0/4.0) * ((forward_propl_x[j][i] - forward_propl_y[j][i]) * (back_prop_x[j][i] - back_prop_y[j][i])) / (muss*muss)));
@@ -2324,7 +2324,7 @@ if(INVMAT==1){
 	          lamss = ppi[j][i]; 
                 } 
 	                        
-		if(pu[j][i]>0.0){
+		if(muss>0.0){
 		  waveconv_u_shot[j][i] = DT*DT*(((1.0/(muss*muss))*(forward_propl_u[j][i] * back_prop_u[j][i])) 
                       + (((6.0*(lamss*lamss)+4.0*(muss*muss)+8.0*lamss*muss) * (forward_propl_x[j][i] * back_prop_x[j][i] + forward_propl_y[j][i] * back_prop_y[j][i]))  
                       - ((3.0*(lamss*lamss)+4.0*lamss*muss) * (forward_propl_y[j][i] * back_prop_x[j][i] + forward_propl_x[j][i] * back_prop_y[j][i]))) / (2.0*muss*muss*(3.0*lamss+2*muss)*(3*lamss+2*muss)));
@@ -2360,7 +2360,10 @@ for (i=1;i<=NX;i=i+IDX){
 	 
 	     muss = pu[j][i];
             lamss = ppi[j][i];
-            waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
+	    
+	    if((muss>0.0)||(lamss>0.0)){
+               waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
+	    }
 	    
           }
 
@@ -2374,7 +2377,11 @@ for (i=1;i<=NX;i=i+IDX){
 	   
               muss = prho[j][i] * pu[j][i] * pu[j][i];
               lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
-	      waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
+	      
+	      if((muss>0.0)||(lamss>0.0)){
+	         waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
+	      }
+	      
 	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
 	      
            }
@@ -2383,7 +2390,9 @@ for (i=1;i<=NX;i=i+IDX){
 	   
 	      muss = prho[j][i] * pu[j][i] * pu[j][i];
 	      lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
-              waveconv_lam[j][i] = (1.0/((3.0*lamss+2.0*muss) * (3.0*lamss+2.0*muss))) * waveconv_lam[j][i];
+	      if((muss>0.0)||(lamss>0.0)){
+                 waveconv_lam[j][i] = (1.0/((3.0*lamss+2.0*muss) * (3.0*lamss+2.0*muss))) * waveconv_lam[j][i];
+	      }
 	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i]; 
 	      
             }
