@@ -138,7 +138,7 @@ taper_length_(in_rec_numbers)_(TAPERLENGTH) = 4
 Inverse_Type_(gradient=1/complete=2)_(INVTYPE) = 2
 gradient_taper_geometry_(GRADT1,GRADT2,GRADT3,GRADT4) = 21, 25, 490, 500
 type_of_material_parameters_to_invert_(Vp,Vs,rho=1/Zp,Zs,rho=2/lam,mu,rho=3)_(INVMAT1) = 1
-forward_modelling_only_(yes=10)_FWT_(yes=0)_(INVMAT) = 10
+forward_modelling_only_(yes=10)_TD_FWT_(yes=0)_Laplace_FWT_(yes=1)_(INVMAT) = 10
 point_source_backpropagation_(x_and_y_components=1/y_comp=2/x_comp=3/p_comp=4)_(QUELLTYPB) = 1
 #
 #

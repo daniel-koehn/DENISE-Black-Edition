@@ -548,7 +548,7 @@ if(INVMAT==10){
 /* Define gradient formulation */
 /* GRAD_FORM = 1 - stress-displacement */
 /* GRAD_FORM = 2 - stress-velocity in non-conservative form (Castellanos, 2014) */
-/* GRAD_FORM = 3 - stress-velocity */
+/* GRAD_FORM = 3 - stress-velocity (Ren and Liu, 2015) */
 GRAD_FORM = 1;
 
 /* Parameters for gravity modeling/inversion */
@@ -1016,7 +1016,7 @@ if(INVTYPE==2){
 if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
 for (ishot=1;ishot<=nshots;ishot+=SHOTINC){
-/* for (ishot=1;ishot<=1;ishot+=1){*/
+/* for (ishot=1;ishot<=1;ishot+=1){ */
 
 if(N_STREAMER>0){
 
@@ -1120,6 +1120,11 @@ if (nsrc_loc){if(QUELLART==6){
    }
 }
 
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=6)&&(ENV==1)){ 
+   calc_envelope(signals,signals,ns,nsrc_loc); 
+} 
+
 /* time domain filtering*/
 /*if ((TIME_FILT)&&(INVMAT!=10)){*/
 
@@ -1153,9 +1158,9 @@ output_source_signal(fopen(source_signal_file,"w"),signals,NT,3);*/
 		    
 /* initialize wavefield with zero */
 if (L){
-	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
+	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
 }else{	
-	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
+	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
 }                                                         
      
 /*----------------------  loop over timesteps (forward model) ------------------*/
@@ -1205,7 +1210,7 @@ for (nt=1;nt<=NT;nt++){
 				K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);
     else
    	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, absorb_coeff, prho, hc, infoout,
-         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);  
+         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx,-1);  
 
 
     /* explosive source */
@@ -1333,6 +1338,11 @@ if (nsrc_loc){if(QUELLART==6){
    }
 }
 
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=6)&&(ENV==1)){ 
+   calc_envelope(signals,signals,ns,nsrc_loc); 
+} 
+
 /* time domain filtering*/
 if ((TIME_FILT)&&(INVMAT!=10)&&(INV_STF==0)){
 	
@@ -1367,9 +1377,9 @@ if(RUN_MULTIPLE_SHOTS){
 		    
 /* initialize wavefield with zero */
 if (L){
-	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
+	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
 }else{	
-	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
+	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
 }
 
 
@@ -1481,7 +1491,7 @@ for (nt=1;nt<=NT;nt++){
 				K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);
     else
    	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, absorb_coeff, prho, hc, infoout,
-         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);  
+         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx,0);  
 
 
     /* explosive source */
@@ -1737,6 +1747,12 @@ if((QUELLTYPB==1)||(QUELLTYPB==3)){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,1,iter);
 
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=6)&&(ENV==1)){ 
+   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
+   calc_envelope(sectionvx,sectionvx,ns,ntr);  
+}
+
 if (TIME_FILT){
 
    timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
@@ -1797,6 +1813,11 @@ if((QUELLTYPB==1)||(QUELLTYPB==2)){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,2,iter);
 
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=6)&&(ENV==1)){ 
+   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
+   calc_envelope(sectionvy,sectionvy,ns,ntr);  
+}
 
 if (TIME_FILT){
 
@@ -1859,6 +1880,11 @@ if(QUELLTYPB==4){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,11,iter);
 
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=6)&&(ENV==1)){ 
+   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
+   calc_envelope(sectionp,sectionp,ns,ntr);  
+}
 
 if (TIME_FILT){
 
@@ -1979,9 +2005,9 @@ hin1=1;
 
 /* initialize wavefield with zero */
 if (L){
-	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
+	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
 }else{	
-	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
+	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
 }
 
 /*----------------------  loop over timesteps (backpropagation) ------------------*/
@@ -2042,7 +2068,7 @@ for (nt=1;nt<=NT;nt++){
 				K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);
    else
    	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, absorb_coeff, prho, hc, infoout,
-         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);  
+         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx,1);  
 
    /* Backpropagate pressure wavefield */	
    psource(nt,psxx,psyy,srcpos_loc_back,sectionpdiff,ntr1,1);
@@ -2109,10 +2135,11 @@ for (nt=1;nt<=NT;nt++){
 	        for (j=1;j<=NY;j=j+IDYI){ 
                                            
 		   	waveconv_rho_shot[j][i]+=(pvxp1[j][i]*forward_prop_rho_x[imat])+(pvyp1[j][i]*forward_prop_rho_y[imat]);
-                        waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
 			
 		   	/* mu-gradient with data integration */
-		   	if(GRAD_FORM==1){			  
+		   	if(GRAD_FORM==1){
+			
+			   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);			  
 
                            if(INVMAT1==1){
 			       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -2134,6 +2161,8 @@ for (nt=1;nt<=NT;nt++){
 
 			/* Vs-gradient without data integration (stress-velocity in non-conservative form) */
                         if(GRAD_FORM==2){
+			
+			   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
 
                            if(INVMAT1==1){
 			       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -2153,10 +2182,11 @@ for (nt=1;nt<=NT;nt++){
                           
                         }
 			
-			/* mu-gradient without data integration (stress-velocity with elastic tensor) */
+			/* mu-gradient without data integration (Ren & Liu, 2015) */
 			if(GRAD_FORM==3){
 
-		          waveconv_u_shot[j][i]+= 2.0*((forward_prop_x[imat]*psxx[j][i]) + (forward_prop_y[imat]*psyy[j][i])) + (forward_prop_u[imat] * psxy[j][i]);
+                          waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(ux[j][i]+uy[j][i]);
+		          waveconv_u_shot[j][i]+= 2.0*((forward_prop_x[imat]*ux[j][i]) + (forward_prop_y[imat]*uy[j][i])) + (forward_prop_u[imat] * uxy[j][i]);
                           
                         }
                       		                                                                                                             
@@ -2302,6 +2332,7 @@ for (i=1;i<=NX;i=i+IDX){
 
        /* calculate lambda gradient */           
        waveconv_lam[j][i] = - DT * waveconv_shot[j][i];
+       
 		 
        if(INVMAT1==3){
 
@@ -2338,9 +2369,7 @@ for (i=1;i<=NX;i=i+IDX){
             }
 		   
 	    if(GRAD_FORM==3){                             	
-	    
 	       waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
-	       
 	    } 		   
 		 	
             if(RTMOD==1){
@@ -2366,7 +2395,7 @@ for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
 		 
       /* calculate mu gradient */ 
-      waveconv_mu[j][i] = - DT * waveconv_u_shot[j][i];
+      waveconv_mu[j][i] = -DT * waveconv_u_shot[j][i];
 		 
       if(INVMAT1==1){
 		 

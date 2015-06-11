@@ -183,6 +183,11 @@ if (nsrc_loc){if(QUELLART==6){
 
 }
 
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=1)&&(ENV==1)){ 
+   calc_envelope(signals,signals,ns,nsrc_loc); 
+} 
+
 if((TIME_FILT)&&(INVMAT!=10)&&(INV_STF==0)){
 
   /*time domain low-pass filtering of the source signal */
@@ -196,9 +201,9 @@ if((TIME_FILT)&&(INVMAT!=10)&&(INV_STF==0)){
 		    
 /* initialize wavefield with zero */
 if (L){
-	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
+	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
 }else{	
-	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
+	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
 }     
 
 /*----------------------  loop over timesteps (forward model) ------------------*/
@@ -233,7 +238,7 @@ for (nt=1;nt<=NT;nt++){
 				K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);
     else
    	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppinp1, punp1, puipjp, absorb_coeff, prhonp1, hc, infoout,
-         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);  
+         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx,-1);  
 
  
     /* explosive source */
@@ -282,6 +287,11 @@ if((QUELLTYPB==1)||(QUELLTYPB==3)){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,1,iter);
 
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=6)&&(ENV==1)){ 
+   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
+   calc_envelope(sectionvx,sectionvx,ns,ntr);  
+}
 			
 if (TIME_FILT){
 
@@ -342,6 +352,11 @@ if((QUELLTYPB==1)||(QUELLTYPB==2)){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,2,iter);
 
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=6)&&(ENV==1)){ 
+   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
+   calc_envelope(sectionvy,sectionvy,ns,ntr);  
+}
 
 if (TIME_FILT){
    timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
@@ -397,6 +412,12 @@ L2=calc_res(sectionvydata,sectionvy,sectionvydiff,sectionvydiffold,ntr,ns,LNORM,
 if(QUELLTYPB==4){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,11,iter);
+
+/* calculate envelope (Chi, Dong & Liu, 2014) */      
+if ((LNORM!=6)&&(ENV==1)){ 
+   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
+   calc_envelope(sectionp,sectionp,ns,ntr);  
+}
 			
 if (TIME_FILT){
 

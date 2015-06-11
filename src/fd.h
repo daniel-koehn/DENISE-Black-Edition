@@ -411,7 +411,7 @@ float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float *
 float **   sxy, float ** pi, float ** u, float ** uipjp, float ** absorb_coeff, float **rho, float *hc, int infoout,
 float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
 float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx);
+float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int sws);
 
 void update_s_elastic_hh(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float **   vy, float **   sxx, float **   syy,
@@ -480,12 +480,12 @@ void writedsk(FILE *fp_out, float amp, int format);
 void writemod(char modfile[STRING_SIZE], float ** array, int format);
 
 void zero_fdveps(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx,
-                 float ** syy, float ** sxy, float ** vxm1, float ** vym1, float ** vxp1, float ** vyp1,
+                 float ** syy, float ** sxy, float ** vxm1, float ** vym1, float ** vxym1, float ** vxp1, float ** vyp1,
                  float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_vyy, float ** psi_vxy,
                  float ** psi_vxxs);
 
 void zero_fdveps_visc(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx,
-                 float ** syy, float ** sxy, float ** vxm1, float ** vym1, float ** vxp1, float ** vyp1,
+                 float ** syy, float ** sxy, float ** vxm1, float ** vym1,  float ** vxym1, float ** vxp1, float ** vyp1,
                  float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_vyy, float ** psi_vxy,
                  float ** psi_vxxs, float ***pr, float ***pp, float ***pq);
 
