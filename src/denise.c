@@ -549,7 +549,8 @@ if(INVMAT==10){
 /* GRAD_FORM = 1 - stress-displacement */
 /* GRAD_FORM = 2 - stress-velocity in non-conservative form (Castellanos, 2014) */
 /* GRAD_FORM = 3 - stress-velocity (Ren and Liu, 2015) */
-GRAD_FORM = 1;
+/* GRAD_FORM = 4 - stress-velocity */
+GRAD_FORM = 4;
 
 /* Parameters for gravity modeling/inversion */
 /* GRAVITY == 0 no gravity modelling or inversion */
@@ -1016,7 +1017,7 @@ if(INVTYPE==2){
 if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
 for (ishot=1;ishot<=nshots;ishot+=SHOTINC){
-/* for (ishot=1;ishot<=1;ishot+=1){ */
+/*for (ishot=1;ishot<=1;ishot+=1){*/
 
 if(N_STREAMER>0){
 
@@ -1563,7 +1564,7 @@ if(nt==hin1){
                 }
 	    
 	        /* gradients without data integration */
-	        if((GRAD_FORM==2)||(GRAD_FORM==3)){
+	        if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
                    forward_prop_x[imat]=ux[j][i];
 	           forward_prop_y[imat]=uy[j][i];
 	        }
@@ -1582,7 +1583,7 @@ if(nt==hin1){
 	        }
 
 	        /* gradients without data integration */
-                if((GRAD_FORM==2)||(GRAD_FORM==3)){
+                if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
  	          forward_prop_u[imat2]=uxy[j][i];
                 }
 
@@ -2209,7 +2210,15 @@ for (nt=1;nt<=NT;nt++){
 		          waveconv_u_shot[j][i]+= 2.0*((forward_prop_x[imat]*ux[j][i]) + (forward_prop_y[imat]*uy[j][i])) + (forward_prop_u[imat] * uxy[j][i]);
                           
                         }
-                      		                                                                                                             
+                      	
+			/* mu-gradient without data integration */
+			if(GRAD_FORM==4){
+
+                          waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
+                          waveconv_u_shot[j][i]+= 2.0*((forward_prop_x[imat]*psxx[j][i]) + (forward_prop_y[imat]*psyy[j][i])) + (forward_prop_u[imat] * psxy[j][i]);
+			  
+                        }
+				                                                                                                             
 		   imat++;
 		   }
 	    }
@@ -2352,7 +2361,7 @@ for (i=1;i<=NX;i=i+IDX){
 
        /* calculate lambda gradient */           
        waveconv_lam[j][i] = - DT * waveconv_shot[j][i];
-       
+
 		 
        if(INVMAT1==3){
 
@@ -2397,7 +2406,7 @@ for (i=1;i<=NX;i=i+IDX){
 	      
             }
 		   
-	    if(GRAD_FORM==3){                             	
+	    if((GRAD_FORM==3)||(GRAD_FORM==4)){                             	
 	       waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
 	    } 		   
 		 	
@@ -2413,7 +2422,11 @@ for (i=1;i<=NX;i=i+IDX){
            waveconv_shot[j][i] = 2.0 * ppi[j][i] * waveconv_lam[j][i];
 	   
 	}
-		                                                                       
+
+        if(iter<INV_VP_ITER){
+           waveconv_shot[j][i] = 0.0;
+        }
+	                                                                       
    }
 }
 
@@ -2425,18 +2438,13 @@ for (i=1;i<=NX;i=i+IDX){
 		 
       /* calculate mu gradient */ 
       waveconv_mu[j][i] = -DT * waveconv_u_shot[j][i];
+
 		 
       if(INVMAT1==1){
 		 
          /* calculate Vs gradient */		 
-         if((GRAD_FORM==1)||(GRAD_FORM==3)){
-	    waveconv_u_shot[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];
-         }
-		    
-         if(GRAD_FORM==2){ 
-            waveconv_u_shot[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];                   
-         }
-		 
+         waveconv_u_shot[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];
+        	 
       }
 		 
       if(INVMAT1==2){
@@ -2447,6 +2455,10 @@ for (i=1;i<=NX;i=i+IDX){
       if(INVMAT1==3){
         /* calculate u gradient */
         waveconv_u_shot[j][i] = waveconv_mu[j][i];
+      }
+
+      if(iter<INV_VS_ITER){
+         waveconv_u_shot[j][i] = 0.0;
       }
 		                                                                       
    }
@@ -2466,7 +2478,7 @@ for (i=1;i<=NX;i=i+IDX){
           waveconv_rho_s[j][i]= DT * waveconv_rho_shot[j][i];
        }
 		
-       if(GRAD_FORM==3){
+       if((GRAD_FORM==3)||(GRAD_FORM==4)){
           waveconv_rho_s[j][i]= DT * waveconv_rho_shot[j][i];
        }
 		 
@@ -2478,6 +2490,10 @@ for (i=1;i<=NX;i=i+IDX){
        if(INVMAT1==3){
           /* calculate density gradient */
           waveconv_rho_shot[j][i] = waveconv_rho_s[j][i];
+       }
+
+       if(iter<INV_RHO_ITER){
+          waveconv_rho_shot[j][i] = 0.0;
        }
 	 
     }

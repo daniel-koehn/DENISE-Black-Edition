@@ -131,7 +131,7 @@ void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
 
-                           if((GRAD_FORM==2)||(GRAD_FORM==3)){
+                           if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;    
@@ -234,7 +234,7 @@ void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
 
-                           if((GRAD_FORM==2)||(GRAD_FORM==3)){
+                           if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;    
@@ -342,7 +342,7 @@ void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
 
-                           if((GRAD_FORM==2)||(GRAD_FORM==3)){
+                           if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;    
@@ -456,7 +456,7 @@ for (j=ny1;j<=ny2;j++){
 
                            }
                            
-                           if((GRAD_FORM==2)||(GRAD_FORM==3)){
+                           if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;
@@ -573,7 +573,7 @@ for (j=ny1;j<=ny2;j++){
 
                            }
                            
-                           if((GRAD_FORM==2)&&(GRAD_FORM==3)){
+                           if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;
@@ -692,7 +692,7 @@ for (j=ny1;j<=ny2;j++){
 
                            }
                            
-                           if((GRAD_FORM==2)&&(GRAD_FORM==3)){
+                           if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
 
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*(sxx_x+sxy_y)/DH;
@@ -755,7 +755,7 @@ for (j=ny1;j<=ny2;j++){
 		    i=(int)srcpos_loc[1][l];
 		    j=(int)srcpos_loc[2][l];
 		    
-                    if((GRAD_FORM==1)||(GRAD_FORM==3)){
+                    if((GRAD_FORM==1)||(GRAD_FORM==3)||(GRAD_FORM==4)){
 		       if(QUELLTYPB==1){vx[j][i] += signals[l][nt];    /* single force in x */
 		                        vy[j][i] += signals1[l][nt];}  /* + single force in y */
 

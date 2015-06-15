@@ -143,6 +143,17 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 				}
 				  
 			      }
+			      
+			      if((INVMAT<=1)&&(GRAD_FORM==4)){
+			      
+				if(sws==0){
+	                           ux[j][i] = vxx;
+				   uy[j][i] = vyy;
+				   uxy[j][i] = vyx+vxy;
+				}
+				  
+			      }
+			      
 			      				
 			      sxy[j][i] += fipjp*(vyx+vxy);
 			      sxx[j][i] += g*(vxx+vyy)+(2.0*f*vxx);
@@ -252,6 +263,16 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 				    uy[j][i] += vyy;
 				    uxy[j][i] += vyx+vxy;
 				 }
+				  
+			      }
+			      
+			      if((INVMAT<=1)&&(GRAD_FORM==4)){
+			      
+				if(sws==0){
+	                           ux[j][i] = vxx;
+				   uy[j][i] = vyy;
+				   uxy[j][i] = vyx+vxy;
+				}
 				  
 			      }			      
 				
@@ -369,6 +390,16 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 				 }
 				  
 			      }
+			      
+			      if((INVMAT<=1)&&(GRAD_FORM==4)){
+			      
+				if(sws==0){
+	                           ux[j][i] = vxx;
+				   uy[j][i] = vyy;
+				   uxy[j][i] = vyx+vxy;
+				}
+				  
+			      }
 				
 				sxy[j][i] += fipjp*(vyx+vxy);
 				sxx[j][i] += g*(vxx+vyy)+(2.0*f*vxx);
@@ -484,17 +515,20 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 				 }
 				
 				 if(sws==1){
-				 
 	                            ux[j][i] += vxx;
 				    uy[j][i] += vyy;
-				    uxy[j][i] += (vyx+vxy);
-				    
-				    /*ux[j][i] += 1e-3;
-				    uy[j][i] += 1e-3;
-				    uxy[j][i] += 1e-3;*/
-				    
-				    
+				    uxy[j][i] += 0.5*(vyx+vxy);
 				 }
+				  
+			      }
+			      
+			      if((INVMAT<=1)&&(GRAD_FORM==4)){
+			      
+				if(sws==0){
+	                           ux[j][i] = vxx;
+				   uy[j][i] = vyy;
+				   uxy[j][i] = vyx+vxy;
+				}
 				  
 			      }
 				
@@ -623,6 +657,16 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 				    uy[j][i] += vyy;
 				    uxy[j][i] += vyx+vxy;
 				 }
+				  
+			      }
+			      
+			      if((INVMAT<=1)&&(GRAD_FORM==4)){
+			      
+				if(sws==0){
+	                           ux[j][i] = vxx;
+				   uy[j][i] = vyy;
+				   uxy[j][i] = vyx+vxy;
+				}
 				  
 			      }
 				
@@ -759,11 +803,18 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 				    uxy[j][i] += vyx+vxy;
 				    
 				 }
-				 
-				 
-				  
+				   
 			      }
 			      
+			      if((INVMAT<=1)&&(GRAD_FORM==4)){
+			      
+				if(sws==0){
+	                           ux[j][i] = vxx;
+				   uy[j][i] = vyy;
+				   uxy[j][i] = vyx+vxy;
+				}
+				  
+			      }
 			      
 				
 				sxy[j][i] += fipjp*(vyx+vxy);
