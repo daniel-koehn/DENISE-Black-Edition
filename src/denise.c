@@ -550,7 +550,7 @@ if(INVMAT==10){
 /* GRAD_FORM = 2 - stress-velocity in non-conservative form (Castellanos, 2014) */
 /* GRAD_FORM = 3 - stress-velocity (Ren and Liu, 2015) */
 /* GRAD_FORM = 4 - stress-velocity */
-GRAD_FORM = 4;
+GRAD_FORM = 1;
 
 /* Parameters for gravity modeling/inversion */
 /* GRAVITY == 0 no gravity modelling or inversion */
