@@ -1969,7 +1969,7 @@ if ((SEISMO)&&(iter==1)&&(INVMAT<=1)&&(ishot==1)){
       catseis(sectionvydiff, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
       
       if (MYID==0){
-         saveseis_glob(FP,sectionvx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+         saveseis_glob(FP,fulldata_vy,fulldata_vy,sectionvy,sectionvy,sectionvy,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
       }
       
    }
@@ -1979,7 +1979,7 @@ if ((SEISMO)&&(iter==1)&&(INVMAT<=1)&&(ishot==1)){
       catseis(sectionvxdiff, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
       
       if (MYID==0){
-         saveseis_glob(FP,fulldata_vx,sectionvy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+         saveseis_glob(FP,fulldata_vx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
       }
       
    }
