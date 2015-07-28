@@ -8,15 +8,16 @@
 
 void seismo_ssg(int lsamp, int ntr, int **recpos, float **sectionvx, 
 float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
-float **vx, float **vy, float **sxx, float **syy, float **pi, float **u, float *hc){ 
+float **vx, float **vy, float **sxx, float **syy, float **pi, float **u, float **rho, float *hc){ 
 		
-	extern int NDT, SEISMO, FDORDER;	
-	extern float DH;
+	extern int NDT, SEISMO, FDORDER, INVMAT1;	
+	extern float DH, DT;
 	int i,j, itr, ins, nxrec, nyrec, m, fdoh;
-	float dh24, dhi, vxx, vyy, vxy, vyx;
+	float dh24, dhi, vxx, vyy, vxy, vyx, muss, lamss;
 
 
 	dh24=1.0/(DH*24.0);
+	dhi = DT/DH;
 	fdoh = FDORDER/2;
 
 	/*ins=lsamp/NDT;*/
@@ -52,8 +53,18 @@ float **vx, float **vy, float **sxx, float **syy, float **pi, float **u, float *
 			vyx *= dhi;
 			vxy *= dhi;
 			
-			sectiondiv[itr][ins]=(vxx+vyy)*sqrt(pi[j][i]);
-			sectioncurl[itr][ins]=(vxy-vyx)*sqrt(u[j][i]);
+			if(INVMAT1==1){
+			  muss = u[j][i] * u[j][i] * rho[j][i];
+			  lamss = pi[j][i] * pi[j][i] * rho[j][i];
+			  sectiondiv[itr][ins]=(vxx+vyy)*sqrt(lamss);
+			  sectioncurl[itr][ins]=(vxy-vyx)*sqrt(muss);
+			}
+			
+			if(INVMAT1==3){
+			  sectiondiv[itr][ins]=(vxx+vyy)*sqrt(pi[j][i]);
+			  sectioncurl[itr][ins]=(vxy-vyx)*sqrt(u[j][i]);
+			}
+			
 			break;
 		
 		case 4 :				
@@ -74,8 +85,18 @@ float **vx, float **vy, float **sxx, float **syy, float **pi, float **u, float *
 			vyx *= dhi;
 			vxy *= dhi;
 
-			sectiondiv[itr][ins]=(vxx+vyy)*sqrt(pi[j][i]);
-			sectioncurl[itr][ins]=(vxy-vyx)*sqrt(u[j][i]);
+			if(INVMAT1==1){
+			  muss = u[j][i] * u[j][i] * rho[j][i];
+			  lamss = pi[j][i] * pi[j][i] * rho[j][i];
+			  sectiondiv[itr][ins]=(vxx+vyy)*sqrt(lamss);
+			  sectioncurl[itr][ins]=(vxy-vyx)*sqrt(muss);
+			}
+			
+			if(INVMAT1==3){
+			  sectiondiv[itr][ins]=(vxx+vyy)*sqrt(pi[j][i]);
+			  sectioncurl[itr][ins]=(vxy-vyx)*sqrt(u[j][i]);
+			}
+			
 			sectionvx[itr][ins]=vx[nyrec][nxrec];
 			sectionvy[itr][ins]=vy[nyrec][nxrec];			
 			sectionp[itr][ins]=-sxx[nyrec][nxrec]-syy[nyrec][nxrec];

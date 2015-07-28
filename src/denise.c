@@ -1255,7 +1255,7 @@ for (nt=1;nt<=NT;nt++){
 	if (SEISMO){
 		seismo_ssg(nt, ntr, recpos_loc, sectionvx, sectionvy, 
 			sectionp, sectioncurl, sectiondiv, 
-			pvx, pvy, psxx, psyy, ppi, pu, hc);
+			pvx, pvy, psxx, psyy, ppi, pu, prho, hc);
 		/*lsamp+=NDT;*/
 	}
 
@@ -1536,7 +1536,7 @@ for (nt=1;nt<=NT;nt++){
 	if (SEISMO){
 		seismo_ssg(nt, ntr, recpos_loc, sectionvx, sectionvy, 
 			sectionp, sectioncurl, sectiondiv, 
-			pvx, pvy, psxx, psyy, ppi, pu, hc);
+			pvx, pvy, psxx, psyy, ppi, pu, prho, hc);
 		/*lsamp+=NDT;*/
 	}
 
@@ -2127,7 +2127,7 @@ for (nt=1;nt<=NT;nt++){
 	/*if ((SEISMO) && (nt==lsamp) && (nt<=NT)){
 		seismo_ssg(lsamp, ntr, recpos_loc, sectionp, sectionvy, 
 			sectionp, sectioncurl, sectiondiv, 
-			pvx, pvy, psxx, psyy, ppi, pu, hc);
+			pvx, pvy, psxx, psyy, ppi, pu, prho, hc);
 		lsamp+=NDT;
 	} */ 
    

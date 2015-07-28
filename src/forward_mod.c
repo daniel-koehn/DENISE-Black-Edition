@@ -266,7 +266,7 @@ for (nt=1;nt<=NT;nt++){
 	if (SEISMO){
 		seismo_ssg(nt, ntr, recpos_loc, sectionvx, sectionvy, 
 			sectionp, sectioncurl, sectiondiv, 
-			pvx, pvy, psxx, psyy, ppinp1, punp1, hc);
+			pvx, pvy, psxx, psyy, ppinp1, punp1, prhonp1, hc);
 		/*lsamp+=NDT;*/
 	}
 		

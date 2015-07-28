@@ -302,7 +302,7 @@ float **pvx, float **pvy, float **psxx, float **psyy, float **ppi, float **pu);
 void seismo_ssg(int lsamp, int ntr, int **recpos, float **sectionvx, 
 float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
 float **pvx, float **pvy, float **psxx, float **psyy, float **ppi, float **pu,
-float *hc); 
+float **prho, float *hc); 
 
 void seismo_rsg(int lsamp, int ntr, int **recpos, float **sectionvx, 
 float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
