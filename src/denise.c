@@ -2136,10 +2136,29 @@ for (nt=1;nt<=NT;nt++){
    
      for (i=1;i<=NX;i=i+IDXI){      
          for (j=1;j<=NY;j=j+IDYI){
-   
-             if(waveconv_shot[j][i]<(sqrt((psxx[j][i] + psyy[j][i])*(psxx[j][i] + psyy[j][i])))){
+
+             /* apply different focusing criteria for microseismic localization ... */
+
+             /* ... max(abs(pvxp1+pvyp1)) */
+             if(waveconv_shot[j][i]<(sqrt((pvxp1[j][i] * pvxp1[j][i]) + (pvyp1[j][i] * pvyp1[j][i])))){
+               waveconv_shot[j][i]=sqrt((pvxp1[j][i] * pvxp1[j][i]) + (pvyp1[j][i] * pvyp1[j][i]));
+             }   
+
+             /* ... max(abs(psxx + psyy + psxy)) */
+             /* if(waveconv_shot[j][i]<(sqrt((psxx[j][i] + psyy[j][i] + psxy[j][i])*(psxx[j][i] + psyy[j][i] + psxy[j][i])))){
+                   waveconv_shot[j][i]=sqrt((psxx[j][i] + psyy[j][i] + psxy[j][i])*(psxx[j][i] + psyy[j][i] + psxy[j][i]));
+             }*/
+
+             /* ... max(abs(psxx)) */
+             /*if(waveconv_shot[j][i]<(sqrt(psxx[j][i]*psxx[j][i]))){
+                   waveconv_shot[j][i]=sqrt(psxx[j][i] * psxx[j][i]);
+             }*/
+
+             /* ... max(abs(psxx + psyy)) */
+             /*if(waveconv_shot[j][i]<(sqrt((psxx[j][i] + psyy[j][i])*(psxx[j][i] + psyy[j][i])))){
 	           waveconv_shot[j][i]=sqrt((psxx[j][i] + psyy[j][i])*(psxx[j][i] + psyy[j][i]));
-             }
+             }*/
+
          }
      }
          
@@ -2354,15 +2373,15 @@ if(INVMAT==1){
 }
 
 /* calculate gradient for lambda, Vp or Zp */
-/* --------------------------------------- */
-	
-for (i=1;i<=NX;i=i+IDX){
-   for (j=1;j<=NY;j=j+IDY){
+/* --------------------------------------- */	
+if(RTMOD==0){
+
+  for (i=1;i<=NX;i=i+IDX){
+     for (j=1;j<=NY;j=j+IDY){
 
        /* calculate lambda gradient */           
        waveconv_lam[j][i] = - DT * waveconv_shot[j][i];
-
-		 
+	 
        if(INVMAT1==3){
 
          if(GRAD_FORM==1){
@@ -2378,42 +2397,39 @@ for (i=1;i<=NX;i=i+IDX){
 
           waveconv_shot[j][i] = waveconv_lam[j][i];
 	}
-		 
+			 
         if(INVMAT1==1){
 
-	   /* calculate Vp gradient */ 
-	   if(GRAD_FORM==1){
+	  /* calculate Vp gradient */ 
+	  if(GRAD_FORM==1){
 	   
               muss = prho[j][i] * pu[j][i] * pu[j][i];
               lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
 	      
 	      if((muss>0.0)||(lamss>0.0)){
-	         waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
+	          waveconv_lam[j][i] = (1.0/(4.0 * (lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
 	      }
 	      
 	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
-	      
-           }
 
-           if(GRAD_FORM==2){                             	
+          }
+
+          if(GRAD_FORM==2){                             	
 	   
 	      muss = prho[j][i] * pu[j][i] * pu[j][i];
 	      lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
+	      
 	      if((muss>0.0)||(lamss>0.0)){
-                 waveconv_lam[j][i] = (1.0/((3.0*lamss+2.0*muss) * (3.0*lamss+2.0*muss))) * waveconv_lam[j][i];
+                  waveconv_lam[j][i] = (1.0/((3.0*lamss+2.0*muss) * (3.0*lamss+2.0*muss))) * waveconv_lam[j][i];
 	      }
 	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i]; 
 	      
-            }
+          }
 		   
-	    if((GRAD_FORM==3)||(GRAD_FORM==4)){                             	
-	       waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
-	    } 		   
-		 	
-            if(RTMOD==1){
-	      waveconv_shot[j][i] = -waveconv_lam[j][i];
-	    }
-		
+	  if((GRAD_FORM==3)||(GRAD_FORM==4)){                             	
+	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
+	  } 		   
+		 		
 	}
 		 
         if(INVMAT1==2){
@@ -2422,12 +2438,14 @@ for (i=1;i<=NX;i=i+IDX){
            waveconv_shot[j][i] = 2.0 * ppi[j][i] * waveconv_lam[j][i];
 	   
 	}
-
+	
         if(iter<INV_VP_ITER){
            waveconv_shot[j][i] = 0.0;
         }
 	                                                                       
+     }
    }
+
 }
 
 /* calculate gradient for mu, Vs or Zs */
