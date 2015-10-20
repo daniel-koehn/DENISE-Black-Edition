@@ -123,7 +123,7 @@ if(LNORM==6){
 		          integrated_section[i][j]=intseis_section;
 			}
 			
-		        if((GRAD_FORM==2)||(GRAD_FORM==3)){
+		        if(GRAD_FORM==2){
 		          integrated_section[i][j]=section[i][j];
 			}
 			
@@ -139,7 +139,7 @@ if(LNORM==6){
 		          integrated_sectiondata[i][j]=intseis_sectiondata;
 			}
 			
-		        if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
+		        if(GRAD_FORM==2){
 		          integrated_sectiondata[i][j]=sectiondata[i][j];
 			}
 	       
@@ -231,7 +231,7 @@ for(i=1;i<=ntr;i++){
 	abs_synthetics=0.0;
 	data_mult_synthetics=0.0;
 	
-        if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
+        if(GRAD_FORM==2){
 	   for(j=1;j<=ns;j++){
 	      intseis_data=sectiondata[i][j];
 	      intseis_synthetics=section[i][j];
@@ -278,7 +278,7 @@ for(i=1;i<=ntr;i++){
 			     if(RTM==1){intseis += DT*(sectiondata[i][j]);}
                           }
 
-                          if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
+                          if(GRAD_FORM==2){
                              if(RTM==0){intseis = (section[i][j]-sectiondata[i][j]);}
                              if(RTM==1){intseis = sectiondata[i][j];}
                           }
@@ -300,7 +300,7 @@ for(i=1;i<=ntr;i++){
                         /* calculate global correlation norm residuals and misfit function */
 			if(LNORM==5){
 
-                          if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
+                          if(GRAD_FORM==2){
 			    intseis_data = sectiondata[i][j];
 			    intseis_synthetics = section[i][j];
                           }

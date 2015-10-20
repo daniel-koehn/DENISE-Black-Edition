@@ -45,8 +45,6 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 
 void spat_filt(float ** waveconv, int iter, int sws);
 
-float norm(float ** waveconv, int iter, int sws);
-
 void av_mat(float **  pi, float **  u, 
 float **  ppijm, float **  puip, float ** pujm);
 
@@ -203,6 +201,8 @@ void merge2(int nsnap, int type);
 void mergemod(char modfile[STRING_SIZE], int format);
 
 void msource(int nt, float ** sxx, float ** syy, float ** sxy, float **  srcpos_loc, float ** signals, int nsrc, int sw);
+
+void norm(float **waveconv);
 
 void note(FILE *fp);
 

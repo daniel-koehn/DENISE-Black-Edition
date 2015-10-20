@@ -153,13 +153,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
-			}
-			
-			if((INVMAT<=1)&&(GRAD_FORM==4)){
-			  ux[j][i] = vxx;
-		          uy[j][i] = vyy;
-			  uxy[j][i] = vxy+vyx;
-			}
+			}			
 
 		}
 		}
@@ -272,13 +266,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
-			}
-			
-			if((INVMAT<=1)&&(GRAD_FORM==4)){
-			  ux[j][i] = vxx;
-		          uy[j][i] = vyy;
-			  uxy[j][i] = vxy+vyx;
-			}
+			}			
 			
 			}
 		}
@@ -395,13 +383,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
-			}
-			
-			if((INVMAT<=1)&&(GRAD_FORM==4)){
-			  ux[j][i] = vxx;
-		          uy[j][i] = vyy;
-			  uxy[j][i] = vxy+vyx;
-			}
+			}			
 
 			}
 		}
@@ -524,13 +506,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
-			}
-			
-			if((INVMAT<=1)&&(GRAD_FORM==4)){
-			  ux[j][i] = vxx;
-		          uy[j][i] = vyy;
-			  uxy[j][i] = vxy+vyx;
-			}
+			}			
 
    }}
 		break;
@@ -655,13 +631,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
-			}
-			
-			if((INVMAT<=1)&&(GRAD_FORM==4)){
-			  ux[j][i] = vxx;
-		          uy[j][i] = vyy;
-			  uxy[j][i] = vxy+vyx;
-			}
+			}			
 			
 
 			}
@@ -792,13 +762,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
-			}
-			
-			if((INVMAT<=1)&&(GRAD_FORM==4)){
-			  ux[j][i] = vxx;
-		          uy[j][i] = vyy;
-			  uxy[j][i] = vxy+vyx;
-			}
+			}			
 
 		
 			}

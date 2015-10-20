@@ -63,7 +63,7 @@ void laplace_fourier_res(float **sectionvy_obs, float **sectionvy, float **secti
 	         integrated_sectiondata[i][invtime] += DT*sectionvy_obs[i][j];
 	      }
 	      
-	      if((GRAD_FORM==2)||(GRAD_FORM==3)){
+	      if(GRAD_FORM==2){
 	         integrated_section[i][invtime] = sectionvy[i][j];
 	         integrated_sectiondata[i][invtime] = sectionvy_obs[i][j];
 	      }	      

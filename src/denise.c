@@ -546,11 +546,9 @@ if(INVMAT==10){
 }
 
 /* Define gradient formulation */
-/* GRAD_FORM = 1 - stress-displacement */
-/* GRAD_FORM = 2 - stress-velocity in non-conservative form (Castellanos, 2014) */
-/* GRAD_FORM = 3 - stress-velocity (Ren and Liu, 2015) */
-/* GRAD_FORM = 4 - stress-velocity */
-GRAD_FORM = 1;
+/* GRAD_FORM = 1 - stress-displacement gradients */
+/* GRAD_FORM = 2 - stress-velocity gradients for decomposed impedance matrix */
+GRAD_FORM = 2;
 
 /* Parameters for gravity modeling/inversion */
 /* GRAVITY == 0 no gravity modelling or inversion */
@@ -1564,7 +1562,7 @@ if(nt==hin1){
                 }
 	    
 	        /* gradients without data integration */
-	        if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
+	        if(GRAD_FORM==2){
                    forward_prop_x[imat]=ux[j][i];
 	           forward_prop_y[imat]=uy[j][i];
 	        }
@@ -1583,7 +1581,7 @@ if(nt==hin1){
 	        }
 
 	        /* gradients without data integration */
-                if((GRAD_FORM==2)||(GRAD_FORM==3)||(GRAD_FORM==4)){
+                if(GRAD_FORM==2){
  	          forward_prop_u[imat2]=uxy[j][i];
                 }
 
@@ -1650,7 +1648,7 @@ DTINV_help[nt]=1;
 	        }
 
 	        /* gradients without data integration */
-                if((GRAD_FORM==2)||(GRAD_FORM==3)){
+                if(GRAD_FORM==2){
  	          forward_propl_u[j][i]+=uxy[j][i]*tmp;
 		  forward_propl_x[j][i]+=ux[j][i]*tmp;
 	          forward_propl_y[j][i]+=uy[j][i]*tmp;
@@ -2215,28 +2213,17 @@ for (nt=1;nt<=NT;nt++){
 			   } 
 	                        
 			   if(muss>0.0){
+								
+			      tmp = (1.0/(4.0*(lamss+muss)*(lamss+muss))) - (1.0/(4.0*muss*muss));
+			      tmp1 = (1.0/(4.0*(lamss+muss)*(lamss+muss))) + (1.0/(4.0*muss*muss));
+			
 			      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * psxy[j][i])) 
-                                  + (((6.0*(lamss*lamss)+4.0*(muss*muss)+8.0*lamss*muss) * (forward_prop_x[imat] * psxx[j][i] + forward_prop_y[imat] * psyy[j][i]))  
-                                  - ((3.0*(lamss*lamss)+4.0*lamss*muss) * (forward_prop_y[imat] * psxx[j][i] + forward_prop_x[imat] * psyy[j][i]))) / (2.0*muss*muss*(3.0*lamss+2*muss)*(3*lamss+2*muss));
+                                                   + ( tmp1 * (forward_prop_x[imat] * psxx[j][i] + forward_prop_y[imat] * psyy[j][i]))  
+                                                   + ( tmp  * (forward_prop_x[imat] * psyy[j][i] + forward_prop_y[imat] * psxx[j][i]));	  
+				  
 			   } 
                           
-                        }
-			
-			/* mu-gradient without data integration (Ren & Liu, 2015) */
-			if(GRAD_FORM==3){
-
-                          waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(ux[j][i]+uy[j][i]);
-		          waveconv_u_shot[j][i]+= 2.0*((forward_prop_x[imat]*ux[j][i]) + (forward_prop_y[imat]*uy[j][i])) + (forward_prop_u[imat] * uxy[j][i]);
-                          
-                        }
-                      	
-			/* mu-gradient without data integration */
-			if(GRAD_FORM==4){
-
-                          waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
-                          waveconv_u_shot[j][i]+= 2.0*((forward_prop_x[imat]*psxx[j][i]) + (forward_prop_y[imat]*psyy[j][i])) + (forward_prop_u[imat] * psxy[j][i]);
-			  
-                        }
+                        }			
 				                                                                                                             
 		   imat++;
 		   }
@@ -2270,7 +2257,7 @@ for (nt=1;nt<=NT;nt++){
 	            }
 
 	            /* gradients without data integration */
-                    if((GRAD_FORM==2)||(GRAD_FORM==3)){
+                    if(GRAD_FORM==2){
  	              back_prop_u[j][i]+=uxy[j][i];
 		      back_prop_x[j][i]+=ux[j][i];
 	              back_prop_y[j][i]+=uy[j][i];
@@ -2358,14 +2345,7 @@ if(INVMAT==1){
                       - ((3.0*(lamss*lamss)+4.0*lamss*muss) * (forward_propl_y[j][i] * back_prop_x[j][i] + forward_propl_x[j][i] * back_prop_y[j][i]))) / (2.0*muss*muss*(3.0*lamss+2*muss)*(3*lamss+2*muss)));
 	         } 
                           
-             }
-			
-	     /* mu-gradient without data integration (stress-velocity with elastic tensor) */
-	     if(GRAD_FORM==3){
-
-	       waveconv_u_shot[j][i]+= DT*DT*(2.0*((forward_propl_x[j][i]*back_prop_x[j][i]) + (forward_propl_y[j][i]*back_prop_y[j][i])) + (forward_propl_u[j][i] * back_prop_u[j][i]));
-                          
-             }
+             }			
                       		                                                                                                             
        }
    }
@@ -2375,6 +2355,10 @@ if(INVMAT==1){
 /* calculate gradient for lambda, Vp or Zp */
 /* --------------------------------------- */	
 if(RTMOD==0){
+
+  /* norm(waveconv_shot);
+  norm(waveconv_u_shot);  
+  norm(waveconv_rho_shot); */
 
   for (i=1;i<=NX;i=i+IDX){
      for (j=1;j<=NY;j=j+IDY){
@@ -2420,15 +2404,13 @@ if(RTMOD==0){
 	      lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 *  muss;
 	      
 	      if((muss>0.0)||(lamss>0.0)){
-                  waveconv_lam[j][i] = (1.0/((3.0*lamss+2.0*muss) * (3.0*lamss+2.0*muss))) * waveconv_lam[j][i];
+		  waveconv_lam[j][i] = (1.0/(4.0*(lamss+muss) * (lamss+muss))) * waveconv_lam[j][i];
 	      }
+	      
 	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i]; 
 	      
           }
-		   
-	  if((GRAD_FORM==3)||(GRAD_FORM==4)){                             	
-	      waveconv_shot[j][i] = 2.0 * ppi[j][i] * prho[j][i] * waveconv_lam[j][i];
-	  } 		   
+		    		   
 		 		
 	}
 		 
@@ -2456,12 +2438,11 @@ for (i=1;i<=NX;i=i+IDX){
 		 
       /* calculate mu gradient */ 
       waveconv_mu[j][i] = -DT * waveconv_u_shot[j][i];
-
 		 
       if(INVMAT1==1){
 		 
          /* calculate Vs gradient */		 
-         waveconv_u_shot[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i];
+         waveconv_u_shot[j][i] = (- 4.0 * prho[j][i] * pu[j][i] * waveconv_lam[j][i]) + 2.0 * prho[j][i] * pu[j][i] * waveconv_mu[j][i]; 
         	 
       }
 		 
@@ -2488,18 +2469,8 @@ for (i=1;i<=NX;i=i+IDX){
     for (j=1;j<=NY;j=j+IDY){
 
        /* calculate density gradient rho' */
-       if(GRAD_FORM==1){
-          waveconv_rho_s[j][i]= - DT * waveconv_rho_shot[j][i];
-       }
-
-       if(GRAD_FORM==2){
-          waveconv_rho_s[j][i]= DT * waveconv_rho_shot[j][i];
-       }
-		
-       if((GRAD_FORM==3)||(GRAD_FORM==4)){
-          waveconv_rho_s[j][i]= DT * waveconv_rho_shot[j][i];
-       }
-		 
+       waveconv_rho_s[j][i]= - DT * waveconv_rho_shot[j][i];
+				 
        if(INVMAT1==1){
           /* calculate density gradient */
           waveconv_rho_shot[j][i] = ((((ppi[j][i] * ppi[j][i])-(2.0 * pu[j][i] * pu[j][i])) * waveconv_lam[j][i]) + (pu[j][i] * pu[j][i] * waveconv_mu[j][i]) + waveconv_rho_s[j][i]);
