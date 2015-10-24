@@ -755,7 +755,7 @@ for (j=ny1;j<=ny2;j++){
 		    i=(int)srcpos_loc[1][l];
 		    j=(int)srcpos_loc[2][l];
 		    
-                    if(GRAD_FORM==1){
+                    if((GRAD_FORM==1)||(GRAD_FORM==2)){
 		       if(QUELLTYPB==1){vx[j][i] += signals[l][nt];    /* single force in x */
 		                        vy[j][i] += signals1[l][nt];}  /* + single force in y */
 

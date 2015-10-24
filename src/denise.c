@@ -548,7 +548,7 @@ if(INVMAT==10){
 /* Define gradient formulation */
 /* GRAD_FORM = 1 - stress-displacement gradients */
 /* GRAD_FORM = 2 - stress-velocity gradients for decomposed impedance matrix */
-GRAD_FORM = 2;
+GRAD_FORM = 1;
 
 /* Parameters for gravity modeling/inversion */
 /* GRAVITY == 0 no gravity modelling or inversion */
