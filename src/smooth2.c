@@ -9,7 +9,7 @@
 void  smooth2(float ** grad){
 
 	/* declaration of extern variables */
-        extern int NX, NY, NXG, NYG, IDX, IDY;
+        extern int NX, NY, NXG, NYG, IDX, IDY, GRADT2;
 	extern int NPROCX, NPROCY, MYID, POS[3];
 	extern int SPAT_FILT_SIZE;
 	extern float WD_DAMP, WD_DAMP1;
@@ -43,7 +43,7 @@ void  smooth2(float ** grad){
         f = vector(0,nmax);
 
         /* define windows function */
-        win[0] = 0;
+        win[0] = GRADT2;
         win[1] = n1;
         win[2] = 0;
         win[3] = n2;
