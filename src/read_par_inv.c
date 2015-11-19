@@ -23,6 +23,7 @@ extern float PRO, FC_START, FC_END, EPS_STF, OFFSETC, OFFSETC_STF;
 extern int TIMEWIN;
 extern float TWLENGTH_PLUS, TWLENGTH_MINUS, GAMMA;
 extern float WD_DAMP, WD_DAMP1, SCALERHO;
+extern float GAMMA_GRAV;
 
 /* definition of local variables */
 int i;
@@ -144,6 +145,11 @@ if(MYID==0){
     if(ENV==1){printf(" ENV = 1 L2-norm envelope objective function \n");}
     if(ENV==2){printf(" ENV = 2 Logarithmic L2-norm envelope objective function \n");}
   }  
+  
+  if(GAMMA_GRAV==0){printf("---------------- No Joint Inversion ----------------\n\n");}
+  else{printf("----------------- Joint Inversion -----------------\n");
+       printf(" GAMMA_GRAV=%f\n",GAMMA_GRAV);
+	   } 
 
 }
 

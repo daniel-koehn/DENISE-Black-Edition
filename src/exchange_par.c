@@ -63,6 +63,9 @@ void exchange_par(void){
         extern int RTM, NLBFGS;
         extern int N_STREAMER, RTMOD;
         extern float REC_INCR_X, REC_INCR_Y;
+	extern float GAMMA_GRAV;
+	extern int GRAVITY, NGRAVB, NZGRAV, GRAV_TYPE, BACK_DENSITY;
+	extern char DFILE[STRING_SIZE];
         
 	/* definition of local variables */
 	int idum[NPAR];
@@ -128,6 +131,7 @@ void exchange_par(void){
 	
 	fdum[44] = FC_SPIKE_2;	
         fdum[45] = EXP_TAPER_GRAD_HOR;
+		fdum[46] = GAMMA_GRAV;
 	                                                                                                                                                                                                                                                             
         idum[1]  = NPROCX;                                                                             
         idum[2]  = NPROCY;                                                                             
@@ -239,6 +243,11 @@ void exchange_par(void){
         idum[91]  = NLBFGS;
         idum[92]  = N_STREAMER;
         idum[93]  = RTMOD;
+	idum[94] = GRAVITY;
+	idum[95] = NGRAVB;
+	idum[96] = NZGRAV;
+	idum[97] = GRAV_TYPE;
+	idum[98] = BACK_DENSITY;
 	
 	} /** if (MYID == 0) **/
 	
@@ -268,6 +277,7 @@ void exchange_par(void){
 	MPI_Bcast(&TRKILL_FILE,STRING_SIZE,MPI_CHAR,0,MPI_COMM_WORLD);
 	MPI_Bcast(&PICKS_FILE,STRING_SIZE,MPI_CHAR,0,MPI_COMM_WORLD);
         MPI_Bcast(&DATA_DIR_T0,STRING_SIZE,MPI_CHAR,0,MPI_COMM_WORLD);
+	MPI_Bcast(&DFILE,STRING_SIZE,MPI_CHAR,0,MPI_COMM_WORLD);
 	
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -328,6 +338,7 @@ void exchange_par(void){
 	
 	FC_SPIKE_2 = fdum[44];
         EXP_TAPER_GRAD_HOR = fdum[45];
+	GAMMA_GRAV = fdum[46];
 
 	NPROCX = idum[1];
 	NPROCY = idum[2];
@@ -439,6 +450,11 @@ void exchange_par(void){
         NLBFGS = idum[91];
         N_STREAMER = idum[92];
         RTMOD = idum[93];	
+	GRAVITY = idum[94];
+	NGRAVB = idum[95];
+	NZGRAV = idum[96];
+	GRAV_TYPE = idum[97];
+	BACK_DENSITY = idum[98];
   
 	MPI_Bcast(&FL[1],L,MPI_FLOAT,0,MPI_COMM_WORLD);
 

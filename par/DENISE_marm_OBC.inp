@@ -232,3 +232,22 @@ apply_reverse_time_migration_(yes=1)_(RTM) = 0
 #
 # ----- Reverse Time Modelling ------------------------- #
 apply_reverse_time_modelling_(yes=1)_(RTMOD) = 0
+#
+#
+# ----- Gravity Modelling/Inversion -----#
+# no gravity modelling and inversion: GRAVITY=0
+# activate only gravity modelling: GRAVITY=1
+# activate gravity modelling and inversion: GRAVITY=2
+active_gravity_modelling_(=1)_and_inversion_(=2)_(GRAVITY) = 2
+# boundaries in x-direction in gridpoints
+boundary_gridpoints_in_x_(NGRAVB) = 500
+# boundaries in z-direction in meter
+boundary_meter_in_z_(NZGRAV) = 200000
+# model and invert gravity data: GRAV_TYPE=1
+# model and invert gravity gradient data: GRAV_TYPE=2
+use_of_gravity_(=1)_or_gravity_gradient_(=2)_data_(GRAV_TYPE) = 1
+# use initial density model (=1) ,only reasonable for inversion, as background density or self-defined model (=2)
+chosen_background_density_model_(BACK_DENSITY) = 2
+# if BACK_DENSITY = 2, define your model 
+filename_for_background_density_(DFILE) = gravity/background_density.rho
+#

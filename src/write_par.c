@@ -52,6 +52,11 @@ void write_par(FILE *fp){
 	
 	extern char MISFIT_LOG_FILE[STRING_SIZE];
 
+	extern int GRAVITY, NGRAVB, NZGRAV, GRAV_TYPE;
+	extern char DFILE[STRING_SIZE];
+	extern int BACK_DENSITY;
+	
+	
 	/* definition of local variables */
 	int l;
 	
@@ -465,6 +470,36 @@ void write_par(FILE *fp){
         if (RTMOD==1){
            fprintf(fp," RTMOD=%d: Reverse Time Modelling will be applied.\n",RTMOD);
         }
+		
+	fprintf(fp,"\n\n");  
+	fprintf(fp," --------------- Gravity Modelling and Inversion -------------------\n");
+	if (GRAVITY==0){
+	   fprintf(fp," No Gravity Modelling and Inversion applied. \t GRAVITY=%d \n",GRAVITY);
+	} 
+	if (GRAVITY==1){
+	   fprintf(fp," Gravity Modelling will be applied. \t\t\t GRAVITY=%d \n",GRAVITY);
+	}
+	if (GRAVITY==2){
+	   fprintf(fp," Gravity Modelling and Inversion will be applied.\t GRAVITY=%d \n",GRAVITY);
+	}
+	
+	fprintf(fp," Boundary in x-direction [gridpoints] \t\t\t NGRAVB = %d \n",NGRAVB);
+	fprintf(fp," Boundary in z-direction [m] \t\t\t\t NZGRAV = %d \n",NZGRAV);
+	
+	if (GRAV_TYPE==1){
+	   fprintf(fp," Modelling and Inversion of Gravity Data. \t\t GRAV_TYPE=%d \n",GRAV_TYPE);
+	}
+	if (GRAV_TYPE==2){
+	   fprintf(fp," Modelling and Inversion of Gravity Gradient Data. \t\t GRAV_TYPE=%d \n",GRAV_TYPE);
+	}
+	
+	if (BACK_DENSITY==1){
+	   fprintf(fp," Initial Model is used as Background Density. \t\t BACK_DENSITY=%d \n",BACK_DENSITY);
+	}
+	if (BACK_DENSITY==2){
+	   fprintf(fp," Self-defined Model is used as Background Density. \t BACK_DENSITY=%d \n",BACK_DENSITY);
+	   fprintf(fp,"\t background density file:\n\t %s \n",DFILE);
+	}
 
 	                                                        
 	fprintf(fp,"\n");

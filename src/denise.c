@@ -153,7 +153,7 @@ char jac_grav[STRING_SIZE];
 /* variable for time domain filtering */
 /*float FC;*/
 
-FILE *fprec, *FP2, *FP3, *FP4, *FP5, *FPL2, *FP6, *FP7, *FP_stage, *FP_GRAV;
+FILE *fprec, *FP2, *FP3, *FP4, *FP5, *FPL2, *FP6, *FP7, *FP_stage, *FP_GRAV, *LAMBDA;
 	
 MPI_Request *req_send, *req_rec;
 MPI_Status  *send_statuses, *rec_statuses;
@@ -227,6 +227,8 @@ NORMALIZE=0;
 
 INV_VP_ITER=0;
 INV_VS_ITER=0;
+
+GAMMA_GRAV=0;
 	
 exchange_par();
 
@@ -550,29 +552,24 @@ if(INVMAT==10){
 /* GRAD_FORM = 2 - stress-velocity gradients for decomposed impedance matrix */
 GRAD_FORM = 1;
 
-/* Parameters for gravity modeling/inversion */
-/* GRAVITY == 0 no gravity modelling or inversion */
-/* GRAVITY == 1 activate gravity modeling */
-/* GRAVITY == 2 activate joint FW-gravity inversion */
-GRAVITY = 0; 
-
-if(GRAVITY){
+if(GRAVITY==1 || GRAVITY==2){
   
+  if(GRAV_TYPE == 1){
   sprintf(GRAV_DATA_OUT, "./gravity/grav_mod.dat"); /* output file of gravity data */
   sprintf(GRAV_DATA_IN, "./gravity/grav_field.dat");  /* input file of gravity data */
-  sprintf(GRAV_STAT_POS, "./gravity/grav_stat.dat"); /* file with station positions for gravity modelling */   
-  NZGRAV = 250;  /* number of grid points in z-direction */
-  NGRAVB = 500;  /* thickness of the boundaries [grid points] */
+  }
+  if(GRAV_TYPE == 2){
+  sprintf(GRAV_DATA_OUT, "./gravity/grav_grad_mod.dat"); /* output file of gravity gradient data */
+  sprintf(GRAV_DATA_IN, "./gravity/grav_grad_field.dat");  /* input file of gravity gradientdata */
+  }
+  sprintf(GRAV_STAT_POS, "./gravity/grav_stat.dat"); /* file with station positions for gravity modelling */
 
   /* size of the extended gravity model */
   nxgrav = NXG + 2*NGRAVB;
   nygrav = NYG + NGRAVB;
 
-  /* weighting parameter gamma for the gravity objective function */
-  GAMMA_GRAV = 5e-1;
-  /*GAMMA_GRAV = 0.0;*/
-
 }
+
 
 if(RTMOD==1){
   RTM=1;
@@ -780,7 +777,7 @@ if (CHECKPTREAD){
 	}
 }
 
-if(GRAVITY){
+if(GRAVITY==1 || GRAVITY==2){
  
   /* read station positions */
   MPI_Barrier(MPI_COMM_WORLD);
@@ -790,7 +787,7 @@ if(GRAVITY){
   gz_mod = vector(1,ngrav);
   gz_res = vector(1,ngrav);
 
-  /* only model gravity data */
+  /* only forward modelling of gravity data */
   if(GRAVITY==1){
 
     /* global density model */
@@ -810,7 +807,7 @@ if(GRAVITY){
     grad_grav =  matrix(1,NY,1,NX);
   }
 
-}  
+} 
       
 snapseis=1;
 snapseis1=1;
@@ -2647,6 +2644,7 @@ if(GRAVITY==2){
   
   MPI_Barrier(MPI_COMM_WORLD);
   
+  /* gravity forward modelling */
   read_density_glob(rho_grav,2);
   extend_mod(rho_grav,rho_grav_ext,nxgrav,nygrav);
   grav_mod(rho_grav_ext,ngrav,gravpos,gz_mod,nxgrav,nygrav,NZGRAV);
@@ -2654,38 +2652,23 @@ if(GRAVITY==2){
   /* calculate gravity data residuals */
   L2_grav=calc_res_grav(ngrav,gz_mod,gz_res);
 
-  /* save L2_grav value at iter=1 */  
-  if(iter==1){L2_GRAV_IT1 = L2_grav;}
-
-  /* calculate lambda_grav */
-  LAM_GRAV = GAMMA_GRAV * (L2sum/L2_GRAV_IT1); 
+  /* calculate lambda 1 */
+  if(iter==1){
+  	LAM_GRAV = GAMMA_GRAV * (L2sum/L2_grav);
+  }
 
   /* add gravity penalty term to the seismic objective function */
   L2t[1]+=LAM_GRAV * L2_grav;
   L2t[4]+=LAM_GRAV * L2_grav;
 
   /* calculate gravity gradient */
+  for (i=1;i<=NX;i=i+IDX){
+       for (j=1;j<=NY;j=j+IDY){
+           grad_grav[j][i]=0.0;
+       }
+  }
   grav_grad(ngrav,gravpos,grad_grav,gz_res);
   
-  /* apply taper functions */
-  if (SWS_TAPER_GRAD_VERT){   /*vertical gradient taper is applied*/
-   taper_grad(grad_grav,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}
-   
-  if (SWS_TAPER_GRAD_HOR){   /*horizontal gradient taper is applied*/
-   taper_grad(grad_grav,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}
-
-  /* output of the gravity gradients after preconditioning */
-  sprintf(jac,"%s_grav.%i%i",JACOBIAN,POS[1],POS[2]);
-  FP_GRAV=fopen(jac,"wb");       
-
-  for (i=1;i<=NX;i=i+IDX){
-      for (j=1;j<=NY;j=j+IDY){
-          fwrite(&grad_grav[j][i],sizeof(float),1,FP_GRAV);
-      }
-  }
-
-  fclose(FP_GRAV);
-
   MPI_Barrier(MPI_COMM_WORLD);        
 
   /* merge model file */
@@ -2712,9 +2695,75 @@ if(INVMAT<=1){
 
    }
 
+   
+/* IMPLEMENTATION OF TAPER IN denise.c, taper of seismic gradients only */
+/*==================== TAPER Vp/Zp/lambda =====================*/
+if (SWS_TAPER_GRAD_VERT){   /*vertical gradient taper is applied*/
+   taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}
 
-   /* Add gravity gradient to FWI density gradient */
-   /* -------------------------------------------- */
+if (SWS_TAPER_GRAD_HOR){    /*horizontal gradient taper is applied*/
+   taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}
+
+if (SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
+   taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}
+
+/* apply Hessian^-1 and save in gradp */
+if (SWS_TAPER_FILE){
+   taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,4);}
+
+/*================== TAPER Vs/Zs/mu ===========================*/
+if (SWS_TAPER_GRAD_VERT){    /*vertical gradient taper is applied*/
+   taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}
+
+if (SWS_TAPER_GRAD_HOR){    /*horizontal gradient taper is applied*/
+   taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}
+
+if(SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
+   taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}
+
+/* apply Hessian^-1 and save in gradp */
+if(SWS_TAPER_FILE){
+   taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,5);}
+
+/*================== TAPER Rho ===========================*/
+if (SWS_TAPER_GRAD_VERT){    /*vertical gradient taper is applied*/
+   taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}
+
+if (SWS_TAPER_GRAD_HOR){     /*horizontal gradient taper is applied*/
+   taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}
+
+if (SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
+   taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}
+
+/* apply Hessian^-1 and save in gradp */
+if (SWS_TAPER_FILE){
+   taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,6);}
+
+
+/* output of the seismic gradient for rho after taper  */
+  sprintf(jac,"%s_seis.%i%i",JACOBIAN,POS[1],POS[2]);
+  FP_GRAV=fopen(jac,"wb");       
+
+  for (i=1;i<=NX;i=i+IDX){
+      for (j=1;j<=NY;j=j+IDY){
+          fwrite(&waveconv_rho[j][i],sizeof(float),1,FP_GRAV);
+      }
+  }
+
+  fclose(FP_GRAV);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  /* merge model file */
+  sprintf(jac,"%s_seis",JACOBIAN);          
+  if (MYID==0) mergemod(jac,3); 
+
+   
+   
+   
+
+/* Add gravity gradient to FWI density gradient */
+/* -------------------------------------------- */
 	
    if(GRAVITY==2){
 		 		 
@@ -2734,9 +2783,12 @@ if(INVMAT<=1){
      MPI_Allreduce(&FWImax,&FWImax_all,  1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
      MPI_Allreduce(&GRAVmax,&GRAVmax_all,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
 		
-     LAM_GRAV_GRAD = GAMMA_GRAV * FWImax_all/GRAVmax_all;
+    /* calculate lambda 2, normalized with respect to the maximum gradients */
+	if(iter==1){
+		LAM_GRAV_GRAD = GAMMA_GRAV * (FWImax_all/GRAVmax_all);
+	} 
 		 
-     /* add gravity gradient to seismic density gradient */
+     /* add gravity gradient to seismic gradient with respect to the density */
      for (i=1;i<=NX;i++){
         for (j=1;j<=NY;j++){
 			
@@ -2801,11 +2853,23 @@ else{
 	opteps_vp=eps_scale;
 }
 
-
+/* write log-parameter files */
 if(MYID==0){
 printf("MYID = %d \t opteps_vp = %e \t opteps_vs = %e \t opteps_rho = %e \n",MYID,opteps_vp,opteps_vs,opteps_rho);
 printf("MYID = %d \t L2t[1] = %e \t L2t[2] = %e \t L2t[3] = %e \t L2t[4] = %e \n",MYID,L2t[1],L2t[2],L2t[3],L2t[4]);
-printf("MYID = %d \t epst1[1] = %e \t epst1[2] = %e \t epst1[3] = %e \n",MYID,epst1[1],epst1[2],epst1[3]);}
+printf("MYID = %d \t epst1[1] = %e \t epst1[2] = %e \t epst1[3] = %e \n",MYID,epst1[1],epst1[2],epst1[3]);
+
+/*output of log file for combined inversion*/
+if(iter_true==1){
+    LAMBDA = fopen("gravity/lambda.dat","w");
+}
+if(iter_true>1){
+    LAMBDA = fopen("gravity/lambda.dat","a");
+}
+fprintf(LAMBDA,"%d \t %d \t %e \t %e \t %e \t %e \t %e \t %e \t %e \n",nstage,iter,LAM_GRAV,L2sum,L2_grav,L2t[4],LAM_GRAV_GRAD,FWImax_all,GRAVmax_all);
+fclose(LAMBDA);
+
+}
 
 if(MYID==0){
 if (TIME_FILT==0){

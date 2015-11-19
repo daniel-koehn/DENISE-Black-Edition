@@ -41,19 +41,20 @@ for (i=1;i<=NX;i=i+IDX){
    }
 }
 
-if (SWS_TAPER_GRAD_VERT){   /*vertical gradient taper is applied*/
-   taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}
+/* IMPLEMENTATION OF TAPER IN denise.c */
+/*if (SWS_TAPER_GRAD_VERT){*/   /*vertical gradient taper is applied*/
+   /*taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}*/
 
-if (SWS_TAPER_GRAD_HOR){   /*horizontal gradient taper is applied*/
-   taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}
+/*if (SWS_TAPER_GRAD_HOR){*/   /*horizontal gradient taper is applied*/
+   /*taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}*/
 
-if (SWS_TAPER_GRAD_SOURCES){   /*cylindrical taper around sources is applied*/
-   taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}
+/*if (SWS_TAPER_GRAD_SOURCES){*/   /*cylindrical taper around sources is applied*/
+   /*taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}*/
  
 /* apply Hessian^-1 and save in gradp*/
-if (SWS_TAPER_FILE){ 
+/*if (SWS_TAPER_FILE){ 
   taper_grad(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,4);
-}
+}*/
 
 /* apply median filter at source positions */
 /*median_src(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,iter,0);*/
@@ -110,19 +111,20 @@ for (i=1;i<=NX;i=i+IDX){
    }
 }
 
-if (SWS_TAPER_GRAD_VERT){   /*vertical gradient taper is applied*/
-   taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}
+/* IMPLEMENTATION OF TAPER IN denise.c */
+/*if (SWS_TAPER_GRAD_VERT){*/   /*vertical gradient taper is applied*/
+   /*taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}*/
 
-if (SWS_TAPER_GRAD_HOR){   /*horizontal gradient taper is applied*/
-   taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}
+/*if (SWS_TAPER_GRAD_HOR){*/   /*horizontal gradient taper is applied*/
+   /*taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}*/
 
-if (SWS_TAPER_GRAD_SOURCES){   /*cylindrical taper around sources is applied*/
-   taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}
+/*if (SWS_TAPER_GRAD_SOURCES){*/   /*cylindrical taper around sources is applied*/
+   /*taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}*/
  
 /* apply Hessian^-1 and save in gradp*/
-if (SWS_TAPER_FILE){ 
+/*if (SWS_TAPER_FILE){ 
   taper_grad(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,5);
-}
+}*/
 
 /* apply median filter at source positions */
 /*median_src(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,iter,0);*/
@@ -178,19 +180,20 @@ for (i=1;i<=NX;i=i+IDX){
    }
 }
 
-if (SWS_TAPER_GRAD_VERT){   /*vertical gradient taper is applied*/
-   taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}
+/* IMPLEMENTATION OF TAPER IN denise.c */
+/*if (SWS_TAPER_GRAD_VERT){*/   /*vertical gradient taper is applied*/
+   /*taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,1);}*/
 
-if (SWS_TAPER_GRAD_HOR){   /*horizontal gradient taper is applied*/
-   taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}
+/*if (SWS_TAPER_GRAD_HOR){*/   /*horizontal gradient taper is applied*/
+   /*taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,2);}*/
 
-if (SWS_TAPER_GRAD_SOURCES){   /*cylindrical taper around sources is applied*/
-   taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}
+/*if (SWS_TAPER_GRAD_SOURCES){*/   /*cylindrical taper around sources is applied*/
+   /*taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,3);}*/
 
 /* apply Hessian^-1 and save in gradp*/
-if (SWS_TAPER_FILE){ 
+/*if (SWS_TAPER_FILE){ 
   taper_grad(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,6);
-}
+}*/
 
 /* apply median filter at source positions */
 /*median_src(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,iter,0);*/
