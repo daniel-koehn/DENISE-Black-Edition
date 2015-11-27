@@ -13,7 +13,7 @@ extern int TRKILL, TIME_FILT, GRAD_FORM,ENV;
 extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, RTM, OFFSET_MUTE;
 float RMS, RMS_obs, signL1, intseis;
-int Lcount,i,j,invtime,k,h, umax=0;
+int Lcount,i,j,invtime,k,h,umax=0;
 float l2;
 float abs_data, abs_synthetics, data_mult_synthetics, intseis_data, intseis_synthetics;
 float intseis_section, intseis_sectiondata, offset, xr, yr, xs, ys;
@@ -23,9 +23,13 @@ float **integrated_sectiondata_envelope=NULL, **integrated_section_envelope=NULL
 float **dummy_1=NULL, **dummy_2=NULL; 
 float EPS_LNORM, EPS_LNORM6, tmp, tmp1;
 
+/* NIM objective function parameters */
+float Qmod, Qtrue, Q1, Q2, Q3;
+float ** Q_mod=NULL, ** Q_true=NULL, **dQ=NULL; 
+
 /* EPS_LNORM=1e1; */
-EPS_LNORM=0.0;
-EPS_LNORM6=1e-1;
+EPS_LNORM=1e-10;
+EPS_LNORM6=1e-9;
 eps=1e-15;
 
 if(TIMEWIN) picked_times = vector(1,ntr);
@@ -78,18 +82,18 @@ if((LNORM==5)&&(GRAD_FORM==1)){
 
         /* Integration of measured and synthetic data  */
         for(i=1;i<=ntr;i++){
+	
                 intseis_section = 0.0;
+		intseis_sectiondata = 0.0;
+		
       	        for(j=1;j<=ns;j++){
-		        intseis_section += section[i][j];
-		        integrated_section[i][j]=intseis_section;
-		}
-	}
-
-        for(i=1;i<=ntr;i++){
-               intseis_sectiondata = 0.0;
-      	       for(j=1;j<=ns;j++){
-		        intseis_sectiondata += sectiondata[i][j];
-		        integrated_sectiondata[i][j]=intseis_sectiondata;
+		        
+			intseis_section += section[i][j];
+		        integrated_section[i][j] = DT * intseis_section;
+			
+			intseis_sectiondata += sectiondata[i][j];
+		        integrated_sectiondata[i][j] = DT * intseis_sectiondata;
+			
 		}
 	}
 
@@ -116,33 +120,24 @@ if(LNORM==6){
         /* Integration of measured and synthetic data  */
         for(i=1;i<=ntr;i++){
                 intseis_section = 0.0;
+		intseis_sectiondata = 0.0;
       	        for(j=1;j<=ns;j++){
 		
 		        if(GRAD_FORM==1){
+			
 		          intseis_section += section[i][j];
-		          integrated_section[i][j]=intseis_section;
+		          integrated_section[i][j] = DT * intseis_section;
+			
+			  intseis_sectiondata += sectiondata[i][j];
+		          integrated_sectiondata[i][j] = DT * intseis_sectiondata;
+			  
 			}
 			
 		        if(GRAD_FORM==2){
-		          integrated_section[i][j]=section[i][j];
+		          integrated_section[i][j] = section[i][j];
+			  integrated_sectiondata[i][j] = sectiondata[i][j];
 			}
 			
-		}
-	}
-
-        for(i=1;i<=ntr;i++){
-               intseis_sectiondata = 0.0;
-      	       for(j=1;j<=ns;j++){
-	       
-	       		if(GRAD_FORM==1){
-		          intseis_sectiondata += sectiondata[i][j];
-		          integrated_sectiondata[i][j]=intseis_sectiondata;
-			}
-			
-		        if(GRAD_FORM==2){
-		          integrated_sectiondata[i][j]=sectiondata[i][j];
-			}
-	       
 		}
 	}
 	
@@ -151,9 +146,9 @@ if(LNORM==6){
         calc_hilbert(integrated_section,integrated_section_hilbert,ns,ntr); 
 
 	/* low-pass filter envelope data */
-	timedomain_filt(integrated_sectiondata_envelope,FC,ORDER,ntr,ns,1);
+	/*timedomain_filt(integrated_sectiondata_envelope,FC,ORDER,ntr,ns,1);
 	timedomain_filt(integrated_section_envelope,FC,ORDER,ntr,ns,1);
-	timedomain_filt(integrated_section_hilbert,FC,ORDER,ntr,ns,1);
+	timedomain_filt(integrated_section_hilbert,FC,ORDER,ntr,ns,1);*/
 
 
         /* L2 envelope objective function*/
@@ -188,6 +183,72 @@ if(LNORM==6){
 	
 
 } /* end of if LNORM==6 */
+
+/* NIM objective function after Chauris et al. (2012) and Tejero et al. (2015) */
+if(LNORM==7){
+
+	integrated_section = matrix(1,ntr,1,ns);
+	integrated_sectiondata = matrix(1,ntr,1,ns);
+
+        Q_mod = matrix(1,ntr,1,ns); 
+ 	Q_true = matrix(1,ntr,1,ns); 
+ 	dQ = matrix(1,ntr,1,ns); 
+ 
+
+        /* Integration of measured and synthetic data  */
+        for(i=1;i<=ntr;i++){
+	
+                intseis_section = 0.0;
+		intseis_sectiondata = 0.0;
+		
+      	        for(j=1;j<=ns;j++){
+		
+		        if(GRAD_FORM==1){
+			
+		          intseis_section += section[i][j];
+		          integrated_section[i][j] = DT * intseis_section;
+			
+			  intseis_sectiondata += sectiondata[i][j];
+		          integrated_sectiondata[i][j] = DT * intseis_sectiondata;
+			  
+			}
+			
+		        if(GRAD_FORM==2){
+		          integrated_section[i][j] = section[i][j];
+			  integrated_sectiondata[i][j] = sectiondata[i][j];
+			}
+			
+		}
+	}
+	
+        /* calculate Q  */
+        for(i=1;i<=ntr;i++){
+	
+                Qmod = 0.0;
+		Qtrue = 0.0;
+		
+      	        for(j=1;j<=ns;j++){
+		
+		   Qmod += integrated_section[i][j] * integrated_section[i][j];
+		   Qtrue += integrated_sectiondata[i][j] * integrated_sectiondata[i][j];
+		   
+		   Q_mod[i][j] = Qmod;
+		   Q_true[i][j] = Qtrue;     
+			
+		}
+		
+		for(j=1;j<=ns;j++){		
+		   
+		   Q_mod[i][j] /= Qmod;
+		   Q_true[i][j] /= Qtrue;
+		   dQ[i][j] = Q_mod[i][j] - Q_true[i][j];
+		   
+		}
+		
+		
+	}			
+
+} /* end of if LNORM==7 */
 
 /* Laplace-Fourier-domain residuals */
 /* -------------------------------- */
@@ -253,6 +314,29 @@ for(i=1;i<=ntr;i++){
 
 	abs_data=sqrt(abs_data);
 	abs_synthetics=sqrt(abs_synthetics);
+	
+     }
+     
+     if(LNORM==7){
+     
+     	Q1 = 0.0;
+	Q2 = 0.0;
+     	for(j=1;j<=ns;j++){
+	
+	   Q1+=dQ[i][j]*Q_mod[i][j];
+	   Q2+=Q_mod[i][j];
+	
+	}
+	
+	Q3 = 0.0;
+	h=1;
+     	for(j=ns;j>=1;j--){
+
+	   Q3+=dQ[i][j];
+	   sectiondiff[i][h] = -2.0*integrated_section[i][j]*(-Q3-Q1)/Q2;
+	   h++;
+	   
+	}
 	
      }
 	
@@ -344,9 +428,9 @@ for(i=1;i<=ntr;i++){
 
    if(LNORM==6){
       /* low-pass filter envelope data */
-      timedomain_filt(sectiondiff,FC,ORDER,ntr,ns,1);
+      /*timedomain_filt(sectiondiff,FC,ORDER,ntr,ns,1);
       timedomain_filt(integrated_section_envelope,FC,ORDER,ntr,ns,1);
-      timedomain_filt(integrated_sectiondata_envelope,FC,ORDER,ntr,ns,1);
+      timedomain_filt(integrated_sectiondata_envelope,FC,ORDER,ntr,ns,1);*/
    }
 
    if(TIMEWIN==3){
@@ -409,8 +493,12 @@ for(i=1;i<=ntr;i++){
 	   }
 
 
-         }    
-       
+         }
+	 
+	 if((LNORM==7)&&(swstestshot==1)){
+	   L2 += 0.5 * dQ[i][invtime] * dQ[i][invtime]; 
+	 }
+
          invtime--;    /*reverse time direction */
 
 	}
@@ -426,9 +514,17 @@ if((LNORM==5)&&(GRAD_FORM==1)){
   free_matrix(integrated_sectiondata,1,ntr,1,ns);
 }
 
-if((LNORM==6)&&(GRAD_FORM==1)){
+if(LNORM==6){
   free_matrix(integrated_section,1,ntr,1,ns);
   free_matrix(integrated_sectiondata,1,ntr,1,ns);
+}
+
+if(LNORM==7){
+  free_matrix(integrated_section,1,ntr,1,ns);
+  free_matrix(integrated_sectiondata,1,ntr,1,ns);
+  free_matrix(Q_mod,1,ntr,1,ns);
+  free_matrix(Q_true,1,ntr,1,ns);
+  free_matrix(dQ,1,ntr,1,ns);
 }
 
 if(TRKILL){

@@ -1,6 +1,6 @@
 /*------------------------------------------------------------------------
- * Module for the Limited Memory - Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
- * method for the elastic multiparameter inversion of
+ * Module for Limited Memory - Broyden-Fletcher-Goldfarb-Shanno (l-BFGS)
+ * method (Nocedal and Wright, 2006) for the elastic multiparameter inversion of
  * vp, vs, rho and lambda, mu, rho respectively
  * 
  * Daniel Koehn
