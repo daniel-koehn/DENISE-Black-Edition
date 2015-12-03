@@ -21,7 +21,7 @@
 #define fsign(x) ((x<0.0)?(-1):1)    
 
 #define PI (3.141592653589793)
-#define NPAR 96
+#define NPAR 100
 #define STRING_SIZE 74
 #define STRING_SIZE2 256
 #define REQUEST_COUNT 4
@@ -145,6 +145,8 @@ void forward_mod(FILE *fprec, float ** waveconv, float ** waveconv_rho, float **
 void grav_grad(int ngrav, float **gravpos, float **grad_grav, float *gz_res);
 
 void grav_mod(float  **rho, int ngrav, float **gravpos, float *gz, int NXGRAV, int NYGRAV, int NZGRAV);
+
+void read_back_density(float ** rho_back);
 
 void hessian_out(float ** hessian_lam, float ** hessian_mu, float ** hessian_rho, float ** ppi, float ** pu, float ** prho);
 

@@ -82,6 +82,10 @@ extern float REC_INCR_X, REC_INCR_Y;
 
 extern int NLBFGS;
 
+extern int GRAVITY, NGRAVB, NZGRAV, GRAV_TYPE;
+extern char DFILE[STRING_SIZE];
+extern int BACK_DENSITY;
+
 /* definition of local variables */
 char s[74];
 int  c=0, lineno=0, l;
@@ -438,7 +442,25 @@ if (MYID == 0){
            break;
          case 114 :
            fscanf(fp_in,"%s =%i",s,&RTMOD);
-           break;  
+           break;
+	 case 115 :
+	   fscanf(fp_in,"%s =%i",s,&GRAVITY);
+	    break;
+	 case 116 :
+	   fscanf(fp_in,"%s =%i",s,&NGRAVB);
+	    break;
+	 case 117 :
+	   fscanf(fp_in,"%s =%i",s,&NZGRAV);
+	    break;
+	 case 118 :
+	   fscanf(fp_in,"%s =%i",s,&GRAV_TYPE);
+	    break;   
+	 case 119 :
+	   fscanf(fp_in,"%s =%i",s,&BACK_DENSITY);
+	    break;
+	 case 120 :
+	   fscanf(fp_in,"%s =%s",s,DFILE);
+	    break;   
 	 default:
 	    break;
 	 }

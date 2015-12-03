@@ -182,6 +182,7 @@ DENISE= \
 	output_source_signal.c \
 	PCG.c \
 	PML_pro.c \
+	read_back_density.c \
         read_density_glob.c \
 	readdsk.c \
         read_grav_pos.c \
