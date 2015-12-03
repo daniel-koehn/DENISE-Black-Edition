@@ -97,7 +97,7 @@ if(GRAVITY==2){
   L2_grav=calc_res_grav(ngrav,gz_mod,gz_res);
 
   /* calculate lambda_grav */
-  LAM_GRAV = GAMMA_GRAV * (L2sum1/L2_GRAV_IT1); 
+  /* LAM_GRAV = GAMMA_GRAV * (L2sum1/L2_GRAV_IT1); */
 
   /* add gravity penalty term to the seismic objective function */
   L2t[itest]+=LAM_GRAV * L2_grav;

@@ -13,6 +13,7 @@
  *  S. Heider   (time-windowing)
  *  T. Bohlen   (original FD forward code) 
  *  L. Zhang    (towed streamer, pressure inversion)
+ *  D. Wehner   (gravity modelling and inversion)
  *  
  *  
  *  In case of questions contact the author:
