@@ -3,7 +3,7 @@ DENISE Black Edition
 
 2D time-domain isotropic (visco)elastic finite-difference modeling and full waveform inversion (FWI) code for P/SV-waves, which I developed together with André Kurzmann, Denise De Nil and Thomas Bohlen.
 
-Since then the code has been extended by Lisa Groos, Sven Heider, Martin Schäfer and Linbin Zhang.
+Since then the code has been extended by Lisa Groos, Sven Heider, Martin Schäfer, Linbin Zhang and Daniel Wehner.
 
 Manual available at:
 
