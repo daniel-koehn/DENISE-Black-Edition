@@ -238,7 +238,7 @@ apply_reverse_time_modelling_(yes=1)_(RTMOD) = 0
 # no gravity modelling and inversion: GRAVITY=0
 # activate only gravity modelling: GRAVITY=1
 # activate gravity modelling and inversion: GRAVITY=2
-active_gravity_modelling_(=1)_and_inversion_(=2)_(GRAVITY) = 2
+active_gravity_modelling_(=1)_and_inversion_(=2)_(GRAVITY) = 0
 # boundaries in x-direction in gridpoints
 boundary_gridpoints_in_x_(NGRAVB) = 500
 # boundaries in z-direction in meter
