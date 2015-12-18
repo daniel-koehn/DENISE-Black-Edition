@@ -38,9 +38,9 @@ err(" picks_?.dat could not be opened !");
 }
 
   for(i=1;i<=ntr_glob;i++){
-    fscanf(fptime,"%f%f",&dump, &dump1);
+    fscanf(fptime,"%f",&dump);
     pick_tmp[i] = dump + TWLENGTH_PLUS;
-    pick_tmp1[i] = dump1;
+    pick_tmp1[i] = dump;
   }
 
 fclose(fptime);
@@ -71,9 +71,9 @@ err(" picks_?.dat could not be opened !");
 }
 
   for(i=1;i<=ntr;i++){
-    fscanf(fptime,"%e%e",&dump, &dump1);
+    fscanf(fptime,"%e",&dump);
     picked_times[i] = dump + TWLENGTH_PLUS;
-    picked_times1[i] = dump1;
+    picked_times1[i] = dump;
   }
 
 fclose(fptime);
