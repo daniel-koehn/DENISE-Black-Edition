@@ -58,8 +58,8 @@
 
 int main(int argc, char **argv){
 /* variables in main */
-int ns, nseismograms=0, nt, nd, fdo3, j, i, ii, jj, shotid, recid, k, nc, iter, h, iter_true, infoout, SHOTINC, TIMEWIN, test_eps, lq, iq, jq, hin, hin1, s=0;
-int NTDTINV, nxny, nxnyi, imat, imat1, imat2, IDXI, IDYI, hi, NTST, NTSTI, partest, FREQFILT;
+int ns, nseismograms=0, nt, nd, fdo3, j, i, ii, jj, shotid, recid, k, nc, iter, h, hin, iter_true, infoout, SHOTINC, TIMEWIN, test_eps, lq, iq, jq, s=0;
+int nxny, hi, NTST, NTSTI, partest, FREQFILT;
 int lsnap, nsnap=0, lsamp=0, buffsize, invtime, invtimer, sws, swstestshot, snapseis, snapseis1, PML;
 int ntr=0, ntr_loc=0, ntr_glob=0, nsrc=0, nsrc_loc=0, nsrc_glob=0, ishot, irec, nshots=0, nshots1, Lcount, itest, Lcountsum, itestshot;
 
@@ -79,10 +79,9 @@ float L2, L2sum, L2_all_shots, L2sum_all_shots, *L2t, alphanomsum, alphanom, alp
 
 float energy, energy_sum, energy_all_shots, energy_sum_all_shots;	
 
-float  **  psxx, **  psxy, **  psyy, ** ux, ** uy, ** uxy, ** uyx, ** Vp0, ** uttx, ** utty, ** Vs0, ** Rho0;
-float  **  pvx, **  pvy, **waveconv, **waveconv_lam, **waveconv_mu, **waveconv_rho, **waveconv_rho_s, **waveconv_u, **waveconvtmp, **wcpart, **wavejac;
+float  ** Vp0, ** Vs0, ** Rho0;
+float  **waveconv, **waveconv_lam, **waveconv_mu, **waveconv_rho, **waveconv_rho_s, **waveconv_u, **waveconvtmp, **wcpart, **wavejac;
 float **waveconv_shot, **waveconv_u_shot, **waveconv_rho_shot;
-float  **  pvxp1, **  pvyp1, **  pvxm1, **  pvym1;
 float ** gradg, ** gradp,** gradg_rho, ** gradp_rho, ** gradg_u, ** gradp_u;
 float  **  prho,**  prhonp1, **prip=NULL, **prjp=NULL, **pripnp1=NULL, **prjpnp1=NULL, **  ppi, **  pu, **  punp1, **  puipjp, **  ppinp1;
 float  **  vpmat, *forward_prop_x, *forward_prop_y, *forward_prop_rho_x, *forward_prop_u, *forward_prop_rho_y;
@@ -92,7 +91,7 @@ float  ** sectionvx=NULL, ** sectionvy=NULL, ** sectionp=NULL, ** sectionpnp1=NU
 	** sectionvydiff=NULL, ** sectionvydata=NULL, ** sectionpn=NULL, ** sectionread=NULL, ** sectionvy_conv=NULL, ** sectionvy_obs=NULL,** sectionvx_conv=NULL,** sectionvx_obs=NULL,
 	* source_time_function=NULL;
 float ** sectionpdata=NULL, ** sectionpdiff=NULL, ** sectionpdiffold=NULL;	
-float  **  absorb_coeff, ** taper_coeff, * epst1, * epst2,  * epst3;
+float ** taper_coeff, * epst1, * epst2,  * epst3;
 float  ** srcpos=NULL, **srcpos_loc=NULL, ** srcpos1=NULL, **srcpos_loc_back=NULL, ** signals=NULL, ** signals_rec=NULL, *hc=NULL, ** dsignals=NULL;
 int   ** recpos=NULL, ** recpos_loc=NULL;
 /*int   ** tracekill=NULL, TRKILL, DTRKILL;*/
@@ -100,14 +99,9 @@ int * DTINV_help;
      
 float ** bufferlef_to_rig,  ** bufferrig_to_lef, ** buffertop_to_bot, ** bufferbot_to_top; 
 
-/* PML variables */
-float * d_x, * K_x, * alpha_prime_x, * a_x, * b_x, * d_x_half, * K_x_half, * alpha_prime_x_half, * a_x_half, * b_x_half, * d_y, * K_y, * alpha_prime_y, * a_y, * b_y, * d_y_half, * K_y_half, * alpha_prime_y_half, * a_y_half, * b_y_half;
-float ** psi_sxx_x, ** psi_syy_y, ** psi_sxy_y, ** psi_sxy_x, ** psi_vxx, ** psi_vyy, ** psi_vxy, ** psi_vyx, ** psi_vxxs;
-
-
 /* Variables for viscoelastic modeling */
 float **ptaus=NULL, **ptaup=NULL, *etaip=NULL, *etajm=NULL, *peta=NULL, **ptausipjp=NULL, **fipjp=NULL, ***dip=NULL, *bip=NULL, *bjm=NULL;
-float *cip=NULL, *cjm=NULL, ***d=NULL, ***e=NULL, ***pr=NULL, ***pp=NULL, ***pq=NULL, **f=NULL, **g=NULL;
+float *cip=NULL, *cjm=NULL, ***d=NULL, ***e=NULL, **f=NULL, **g=NULL;
 
 /* Variables for step length calculation */
 int step1, step2, step3=0, itests, iteste, countstep;
@@ -465,22 +459,7 @@ req_rec=(MPI_Request *)malloc(REQUEST_COUNT*sizeof(MPI_Request));
 send_statuses=(MPI_Status *)malloc(REQUEST_COUNT*sizeof(MPI_Status));
 rec_statuses=(MPI_Status *)malloc(REQUEST_COUNT*sizeof(MPI_Status));
 
-/* memory allocation for dynamic (wavefield) arrays */
-psxx =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-psxy =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-psyy =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-pvx  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-pvy  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-pvxp1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-pvyp1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-pvxm1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-pvym1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-ux   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-uy   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-uxy  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-uyx  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-uttx   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-utty   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+/* waveform inversion variables */
 Vp0  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 Vs0  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 Rho0  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
@@ -505,13 +484,6 @@ pu   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 punp1   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 vpmat   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 puipjp   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-
-/* dynamic (wavefield) arrays for viscoelastic modeling */
-if (L > 0) {
-	pr = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-	pp = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-	pq = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-}
 
 /* memory allocation for static arrays for viscoelastic modeling */
 if (L>0){
@@ -596,7 +568,7 @@ NTST=20;
 NTSTI=NTST/DTINV;
 
 nxny=NX*NY;
-nxnyi=(NX/IDXI)*(NY/IDYI);
+NXNYI=(NX/IDXI)*(NY/IDYI);
 
 /* Variables for the L-BFGS method */
 
@@ -639,11 +611,11 @@ if(INVMAT<=1){
 
 if(INVMAT==0){
 
-  forward_prop_x =  vector(1,nxnyi*(NTDTINV));
-  forward_prop_y =  vector(1,nxnyi*(NTDTINV));
-  forward_prop_rho_x =  vector(1,nxnyi*(NTDTINV));
-  forward_prop_rho_y =  vector(1,nxnyi*(NTDTINV));
-  forward_prop_u =  vector(1,nxnyi*(NTDTINV));
+  forward_prop_x =  vector(1,NXNYI*(NTDTINV));
+  forward_prop_y =  vector(1,NXNYI*(NTDTINV));
+  forward_prop_rho_x =  vector(1,NXNYI*(NTDTINV));
+  forward_prop_rho_y =  vector(1,NXNYI*(NTDTINV));
+  forward_prop_u =  vector(1,NXNYI*(NTDTINV));
 
 }
 
@@ -667,44 +639,6 @@ if((EPRECOND==1)||(EPRECOND==3)){
   Ws = matrix(-nd+1,NY+nd,-nd+1,NX+nd); /* total energy of the source wavefield */
   Wr = matrix(-nd+1,NY+nd,-nd+1,NX+nd); /* total energy of the receiver wavefield */
   We = matrix(-nd+1,NY+nd,-nd+1,NX+nd); /* total energy of source and receiver wavefield */
-}
-
-if(FW>0){
-
-  d_x = vector(1,2*FW);
-  K_x = vector(1,2*FW);
-  alpha_prime_x = vector(1,2*FW);
-  a_x = vector(1,2*FW);
-  b_x = vector(1,2*FW);
-  
-  d_x_half = vector(1,2*FW);
-  K_x_half = vector(1,2*FW);
-  alpha_prime_x_half = vector(1,2*FW);
-  a_x_half = vector(1,2*FW);
-  b_x_half = vector(1,2*FW);
-
-  d_y = vector(1,2*FW);
-  K_y = vector(1,2*FW);
-  alpha_prime_y = vector(1,2*FW);
-  a_y = vector(1,2*FW);
-  b_y = vector(1,2*FW);
-  
-  d_y_half = vector(1,2*FW);
-  K_y_half = vector(1,2*FW);
-  alpha_prime_y_half = vector(1,2*FW);
-  a_y_half = vector(1,2*FW);
-  b_y_half = vector(1,2*FW);
-
-  psi_sxx_x =  matrix(1,NY,1,2*FW); 
-  psi_syy_y =  matrix(1,2*FW,1,NX);
-  psi_sxy_y =  matrix(1,2*FW,1,NX);
-  psi_sxy_x =  matrix(1,NY,1,2*FW);
-  psi_vxx   =  matrix(1,NY,1,2*FW);
-  psi_vxxs  =  matrix(1,NY,1,2*FW); 
-  psi_vyy   =  matrix(1,2*FW,1,NX);
-  psi_vxy   =  matrix(1,2*FW,1,NX);
-  psi_vyx   =  matrix(1,NY,1,2*FW);
-   
 }
 
 taper_coeff=  matrix(1,NY,1,NX);
@@ -757,26 +691,6 @@ if(L){
 	checkfd_ssg_elastic(FP,prho,ppi,pu,hc);
 }
 
-
-/* calculate damping coefficients for CPMLs*/
-if(FW>0){PML_pro(d_x, K_x, alpha_prime_x, a_x, b_x, d_x_half, K_x_half, alpha_prime_x_half, a_x_half, b_x_half, 
-               d_y, K_y, alpha_prime_y, a_y, b_y, d_y_half, K_y_half, alpha_prime_y_half, a_y_half, b_y_half);}
-
-MPI_Barrier(MPI_COMM_WORLD);
-
-if (CHECKPTREAD){
-	if (MYID==0){
-		time3=MPI_Wtime();
- 		fprintf(FP," Reading wavefield from check-point file %s \n",CHECKPTFILE);	
-	}
-	
-	read_checkpoint(-1, NX+2, -1, NY+2, pvx, pvy, psxx, psyy, psxy);
-	MPI_Barrier(MPI_COMM_WORLD);
-	if (MYID==0){
-		time4=MPI_Wtime();
-      		fprintf(FP," finished (real time: %4.2f s).\n",time4-time3);
-	}
-}
 
 if(GRAVITY==1 || GRAVITY==2){
  
@@ -993,18 +907,11 @@ EPSILON=0.0;  /* test step length */
 exchange_par();
 
 /* set gradient and preconditioning matrices 0 before next iteration*/
-for (i=1;i<=NX;i=i+IDX){ 
-	for (j=1;j<=NY;j=j+IDY){
-	
-	   if(INVMAT<=1){
-	     waveconv[j][i]=0.0;
-	     waveconv_rho[j][i]=0.0;
-	     waveconv_u[j][i]=0.0;    
-           }
-          
-        }   
+if(INVMAT<=1){
+   init_grad(waveconv);
+   init_grad(waveconv_rho);
+   init_grad(waveconv_u);
 }
-
 
 itestshot=TESTSHOT_START;
 swstestshot=0;
@@ -1079,224 +986,72 @@ if(N_STREAMER>0){
 /* estimate source time function by Wiener deconvolution */
 if((INV_STF)&&(iter==1)&&(INVMAT<=1)){
 
-        fprintf(FP,"\n==================================================================================\n");
-        fprintf(FP,"\n MYID=%d *****  Starting simulation (STF) for shot %d of %d  ********** \n",MYID,ishot,nshots);
-	fprintf(FP,"\n==================================================================================\n\n");
-
-                for (nt=1;nt<=8;nt++) srcpos1[nt][1]=srcpos[nt][ishot]; 
-		
-                if (RUN_MULTIPLE_SHOTS){
-
-                                /* find this single source positions on subdomains */
-                                if (nsrc_loc>0) free_matrix(srcpos_loc,1,8,1,1);
-                                srcpos_loc=splitsrc(srcpos1,&nsrc_loc, 1);
-		        }
-
-
-                else{
-                                /* Distribute multiple source positions on subdomains */
-                               srcpos_loc = splitsrc(srcpos,&nsrc_loc, nsrc);
-                }
-
-QUELLART = 6;
-MPI_Barrier(MPI_COMM_WORLD);
-/* calculate wavelet for each source point */
-signals=NULL;
-signals=wavelet(srcpos_loc,nsrc_loc,ishot);
-
-if (nsrc_loc){if(QUELLART==6){
-
-   /* low pass filtering of spike */
-   timedomain_filt(signals,FC_SPIKE_2,ORDER_SPIKE,nsrc_loc,ns,1);
-
-   /* band-pass filtering of spike */
-   if(FC_SPIKE_1 > 0.0){
-   timedomain_filt(signals,FC_SPIKE_1,ORDER_SPIKE,nsrc_loc,ns,2);
-   }
-
-   }
-}
-
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if ((LNORM!=6)&&(ENV==1)){ 
-   calc_envelope(signals,signals,ns,nsrc_loc); 
-} 
-
-/* time domain filtering*/
-/*if ((TIME_FILT)&&(INVMAT!=10)){*/
-
-   /*time domain low pass filtering of the source signal */
-   /*timedomain_filt(signals,FC,ORDER,nsrc_loc,ns,1);*/
-
-   /*time domain band-pass filtering of the source signal */
-   /*if(TIME_FILT==2){
-     timedomain_filt(signals,FC_START,ORDER,nsrc_loc,ns,2);
-   }*/
-
-/*}*/
-
-/*char  source_signal_file[STRING_SIZE];
-sprintf(source_signal_file,"source_signal.%d.su.shot%d.it%d",MYID,ishot,iter);
-fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
-output_source_signal(fopen(source_signal_file,"w"),signals,NT,3);*/
-
-/* output source signal e.g. for cross-correlation of comparison with analytical solutions */
-/*if(RUN_MULTIPLE_SHOTS){
-
-	if(nsrc_loc>0){
-        	   char  source_signal_file[STRING_SIZE];
-        	   sprintf(source_signal_file,"%s_source_signal.%d.su.shot%d", MFILE, MYID,ishot);
-        	   fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
-        	   output_source_signal(fopen(source_signal_file,"w"),signals,NT,1);
-	}                                
-                                
+        QUELLART = 6;
 	MPI_Barrier(MPI_COMM_WORLD);
-}*/
-		    
-/* initialize wavefield with zero */
-if (L){
-	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
-}else{	
-	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
-}                                                         
-     
-/*----------------------  loop over timesteps (forward model) ------------------*/
 
-lsnap=iround(TSNAP1/DT);  
-lsamp=NDT;
-nsnap=0;
-
-for (nt=1;nt<=NT;nt++){     
-                
-	/* Check if simulation is still stable */
-        /*if (isnan(pvy[NY/2][NX/2])) err(" Simulation is unstable !");*/
-	if (isnan(pvy[NY/2][NX/2])) {
-	   fprintf(FP,"\n Time step: %d; pvy: %f \n",nt,pvy[NY/2][NX/2]);
-	   err(" Simulation is unstable !");}
-
-		
-   infoout = !(nt%10000);
-
-   if (MYID==0){
-      if (infoout)  fprintf(FP,"\n Computing timestep %d of %d \n",nt,NT);
-      time3=MPI_Wtime();
-   }
-
-      /* update of particle velocities */
-      update_v_PML(1, NX, 1, NY, nt, pvx, pvxp1, pvxm1, pvy, pvyp1, pvym1, uttx, utty, psxx, psyy, psxy, prip, prjp, srcpos_loc,signals,signals,nsrc_loc,absorb_coeff,hc,infoout,0, K_x, a_x,
-                   b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_sxx_x, psi_syy_y, psi_sxy_y, psi_sxy_x);
-                         
-	if (MYID==0){
-		time4=MPI_Wtime();
-		time_av_v_update+=(time4-time3);
-		if (infoout)  fprintf(FP," particle velocity exchange between PEs ...");
+        for (nt=1;nt<=8;nt++) srcpos1[nt][1]=srcpos[nt][ishot]; 
+	
+        if (RUN_MULTIPLE_SHOTS){
+            /* find this single source positions on subdomains */
+            if (nsrc_loc>0) free_matrix(srcpos_loc,1,8,1,1);
+            srcpos_loc=splitsrc(srcpos1,&nsrc_loc, 1);
 	}
-                                                   
-	/* exchange of particle velocities between PEs */
-	exchange_v(pvx,pvy, bufferlef_to_rig, bufferrig_to_lef, buffertop_to_bot, bufferbot_to_top, req_send, req_rec);
-                                                               
-	if (MYID==0){
-	  time5=MPI_Wtime();
-	  time_av_v_exchange+=(time5-time4);
-	  if (infoout)  fprintf(FP," finished (real time: %4.2f s).\n",time5-time4);
-	}                                                                                         	
+        else{
+            /* Distribute multiple source positions on subdomains */
+            srcpos_loc = splitsrc(srcpos,&nsrc_loc, nsrc);
+        }
 
-    if (L)    /* viscoelastic */
-    	update_s_visc_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, prho, hc, infoout,
-				pr, pp, pq, fipjp, f, g, bip, bjm, cip, cjm, d, e, dip,
-				K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);
-    else
-   	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, absorb_coeff, prho, hc, infoout,
-         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx,-1);  
+	/* calculate wavelet for each source point */
+        signals=NULL;
+	signals=wavelet(srcpos_loc,nsrc_loc,ishot);
 
+	if (nsrc_loc){if(QUELLART==6){
 
-    /* explosive source */
-   if ((!CHECKPTREAD)&&(QUELLTYP==1)) 	
-   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc,0);
-   
-   /* moment tensor source */
-   if ((!CHECKPTREAD)&&(QUELLTYP==5)) 	
-   msource(nt,psxx,psyy,psxy,srcpos_loc,signals,nsrc_loc,0);
+	   /* low pass filtering of spike */
+	   timedomain_filt(signals,FC_SPIKE_2,ORDER_SPIKE,nsrc_loc,ns,1);
 
-   if ((FREE_SURF) && (POS[2]==0)){
-   	if (L)    /* viscoelastic */
-		surface_PML(1, pvx, pvy, psxx, psyy, psxy, pp, pq, ppi, pu, prho, ptaup, ptaus, etajm, peta, hc, K_x, a_x, b_x, psi_vxxs);
-	else      /* elastic */
-   		surface_elastic_PML(1, pvx, pvy, psxx, psyy, psxy, ppi, pu, prho, hc, K_x, a_x, b_x, psi_vxxs);
-   }
+	   /* band-pass filtering of spike */
+	   if(FC_SPIKE_1 > 0.0){
+	   timedomain_filt(signals,FC_SPIKE_1,ORDER_SPIKE,nsrc_loc,ns,2);
+	   }
 
+	   }
+	} 
 
-   if (MYID==0){
-      time6=MPI_Wtime();
-	  time_av_s_update+=(time6-time5);
-      if (infoout)  fprintf(FP," stress exchange between PEs ...");
-      }
+        /* forward problem */
+        psv(ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
+	bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,nsrc_loc,srcpos_loc, 
+	recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl,forward_prop_rho_x, 
+	forward_prop_rho_y,forward_prop_x,forward_prop_y,forward_prop_u,waveconv_shot,waveconv_u_shot, waveconv_rho_shot, 
+	Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,0,req_send,req_rec);
+	
+        catseis(sectionvy, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);	   
 
+	/* estimate STF */	
+	   if (nsrc_loc>0){
+	       
+	      /* read seismic data from SU file vy */
+	      /* --------------------------------- */
+	      inseis(fprec,ishot,sectionread,ntr_glob,ns,2,iter);
 
-   /* stress exchange between PEs */
-    exchange_s(psxx,psyy,psxy, 
-      bufferlef_to_rig, bufferrig_to_lef, 
-      buffertop_to_bot, bufferbot_to_top,
-      req_send, req_rec);
+	      if (TIME_FILT){
+		 timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
 
+		 if (TIME_FILT==2){  /* apply band-pass*/
+		    timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
+		 }
 
- 
-   if (MYID==0){
-      time7=MPI_Wtime();
- 	  time_av_s_exchange+=(time7-time6);
-     if (infoout)  fprintf(FP," finished (real time: %4.2f s).\n",time7-time6);
-      }  
+	      }
 
-	/* store amplitudes at receivers in section-arrays */
-	if (SEISMO){
-		seismo_ssg(nt, ntr, recpos_loc, sectionvx, sectionvy, 
-			sectionp, sectioncurl, sectiondiv, 
-			pvx, pvy, psxx, psyy, ppi, pu, prho, hc);
-		/*lsamp+=NDT;*/
-	}
+	      stf(sectionread,fulldata_vy,ntr_glob,ishot,ns,iter,nshots,signals,recpos,srcpos);
+	      /*saveseis_glob(FP,sectionread,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);*/
+	      
+	   }
 
-      
-   if (MYID==0){
-      time8=MPI_Wtime();
-	  time_av_timestep+=(time8-time3);
-      if (infoout)  fprintf(FP," total real time for timestep %d : %4.2f s.\n",nt,time8-time3);
-      }   		
+	   MPI_Barrier(MPI_COMM_WORLD);
 
-
-   }/*--------------------  End  of loop over timesteps (STF estimation) ----------*/
-		
-   catseis(sectionvy, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
-
-   /*MPI_Barrier(MPI_COMM_WORLD);   */
-
-   /* estimate STF */	
-   if (nsrc_loc>0){
-       
-      /* read seismic data from SU file vy */
-      /* --------------------------------- */
-      inseis(fprec,ishot,sectionread,ntr_glob,ns,2,iter);
-
-      if (TIME_FILT){
-         timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
-
-         if (TIME_FILT==2){  /* apply band-pass*/
-            timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
-         }
-
-      }
-
-      stf(sectionread,fulldata_vy,ntr_glob,ishot,ns,iter,nshots,signals,recpos,srcpos);
-      /*saveseis_glob(FP,sectionread,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);*/
-      
-   }
-
-   MPI_Barrier(MPI_COMM_WORLD);
-
-   QUELLART=3;
-
+	   QUELLART=3;
 }
-
-
  
         fprintf(FP,"\n==================================================================================\n");
         fprintf(FP,"\n MYID=%d *****  Starting simulation (forward model) for shot %d of %d  ********** \n",MYID,ishot,nshots);
@@ -1335,11 +1090,6 @@ if (nsrc_loc){if(QUELLART==6){
    }
 }
 
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if ((LNORM!=6)&&(ENV==1)){ 
-   calc_envelope(signals,signals,ns,nsrc_loc); 
-} 
-
 /* time domain filtering*/
 if ((TIME_FILT)&&(INVMAT!=10)&&(INV_STF==0)){
 	
@@ -1371,314 +1121,53 @@ if(RUN_MULTIPLE_SHOTS){
                                 
 	MPI_Barrier(MPI_COMM_WORLD);
 }
-		    
-/* initialize wavefield with zero */
-if (L){
-	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
-}else{	
-	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
-}
-
-
+		   
 /*initialize gradient matrices for each shot with zeros*/
 if(INVMAT<=1){
 
-	for(i=1;i<=NX;i=i+IDX){
-		for(j=1;j<=NY;j=j+IDY){
-			waveconv_shot[j][i]=0.0;
-		}
-	}
+   init_grad(waveconv_shot);
+   init_grad(waveconv_u_shot);
+   init_grad(waveconv_rho_shot);
 
-	for(i=1;i<=NX;i=i+IDX){
-		for(j=1;j<=NY;j=j+IDY){
-			waveconv_rho_shot[j][i]=0.0;
-		}
-	}
-
-	for(i=1;i<=NX;i=i+IDX){
-		for(j=1;j<=NY;j=j+IDY){
-			waveconv_u_shot[j][i]=0.0;
-
-                   if((EPRECOND==1)||(EPRECOND==3)){
-                     Ws[j][i]=0.0;
-                     Wr[j][i]=0.0;
-	             We[j][i]=0.0;
-                   }
-		}
-	}
+   if((EPRECOND==1)||(EPRECOND==3)){
+      init_grad(Ws);
+      init_grad(Wr);
+      init_grad(We);
+   }			
 }
 
 /*initialize Laplace-domain wavefields for each shot with zeros*/
 if(INVMAT==1){
 
-   for(i=1;i<=NX;i=i+IDX){
-      for(j=1;j<=NY;j=j+IDY){
-      
-         forward_propl_rho_x[j][i]=0.0;
-         forward_propl_rho_y[j][i]=0.0;
-         forward_propl_u[j][i]=0.0;
-         forward_propl_x[j][i]=0.0;
-         forward_propl_y[j][i]=0.0;
+   init_grad(forward_propl_rho_x);
+   init_grad(forward_propl_rho_y);
+   init_grad(forward_propl_x);
+   init_grad(forward_propl_y);
+   init_grad(forward_propl_u);
 
-         back_prop_rho_x[j][i]=0.0;
-         back_prop_rho_y[j][i]=0.0;
-         back_prop_u[j][i]=0.0;
-         back_prop_x[j][i]=0.0;
-         back_prop_y[j][i]=0.0;
-   
-      }
-   }
+   init_grad(back_prop_rho_x);
+   init_grad(back_prop_rho_y);
+   init_grad(back_prop_x);
+   init_grad(back_prop_y);
+   init_grad(back_prop_u);
 
-}                                                         
-     
-/*----------------------  loop over timesteps (forward model) ------------------*/
+}                                                              
 
 lsnap=iround(TSNAP1/DT);  
 lsamp=NDT;
 nsnap=0;
 
-hin=1;
-hin1=1;
-
-imat=1;
-imat1=1;
-imat2=1;
-hi=1;
-
 if(RTMOD==0){  
 
-for (nt=1;nt<=NT;nt++){     
-                
-	/* Check if simulation is still stable */
-        /*if (isnan(pvy[NY/2][NX/2])) err(" Simulation is unstable !");*/
-	if (isnan(pvy[NY/2][NX/2])) {
-	   fprintf(FP,"\n Time step: %d; pvy: %f \n",nt,pvy[NY/2][NX/2]);
-	   err(" Simulation is unstable !");}
-
-		
-   infoout = !(nt%10000);
-
-   if (MYID==0){
-      if (infoout)  fprintf(FP,"\n Computing timestep %d of %d \n",nt,NT);
-      time3=MPI_Wtime();
-   }
-
-      /* update of particle velocities */
-      update_v_PML(1, NX, 1, NY, nt, pvx, pvxp1, pvxm1, pvy, pvyp1, pvym1, uttx, utty, psxx, psyy, psxy, prip, prjp, srcpos_loc,signals,signals,nsrc_loc,absorb_coeff,hc,infoout,0, K_x, a_x,
-                   b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_sxx_x, psi_syy_y, psi_sxy_y, psi_sxy_x);
-                         
-	if (MYID==0){
-		time4=MPI_Wtime();
-		time_av_v_update+=(time4-time3);
-		if (infoout)  fprintf(FP," particle velocity exchange between PEs ...");
-	}
-                                                   
-	/* exchange of particle velocities between PEs */
-	exchange_v(pvx,pvy, bufferlef_to_rig, bufferrig_to_lef, buffertop_to_bot, bufferbot_to_top, req_send, req_rec);
-                                                               
-	if (MYID==0){
-	  time5=MPI_Wtime();
-	  time_av_v_exchange+=(time5-time4);
-	  if (infoout)  fprintf(FP," finished (real time: %4.2f s).\n",time5-time4);
-	}                                                                                         	
-
-    if (L)    /* viscoelastic */
-    	update_s_visc_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, prho, hc, infoout,
-				pr, pp, pq, fipjp, f, g, bip, bjm, cip, cjm, d, e, dip,
-				K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);
-    else
-   	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, absorb_coeff, prho, hc, infoout,
-         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx,0);  
-
-
-    /* explosive source */
-   if ((!CHECKPTREAD)&&(QUELLTYP==1)) 	
-   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc,0);
-   
-   /* moment tensor source */
-   if ((!CHECKPTREAD)&&(QUELLTYP==5)) 	
-   msource(nt,psxx,psyy,psxy,srcpos_loc,signals,nsrc_loc,0);
-
-   if ((FREE_SURF) && (POS[2]==0)){
-   	if (L)    /* viscoelastic */
-		surface_PML(1, pvx, pvy, psxx, psyy, psxy, pp, pq, ppi, pu, prho, ptaup, ptaus, etajm, peta, hc, K_x, a_x, b_x, psi_vxxs);
-	else      /* elastic */
-   		surface_elastic_PML(1, pvx, pvy, psxx, psyy, psxy, ppi, pu, prho, hc, K_x, a_x, b_x, psi_vxxs);
-   }
-
-
-   if (MYID==0){
-      time6=MPI_Wtime();
-	  time_av_s_update+=(time6-time5);
-      if (infoout)  fprintf(FP," stress exchange between PEs ...");
-      }
-
-
-   /* stress exchange between PEs */
-    exchange_s(psxx,psyy,psxy, 
-      bufferlef_to_rig, bufferrig_to_lef, 
-      buffertop_to_bot, bufferbot_to_top,
-      req_send, req_rec);
-
-
- 
-   if (MYID==0){
-      time7=MPI_Wtime();
- 	  time_av_s_exchange+=(time7-time6);
-     if (infoout)  fprintf(FP," finished (real time: %4.2f s).\n",time7-time6);
-      }  
-
-	/* store amplitudes at receivers in section-arrays */
-	if (SEISMO){
-		seismo_ssg(nt, ntr, recpos_loc, sectionvx, sectionvy, 
-			sectionp, sectioncurl, sectiondiv, 
-			pvx, pvy, psxx, psyy, ppi, pu, prho, hc);
-		/*lsamp+=NDT;*/
-	}
-
-
-if(nt==hin1){
-
-    /* save forward wavefields for time-domain inversion */
-    if(INVMAT==0){
-    
-        for (i=1;i<=NX;i=i+IDXI){
-	    for (j=1;j<=NY;j=j+IDYI){
-		 forward_prop_rho_x[imat1]=pvxp1[j][i];
-		 forward_prop_rho_y[imat1]=pvyp1[j][i];
-                 imat1++;                                   
-	    }
-        }   
-
-        for (i=1;i<=NX;i=i+IDXI){ 
-	    for (j=1;j<=NY;j=j+IDYI){
-	    
-	        /* gradients with data integration */
-                if(GRAD_FORM==1){
-	           forward_prop_x[imat]=psxx[j][i];
-	           forward_prop_y[imat]=psyy[j][i];
-                }
-	    
-	        /* gradients without data integration */
-	        if(GRAD_FORM==2){
-                   forward_prop_x[imat]=ux[j][i];
-	           forward_prop_y[imat]=uy[j][i];
-	        }
-	    
-	        imat++;
-            }
-         }
-    
-
-        for (i=1;i<=NX;i=i+IDXI){ 
-	    for (j=1;j<=NY;j=j+IDYI){
-	    
-	        /* gradients with data integration */
-                if(GRAD_FORM==1){
- 	          forward_prop_u[imat2]=psxy[j][i];
-	        }
-
-	        /* gradients without data integration */
-                if(GRAD_FORM==2){
- 	          forward_prop_u[imat2]=uxy[j][i];
-                }
-
-	        imat2++;
-	    
-            }
-        }
-	
-    }
-   
-    if((EPRECOND==1)||(EPRECOND==3)){
-      eprecond(Ws,pvx,pvy);
-    }
-
-    if((EPRECOND==2)&&(iter==1)){
-       
-      /* calculate Pseudo-Hessians in time-domain */
-      for(i=1;i<=NX;i=i+IDX){
-	 for(j=1;j<=NY;j=j+IDY){
-
-            if(INVMAT1==1){
-
-              muss = prho[j][i] * pu[j][i] * pu[j][i];
-	      lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 * muss;
-
-              if(muss>0.0){
-	        hessian_lam[j][i]  += (psxx[j][i] + psyy[j][i])*(psxx[j][i] + psyy[j][i]);
-	        hessian_mu[j][i]  += (psxy[j][i]*psxy[j][i]/(muss*muss)) + ((psxx[j][i]+psyy[j][i])*(psxx[j][i]+psyy[j][i])/(4.0*(lamss+muss)*(lamss+muss))) + ((psxx[j][i]-psyy[j][i])*(psxx[j][i]-psyy[j][i])/(4.0*muss*muss));
-	        hessian_rho[j][i] += (pvxp1[j][i]*pvxp1[j][i]) + (pvyp1[j][i]*pvyp1[j][i]);
-              }
- 
-            }
-
-	 }
-      }
-
-    }
- 
-    hin++;
-    hin1=hin1+DTINV;
-                                                             
-
-DTINV_help[nt]=1;
-
-}
-
-   /* save forward wavefields for time-Laplace domain inversion */   
-   if(INVMAT==1){
-     
-     time = (float)(nt*DT);
-     tmp = exp(-GAMMA*(time+DT)*(time+DT));
-
-        for (i=1;i<=NX;i=i+IDXI){ 
-	    for (j=1;j<=NY;j=j+IDYI){
-
-	        forward_propl_rho_x[j][i]+=pvxp1[j][i]*tmp;
-		forward_propl_rho_y[j][i]+=pvyp1[j][i]*tmp;
-
-	        /* gradients with data integration */
-                if(GRAD_FORM==1){
- 	          forward_propl_u[j][i]+=psxy[j][i]*tmp;
-		  forward_propl_x[j][i]+=psxx[j][i]*tmp;
-	          forward_propl_y[j][i]+=psyy[j][i]*tmp;
-	        }
-
-	        /* gradients without data integration */
-                if(GRAD_FORM==2){
- 	          forward_propl_u[j][i]+=uxy[j][i]*tmp;
-		  forward_propl_x[j][i]+=ux[j][i]*tmp;
-	          forward_propl_y[j][i]+=uy[j][i]*tmp;
-                }
-		
-            }
-        }
-	
-    }
-
-
-   /* WRITE SNAPSHOTS TO DISK */
-   if ((SNAP) && (nt==lsnap) && (nt<=TSNAP2/DT)){
-
-      snap(FP,nt,++nsnap,pvx,pvy,psxx,psyy,pu,ppi,hc);
-
-      lsnap=lsnap+iround(TSNAPINC/DT);
-      }
-
-   
-      
-   if (MYID==0){
-      time8=MPI_Wtime();
-	  time_av_timestep+=(time8-time3);
-      if (infoout)  fprintf(FP," total real time for timestep %d : %4.2f s.\n",nt,time8-time3);
-      }   		
-
-
-   }/*--------------------  End  of loop over timesteps (forward model) ----------*/
+   /* solve forward problem */
+   psv(ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
+   bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,nsrc_loc,srcpos_loc, 
+   recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl,forward_prop_rho_x, 
+   forward_prop_rho_y,forward_prop_x,forward_prop_y,forward_prop_u,waveconv_shot,waveconv_u_shot, waveconv_rho_shot, 
+   Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,0,req_send,req_rec);
 
 } /* end if(RTMOD==0) */	
-	
+
 if ((SEISMO==1)&&(INVMAT==10)){
         
         catseis(sectionvx, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
@@ -1723,8 +1212,7 @@ if ((SEISMO==4)&&(INVMAT==10)){
         }         
  
 }
-
-
+	
 if(INVMAT<=1){
 
 if (MYID==0){
@@ -1743,12 +1231,6 @@ if ((ntr > 0)&&(HESSIAN==0)){
 if((QUELLTYPB==1)||(QUELLTYPB==3)){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,1,iter);
-
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if ((LNORM!=6)&&(ENV==1)){ 
-   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
-   calc_envelope(sectionvx,sectionvx,ns,ntr);  
-}
 
 if (TIME_FILT){
 
@@ -1810,12 +1292,6 @@ if((QUELLTYPB==1)||(QUELLTYPB==2)){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,2,iter);
 
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if ((LNORM!=6)&&(ENV==1)){ 
-   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
-   calc_envelope(sectionvy,sectionvy,ns,ntr);  
-}
-
 if (TIME_FILT){
 
    timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
@@ -1876,12 +1352,6 @@ energy_all_shots=calc_energy(sectionvydata,ntr,ns,energy_all_shots, ntr_glob, re
 if(QUELLTYPB==4){ /* if QUELLTYPB */
 
 inseis(fprec,ishot,sectionread,ntr_glob,ns,11,iter);
-
-/* calculate envelope (Chi, Dong & Liu, 2014) */      
-if ((LNORM!=6)&&(ENV==1)){ 
-   calc_envelope(sectionread,sectionread,ns,ntr_glob); 
-   calc_envelope(sectionp,sectionp,ns,ntr);  
-}
 
 if (TIME_FILT){
 
@@ -1991,18 +1461,8 @@ if ((SEISMO)&&(iter==1)&&(INVMAT<=1)&&(ishot==1)){
    }   
            
 }
-                  
-	    		    
+                  	    		    
 /* --------------------------------------------------------------------------------------------------------------------- */
-
-/*srcpos_loc_back=splitsrc_back(recpos,&nsrc_loc,ntr_glob);*/
-  
-for (irec=1;irec<=1;irec+=RECINC){ /* loop over shots at receiver positions */
-
-/*for (irec=20;irec<=20;irec+=1){*/
-
-hin=1;
-hin1=1;
 
     if(MYID==0){
     printf("\n==================================================================================\n");
@@ -2016,278 +1476,23 @@ hin1=1;
         srcpos_loc_back[1][i] = (recpos_loc[1][i]);
         srcpos_loc_back[2][i] = (recpos_loc[2][i]);
     }
-    ntr1=ntr;
                                     
-                
+   /* solve adjoint problem */
+   psv(ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
+   bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,ntr,srcpos_loc_back, 
+   recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl,forward_prop_rho_x, 
+   forward_prop_rho_y,forward_prop_x,forward_prop_y,forward_prop_u,waveconv_shot,waveconv_u_shot, waveconv_rho_shot, 
+   Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,1,req_send,req_rec);                
 
 /* initialize wavefield with zero */
-if (L){
+/*if (L){
 	zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
 }else{	
 	zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
-}
+}*/
 
 /*----------------------  loop over timesteps (backpropagation) ------------------*/
 
-lsnap=iround(TSNAP1/DT);  
-lsamp=NDT;
-nsnap=0;
-
-/*invtimer=NT/DTINV;*/
-for (nt=1;nt<=NT;nt++){     
-
-	
-	/* Check if simulation is still stable */
-        /*if (isnan(pvy[NY/2][NX/2])) err(" Simulation is unstable !");*/
-	if (isnan(pvy[NY/2][NX/2])) {
-	   fprintf(FP,"\n Time step: %d; pvy: %f \n",nt,pvy[NY/2][NX/2]);
-	   err(" Simulation is unstable !");}
-
-		
-   infoout = !(nt%10000);
-
-   if (MYID==0){
-      if (infoout)  fprintf(FP,"\n Computing timestep %d of %d \n",nt,NT);
-      time3=MPI_Wtime();
-   }
-
-      /*if(MYID==0){  
-      printf("Calculate zero lag x-correlation of forward and backpropagated wavefields \n");
-      printf("------------------------------------------------------------------------- \n");
-      }*/
-
-   /* update of particle velocities */
-   /*update_v_hc(1, NX, 1, NY, nt, pvx, pvxp1, pvxm1, pvy, pvyp1, pvym1, uttx, utty, psxx, psyy, psxy, prip, prjp,
-   	       srcpos_loc_back,sectionvxdiff,sectionvydiff,ntr,absorb_coeff, hc, infoout,1);*/
-
-   update_v_PML(1, NX, 1, NY, nt, pvx, pvxp1, pvxm1, pvy, pvyp1, pvym1, uttx, utty, psxx, psyy, psxy, prip, prjp, srcpos_loc_back, sectionvxdiff,sectionvydiff,ntr1,absorb_coeff,hc,infoout,1, K_x, a_x,
-                   b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_sxx_x, psi_syy_y, psi_sxy_y, psi_sxy_x); 
-
-   if (MYID==0){
-      time4=MPI_Wtime();
-      time_av_v_update+=(time4-time3);
-     if (infoout)  fprintf(FP," particle velocity exchange between PEs ...");
-      }
-
-   /* exchange of particle velocities between PEs */
-   exchange_v(pvx,pvy, bufferlef_to_rig, bufferrig_to_lef, 
-      buffertop_to_bot, bufferbot_to_top, req_send, req_rec);
-
-   if (MYID==0){
-      time5=MPI_Wtime();
-	  time_av_v_exchange+=(time5-time4);
-      if (infoout)  fprintf(FP," finished (real time: %4.2f s).\n",time5-time4);
-   }
-
-   if (L)    /* viscoelastic */
-    	update_s_visc_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, prho, hc, infoout,
-				pr, pp, pq, fipjp, f, g, bip, bjm, cip, cjm, d, e, dip,
-				K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);
-   else
-   	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, absorb_coeff, prho, hc, infoout,
-         	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx,1);  
-
-   /* Backpropagate pressure wavefield */	
-   psource(nt,psxx,psyy,srcpos_loc_back,sectionpdiff,ntr1,1);
-
-     if ((FREE_SURF) && (POS[2]==0)){
-   	if (L)    /* viscoelastic */
-		surface_PML(1, pvx, pvy, psxx, psyy, psxy, pp, pq, ppi, pu, prho, ptaup, ptaus, etajm, peta, hc, K_x, a_x, b_x, psi_vxxs);
-	else      /* elastic */
-   		surface_elastic_PML(1, pvx, pvy, psxx, psyy, psxy, ppi, pu, prho, hc, K_x, a_x, b_x, psi_vxxs);
-   }
-
-
-   if (MYID==0){
-      time6=MPI_Wtime();
-	  time_av_s_update+=(time6-time5);
-      if (infoout)  fprintf(FP," stress exchange between PEs ...");
-   }
-
-
-   /* stress exchange between PEs */
-    exchange_s(psxx,psyy,psxy, 
-      bufferlef_to_rig, bufferrig_to_lef, 
-      buffertop_to_bot, bufferbot_to_top,
-      req_send, req_rec);
-
-
- 
-   if (MYID==0){
-      time7=MPI_Wtime();
- 	time_av_s_exchange+=(time7-time6);
-     if (infoout)  fprintf(FP," finished (real time: %4.2f s).\n",time7-time6);
-   }
-
-	/* store amplitudes at receivers in section-arrays */
-	/*if ((SEISMO) && (nt==lsamp) && (nt<=NT)){
-		seismo_ssg(lsamp, ntr, recpos_loc, sectionp, sectionvy, 
-			sectionp, sectioncurl, sectiondiv, 
-			pvx, pvy, psxx, psyy, ppi, pu, prho, hc);
-		lsamp+=NDT;
-	} */ 
-   
-   /* calculate maximum pressure values at each grid point*/
-   if(RTMOD==1){
-   
-     for (i=1;i<=NX;i=i+IDXI){      
-         for (j=1;j<=NY;j=j+IDYI){
-
-             /* apply different focusing criteria for microseismic localization ... */
-
-             /* ... max(abs(pvxp1+pvyp1)) */
-             if(waveconv_shot[j][i]<(sqrt((pvxp1[j][i] * pvxp1[j][i]) + (pvyp1[j][i] * pvyp1[j][i])))){
-               waveconv_shot[j][i]=sqrt((pvxp1[j][i] * pvxp1[j][i]) + (pvyp1[j][i] * pvyp1[j][i]));
-             }   
-
-             /* ... max(abs(psxx + psyy + psxy)) */
-             /* if(waveconv_shot[j][i]<(sqrt((psxx[j][i] + psyy[j][i] + psxy[j][i])*(psxx[j][i] + psyy[j][i] + psxy[j][i])))){
-                   waveconv_shot[j][i]=sqrt((psxx[j][i] + psyy[j][i] + psxy[j][i])*(psxx[j][i] + psyy[j][i] + psxy[j][i]));
-             }*/
-
-             /* ... max(abs(psxx)) */
-             /*if(waveconv_shot[j][i]<(sqrt(psxx[j][i]*psxx[j][i]))){
-                   waveconv_shot[j][i]=sqrt(psxx[j][i] * psxx[j][i]);
-             }*/
-
-             /* ... max(abs(psxx + psyy)) */
-             /*if(waveconv_shot[j][i]<(sqrt((psxx[j][i] + psyy[j][i])*(psxx[j][i] + psyy[j][i])))){
-	           waveconv_shot[j][i]=sqrt((psxx[j][i] + psyy[j][i])*(psxx[j][i] + psyy[j][i]));
-             }*/
-
-         }
-     }
-         
-   } /*end if(RTMOD==1)*/
-   
-   if((RTMOD==0)&&(DTINV_help[NT-nt+1]==1)){
-    
-        if(HESSIAN==0){imat=((nxnyi*(NTDTINV)) - hin*nxnyi)+1;}
-	
-	/* save backpropagated wavefields for time-domain inversion and partially assemble gradients */                 
-        if((HESSIAN==0)&&(INVMAT==0)){
-	
-	    for (i=1;i<=NX;i=i+IDXI){   
-	        for (j=1;j<=NY;j=j+IDYI){ 
-                                           
-		   	waveconv_rho_shot[j][i]+=(pvxp1[j][i]*forward_prop_rho_x[imat])+(pvyp1[j][i]*forward_prop_rho_y[imat]);
-			
-		   	/* mu-gradient with data integration */
-		   	if(GRAD_FORM==1){
-			
-			   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);			  
-
-                           if(INVMAT1==1){
-			       muss = prho[j][i] * pu[j][i] * pu[j][i];
-			       lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 * muss;
-			   }
-	           
-			   if(INVMAT1==3){
-			       muss = pu[j][i];
-			       lamss = ppi[j][i]; 
-			   } 
-	                        
-			   if(muss>0.0){
-			      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * psxy[j][i])) 
-                                  + ((1.0/4.0) * ((forward_prop_x[imat] + forward_prop_y[imat]) * (psxx[j][i] + psyy[j][i])) / ((lamss+muss)*(lamss+muss)))  
-                                  + ((1.0/4.0) * ((forward_prop_x[imat] - forward_prop_y[imat]) * (psxx[j][i] - psyy[j][i])) / (muss*muss));
-			   }
-			   
-                        }
-
-			/* Vs-gradient without data integration (stress-velocity in non-conservative form) */
-                        if(GRAD_FORM==2){
-			
-			   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
-
-                           if(INVMAT1==1){
-			       muss = prho[j][i] * pu[j][i] * pu[j][i];
-			       lamss = prho[j][i] * ppi[j][i] * ppi[j][i] - 2.0 * muss;
-			   }
-	           
-			   if(INVMAT1==3){
-			       muss = pu[j][i];
-			       lamss = ppi[j][i]; 
-			   } 
-	                        
-			   if(muss>0.0){
-								
-			      tmp = (1.0/(4.0*(lamss+muss)*(lamss+muss))) - (1.0/(4.0*muss*muss));
-			      tmp1 = (1.0/(4.0*(lamss+muss)*(lamss+muss))) + (1.0/(4.0*muss*muss));
-			
-			      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * psxy[j][i])) 
-                                                   + ( tmp1 * (forward_prop_x[imat] * psxx[j][i] + forward_prop_y[imat] * psyy[j][i]))  
-                                                   + ( tmp  * (forward_prop_x[imat] * psyy[j][i] + forward_prop_y[imat] * psxx[j][i]));	  
-				  
-			   } 
-                          
-                        }			
-				                                                                                                             
-		   imat++;
-		   }
-	    }
-		
-		
-	  }
-	  
-	  
-	  if(EPRECOND==1){
-	     eprecond(Wr,pvx,pvy);
-	  }
-                                                                                                                               
-    hin++;
-    }
-    
-    	  /* save backpropagated wavefields for time-Laplace domain inversion */   
-          if(INVMAT==1){
-
-             for (i=1;i<=NX;i=i+IDXI){ 
-	        for (j=1;j<=NY;j=j+IDYI){
-	    
-	            back_prop_rho_x[j][i]+=pvxp1[j][i];
-		    back_prop_rho_y[j][i]+=pvyp1[j][i];
-
-	            /* gradients with data integration */
-                    if(GRAD_FORM==1){
- 	              back_prop_u[j][i]+=psxy[j][i];
-		      back_prop_x[j][i]+=psxx[j][i];
-	              back_prop_y[j][i]+=psyy[j][i];
-	            }
-
-	            /* gradients without data integration */
-                    if(GRAD_FORM==2){
- 	              back_prop_u[j][i]+=uxy[j][i];
-		      back_prop_x[j][i]+=ux[j][i];
-	              back_prop_y[j][i]+=uy[j][i];
-                    }
-		
-                 }
-             }
-	
-          }
-
-     /*fclose(FP2);*/
-     
-   /* WRITE SNAPSHOTS TO DISK */
-   if ((SNAP) && (nt==lsnap) && (nt<=TSNAP2/DT)){
-
-      snap(FP,nt,++nsnap,pvx,pvy,psxx,psyy,pu,ppi,hc);
-
-      lsnap=lsnap+iround(TSNAPINC/DT);
-      }
-                                                                                                                                               
-   
-   if (MYID==0){
-      time8=MPI_Wtime();
-	time_av_timestep+=(time8-time3);
-      if (infoout)  fprintf(FP," total real time for timestep %d : %4.2f s.\n",nt,time8-time3);
-      }   		
-
-
-   }/*--------------------  End  of loop over timesteps (backpropagation)----------*/
-
-
-} /* end of loop over shots */
 	
 /*if ((ntr > 0) && (SEISMO)){
 	saveseis(FP,sectionpdiff,sectionvy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr,srcpos1,ishot,ns,0);
@@ -2807,7 +2012,7 @@ if((HESSIAN==0)&&(GRAD_METHOD==1)&&(INVMAT<=1)){
 }
 
 if((HESSIAN==0)&&(GRAD_METHOD==2)&&(INVMAT<=1)){
-  LBFGS1(taper_coeff, nsrc, srcpos, recpos, ntr_glob, iter, nfstart_jac, waveconv, C_vp, gradp, waveconv_u, C_vs, gradp_u, waveconv_rho, C_rho, gradp_rho, y_LBFGS, s_LBFGS, rho_LBFGS, alpha_LBFGS, ppi, pu, prho, nxnyi, q_LBFGS, r_LBFGS, beta_LBFGS, LBFGS_pointer, NLBFGS, NLBFGS_vec);
+  LBFGS1(taper_coeff, nsrc, srcpos, recpos, ntr_glob, iter, nfstart_jac, waveconv, C_vp, gradp, waveconv_u, C_vs, gradp_u, waveconv_rho, C_rho, gradp_rho, y_LBFGS, s_LBFGS, rho_LBFGS, alpha_LBFGS, ppi, pu, prho, NXNYI, q_LBFGS, r_LBFGS, beta_LBFGS, LBFGS_pointer, NLBFGS, NLBFGS_vec);
 }
 
 opteps_vp=0.0;
@@ -2828,21 +2033,12 @@ if(iter==1){min_iter_help=MIN_ITER;}
 /* Estimate optimum step length ... */
 
 /* ... by line search (parabolic fitting) */
-eps_scale = step_length_est(fprec,waveconv,waveconv_rho,waveconv_u,prho,prhonp1,ppi,ppinp1,iter,nfstart,nsrc,puipjp,prip,prjp,L2,partest,srcpos_loc,srcpos,srcpos1,signals,ns,
+/*eps_scale = step_length_est(fprec,waveconv,waveconv_rho,waveconv_u,prho,prhonp1,ppi,ppinp1,iter,nfstart,nsrc,puipjp,prip,prjp,L2,partest,srcpos_loc,srcpos,srcpos1,signals,ns,
                 nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pvxm1,pvym1,uttx,utty,absorb_coeff,hc,K_x,
                 a_x,b_x,K_x_half,a_x_half,b_x_half,K_y,a_y,b_y,K_y_half,a_y_half,b_y_half,uxy,uyx,ntr,recpos_loc,sectionvx,sectionvy,sectionp,sectioncurl,sectiondiv,sectionread,ntr_glob,
                 sectionvxdata,sectionvxdiff,sectionvxdiffold,sectionvydata,sectionvydiff,sectionvydiffold,sectionpdata,sectionpdiff,sectionpdiffold,epst1,L2t,L2sum,energy_sum,bufferlef_to_rig,
 		bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,pu,punp1,itest,nsrc_glob,nsrc_loc,req_send,req_rec,pr,pp,pq,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,etaip,
-                ptausipjp,recpos,&step1,&step3,C_vp,gradg,FC,nxgrav,nygrav,ngrav,gravpos,gz_mod,NZGRAV,recswitch,FP,ntr_loc);
-
-/* ... by line search (parabolic fitting+safeguard) */
-/*eps_scale = step_length_est1(fprec,waveconv,waveconv_rho,waveconv_u,prho,prhonp1,ppi,ppinp1,iter,nfstart,nsrc,puipjp,prip,prjp,L2,partest,srcpos_loc,srcpos,srcpos1,signals,ns,
-	        nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pvxm1,pvym1,uttx,utty,absorb_coeff,hc,K_x, 
-	        a_x,b_x,K_x_half,a_x_half,b_x_half,K_y,a_y,b_y,K_y_half,a_y_half,b_y_half,uxy,uyx,ntr,recpos_loc,sectionvx,sectionvy,sectionp,sectioncurl,sectiondiv,sectionread,ntr_glob,
-	        sectionvxdata,sectionvxdiff,sectionvxdiffold,sectionvydata,sectionvydiff,sectionvydiffold,epst1,L2t,L2sum,energy_sum,bufferlef_to_rig,bufferrig_to_lef, 
-	        buffertop_to_bot,bufferbot_to_top,pu,punp1,itest,nsrc_glob,nsrc_loc,req_send,req_rec,pr,pp,pq,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,etaip,
-                ptausipjp,recpos,&step1,&step3,C_vp,gradg,FC);*/
-
+                ptausipjp,recpos,&step1,&step3,C_vp,gradg,FC,nxgrav,nygrav,ngrav,gravpos,gz_mod,NZGRAV,recswitch,FP,ntr_loc);*/
 
 /* no model update due to steplength estimation failed or update with the smallest steplength if the number of iteration is smaller than the minimum number of iteration per
 frequency MIN_ITER */
@@ -2974,40 +2170,10 @@ if(EPRECOND==2){
 
 } /* End of FWI-workflow loop */
 
-if (CHECKPTWRITE){
-	if (MYID==0){
-		time3=MPI_Wtime();
- 		fprintf(FP," Saving wavefield to check-point file %s \n",CHECKPTFILE);	
-	}
-	
-	save_checkpoint(-1, NX+2, -1, NY+2, pvx, pvy, psxx, psyy, psxy);
-	MPI_Barrier(MPI_COMM_WORLD);
-	if (MYID==0){
-		time4=MPI_Wtime();
-      		fprintf(FP," finished (real time: %4.2f s).\n",time4-time3);
-	}
-}
-
 /* deallocation of memory */
-free_matrix(psxx,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(psxy,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(psyy,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(pvx,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(pvy,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(pvxp1,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(pvyp1,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(pvxm1,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(pvym1,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(ux,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(uy,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(uxy,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(uyx,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(Vp0,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(Vs0,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(Rho0,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(uttx,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(utty,-nd+1,NY+nd,-nd+1,NX+nd);
-
 
 free_matrix(prho,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(prhonp1,-nd+1,NY+nd,-nd+1,NX+nd);
@@ -3029,47 +2195,6 @@ free_matrix(waveconv_shot,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(wcpart,1,3,1,3);
 
 free_matrix(wavejac,-nd+1,NY+nd,-nd+1,NX+nd);
-
-if(FW>0){
-
-free_vector(d_x,1,2*FW);
-free_vector(K_x,1,2*FW);
-free_vector(alpha_prime_x,1,2*FW);
-free_vector(a_x,1,2*FW);
-free_vector(b_x,1,2*FW);
-
-free_vector(d_x_half,1,2*FW);
-free_vector(K_x_half,1,2*FW);
-free_vector(alpha_prime_x_half,1,2*FW);
-free_vector(a_x_half,1,2*FW);
-free_vector(b_x_half,1,2*FW);
-
-free_vector(d_y,1,2*FW);
-free_vector(K_y,1,2*FW);
-free_vector(alpha_prime_y,1,2*FW);
-free_vector(a_y,1,2*FW);
-free_vector(b_y,1,2*FW);
-
-free_vector(d_y_half,1,2*FW);
-free_vector(K_y_half,1,2*FW);
-free_vector(alpha_prime_y_half,1,2*FW);
-free_vector(a_y_half,1,2*FW);
-free_vector(b_y_half,1,2*FW);
-
-free_matrix(psi_sxx_x,1,NY,1,2*FW);
-free_matrix(psi_syy_y,1,2*FW,1,NX);
-free_matrix(psi_sxy_x,1,NY,1,2*FW);
-free_matrix(psi_sxy_y,1,2*FW,1,NX);
-free_matrix(psi_vxx,1,NY,1,2*FW);
-free_matrix(psi_vxxs,1,NY,1,2*FW);
-free_matrix(psi_vyy,1,2*FW,1,NX);
-free_matrix(psi_vxy,1,2*FW,1,NX);
-free_matrix(psi_vyx,1,NY,1,2*FW);
-
-}
-
-/*absorb_coeff=  matrix(1,NY,1,NX);
-free_matrix(absorb_coeff,1,NY,1,NX);*/
 free_matrix(taper_coeff,1,NY,1,NX);
 
 free_matrix(bufferlef_to_rig,1,NY,1,fdo3);
@@ -3233,9 +2358,6 @@ if (nsrc_loc>0){
  
  /* free memory for viscoelastic modeling variables */
  if (L) {
-		free_f3tensor(pr,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-		free_f3tensor(pp,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-		free_f3tensor(pq,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
 		free_matrix(ptaus,-nd+1,NY+nd,-nd+1,NX+nd);
 		free_matrix(ptausipjp,-nd+1,NY+nd,-nd+1,NX+nd);
 		free_matrix(ptaup,-nd+1,NY+nd,-nd+1,NX+nd);

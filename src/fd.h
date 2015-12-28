@@ -156,6 +156,8 @@ int householder(int m, int n, float **mat, float *b);
 
 void info(FILE *fp);
 
+void init_grad(float ** A);
+
 void initproc(void);
 
 void interpol(int ni1, int ni2, float **  intvar, int cfgt_check);
@@ -239,6 +241,18 @@ float **  srcpos_loc, float ** signals, int nsrc, int sw);
 
 void psource_rsg(int nt, float ** sxx, float ** syy,
 float **  srcpos_loc, float ** signals, int nsrc);
+
+void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip, float **prjp, 
+        float *hc, int infoout, float **fipjp, float **f, float **g, float *bip, float *bjm, 
+        float *cip, float *cjm, float ***d, float ***e,  float ***dip, float **ptaup, float **ptaus, 
+        float *etajm, float *peta, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
+        float ** buffertop_to_bot, float ** bufferbot_to_top, int ishot, int nshots, int nsrc_loc, 
+        float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **sectionp, 
+        float **sectionvx, float **sectionvy, float **sectiondiv, float **sectioncurl, 
+        float *forward_prop_rho_x, float *forward_prop_rho_y, float *forward_prop_x, float *forward_prop_y, 
+        float *forward_prop_u, float **waveconv_shot, float **waveconv_u_shot, float **waveconv_rho_shot, 
+        float **Ws, float **Wr, float **sectionvxdiff, float **sectionvydiff, int hin, int *DTINV_help, 
+        int mode, MPI_Request * req_send, MPI_Request * req_rec);
 
 float *rd_sour(int *nts,FILE* fp_source);
 
