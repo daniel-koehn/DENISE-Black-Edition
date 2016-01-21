@@ -10,7 +10,7 @@
 
 #include "fd.h"
 
-void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct wavePSV_PML wavePSV_PML, float ** ppi, float ** pu, 
+void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, float ** ppi, float ** pu, 
         float ** puipjp, float **prho, float  **prip, float **prjp, 
         float *hc, int infoout, float **fipjp, float **f, float **g, float *bip, float *bjm, 
         float *cip, float *cjm, float ***d, float ***e,  float ***dip, float **ptaup, float **ptaus, 
@@ -101,15 +101,15 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 			    
 	/* initialize PSV wavefields with zero */
 	if (L){
-		zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd, wavePSV_el.pvx,wavePSV_el.pvy,wavePSV_el.psxx,wavePSV_el.psyy,wavePSV_el.psxy,
-                                 wavePSV_el.ux,wavePSV_el.uy,wavePSV_el.uxy,wavePSV_el.pvxp1, wavePSV_el.pvyp1,wavePSV_PML.psi_sxx_x,wavePSV_PML.psi_sxy_x,
-                                 wavePSV_PML.psi_vxx,wavePSV_PML.psi_vyx,wavePSV_PML.psi_syy_y,wavePSV_PML.psi_sxy_y,wavePSV_PML.psi_vyy,wavePSV_PML.psi_vxy,
-                                 wavePSV_PML.psi_vxxs,wavePSV_visc.pr,wavePSV_visc.pp,wavePSV_visc.pq);
+		zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd, (*wavePSV).pvx,(*wavePSV).pvy,(*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy,
+                                 (*wavePSV).ux,(*wavePSV).uy,(*wavePSV).uxy,(*wavePSV).pvxp1, (*wavePSV).pvyp1,(*wavePSV_PML).psi_sxx_x,(*wavePSV_PML).psi_sxy_x,
+                                 (*wavePSV_PML).psi_vxx,(*wavePSV_PML).psi_vyx,(*wavePSV_PML).psi_syy_y,(*wavePSV_PML).psi_sxy_y,(*wavePSV_PML).psi_vyy,(*wavePSV_PML).psi_vxy,
+                                 (*wavePSV_PML).psi_vxxs,(*wavePSV).pr,(*wavePSV).pp,(*wavePSV).pq);
 	}else{	
-		zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,wavePSV_el.pvx,wavePSV_el.pvy,wavePSV_el.psxx,wavePSV_el.psyy,wavePSV_el.psxy,
-                            wavePSV_el.ux,wavePSV_el.uy,wavePSV_el.uxy,wavePSV_el.pvxp1, wavePSV_el.pvyp1,wavePSV_PML.psi_sxx_x,
-                            wavePSV_PML.psi_sxy_x,wavePSV_PML.psi_vxx,wavePSV_PML.psi_vyx,wavePSV_PML.psi_syy_y,wavePSV_PML.psi_sxy_y,
-                            wavePSV_PML.psi_vyy,wavePSV_PML.psi_vxy,wavePSV_PML.psi_vxxs);	
+		zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,(*wavePSV).pvx,(*wavePSV).pvy,(*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy,
+                            (*wavePSV).ux,(*wavePSV).uy,(*wavePSV).uxy,(*wavePSV).pvxp1, (*wavePSV).pvyp1,(*wavePSV_PML).psi_sxx_x,
+                            (*wavePSV_PML).psi_sxy_x,(*wavePSV_PML).psi_vxx,(*wavePSV_PML).psi_vyx,(*wavePSV_PML).psi_syy_y,(*wavePSV_PML).psi_sxy_y,
+                            (*wavePSV_PML).psi_vyy,(*wavePSV_PML).psi_vxy,(*wavePSV_PML).psi_vxxs);	
 	}                                                         
 	     
 	/*----------------------  loop over timesteps (forward model) ------------------*/
@@ -135,8 +135,8 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 		        
 		/* Check if simulation is still stable */
 		/*if (isnan(pvy[NY/2][NX/2])) err(" Simulation is unstable !");*/
-		if (isnan(wavePSV_el.pvy[NY/2][NX/2])) {
-		   fprintf(FP,"\n Time step: %d; pvy: %f \n",nt,wavePSV_el.pvy[NY/2][NX/2]);
+		if (isnan((*wavePSV).pvy[NY/2][NX/2])) {
+		   fprintf(FP,"\n Time step: %d; pvy: %f \n",nt,(*wavePSV).pvy[NY/2][NX/2]);
 		   err(" Simulation is unstable !");}
 
 		
@@ -149,17 +149,17 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 
 	      /* update of particle velocities */
               if(mode==0){
-	         update_v_PML(1, NX, 1, NY, nt, wavePSV_el.pvx, wavePSV_el.pvxp1, wavePSV_el.pvxm1, wavePSV_el.pvy, wavePSV_el.pvyp1, wavePSV_el.pvym1, wavePSV_el.uttx, wavePSV_el.utty, wavePSV_el.psxx, wavePSV_el.psyy,       
-                              wavePSV_el.psxy, prip, prjp, srcpos_loc,signals,signals,nsrc_loc,wavePSV_PML.absorb_coeff,hc,infoout, mode, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.K_x_half, wavePSV_PML.a_x_half, 
-                              wavePSV_PML.b_x_half, wavePSV_PML.K_y, wavePSV_PML.a_y, wavePSV_PML.b_y, wavePSV_PML.K_y_half, wavePSV_PML.a_y_half, wavePSV_PML.b_y_half, wavePSV_PML.psi_sxx_x, wavePSV_PML.psi_syy_y, 
-                              wavePSV_PML.psi_sxy_y, wavePSV_PML.psi_sxy_x);
+	         update_v_PML(1, NX, 1, NY, nt, (*wavePSV).pvx, (*wavePSV).pvxp1, (*wavePSV).pvxm1, (*wavePSV).pvy, (*wavePSV).pvyp1, (*wavePSV).pvym1, (*wavePSV).uttx, (*wavePSV).utty, (*wavePSV).psxx, (*wavePSV).psyy,       
+                              (*wavePSV).psxy, prip, prjp, srcpos_loc,signals,signals,nsrc_loc,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, 
+                              (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_sxx_x, (*wavePSV_PML).psi_syy_y, 
+                              (*wavePSV_PML).psi_sxy_y, (*wavePSV_PML).psi_sxy_x);
               }
 
               if(mode==1){
-	         update_v_PML(1, NX, 1, NY, nt, wavePSV_el.pvx, wavePSV_el.pvxp1, wavePSV_el.pvxm1, wavePSV_el.pvy, wavePSV_el.pvyp1, wavePSV_el.pvym1, wavePSV_el.uttx, wavePSV_el.utty, wavePSV_el.psxx, wavePSV_el.psyy, 
-                              wavePSV_el.psxy, prip, prjp, srcpos_loc, sectionvxdiff, sectionvydiff,nsrc_loc,wavePSV_PML.absorb_coeff,hc,infoout, mode, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.K_x_half,  
-                              wavePSV_PML.a_x_half, wavePSV_PML.b_x_half, wavePSV_PML.K_y, wavePSV_PML.a_y, wavePSV_PML.b_y, wavePSV_PML.K_y_half, wavePSV_PML.a_y_half, wavePSV_PML.b_y_half, wavePSV_PML.psi_sxx_x, 
-                              wavePSV_PML.psi_syy_y, wavePSV_PML.psi_sxy_y, wavePSV_PML.psi_sxy_x);
+	         update_v_PML(1, NX, 1, NY, nt, (*wavePSV).pvx, (*wavePSV).pvxp1, (*wavePSV).pvxm1, (*wavePSV).pvy, (*wavePSV).pvyp1, (*wavePSV).pvym1, (*wavePSV).uttx, (*wavePSV).utty, (*wavePSV).psxx, (*wavePSV).psyy, 
+                              (*wavePSV).psxy, prip, prjp, srcpos_loc, sectionvxdiff, sectionvydiff,nsrc_loc,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half,  
+                              (*wavePSV_PML).a_x_half, (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_sxx_x, 
+                              (*wavePSV_PML).psi_syy_y, (*wavePSV_PML).psi_sxy_y, (*wavePSV_PML).psi_sxy_x);
               }
 		                 
 		/*if (MYID==0){
@@ -169,7 +169,7 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 		}*/
 		                                           
 		/* exchange of particle velocities between PEs */
-		exchange_v(wavePSV_el.pvx,wavePSV_el.pvy, bufferlef_to_rig, bufferrig_to_lef, buffertop_to_bot, bufferbot_to_top, req_send, req_rec);
+		exchange_v((*wavePSV).pvx,(*wavePSV).pvy, bufferlef_to_rig, bufferrig_to_lef, buffertop_to_bot, bufferbot_to_top, req_send, req_rec);
 		                                                       
 		/*if (MYID==0){
 		  time5=MPI_Wtime();
@@ -178,30 +178,30 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 		}*/                                                                                      	
 
 	    if (L)    /* viscoelastic */
-	    	update_s_visc_PML(1, NX, 1, NY, wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.ux, wavePSV_el.uy, wavePSV_el.uxy, wavePSV_el.uyx, wavePSV_el.psxx, wavePSV_el.psyy, wavePSV_el.psxy, ppi, pu, puipjp, prho, hc,
-                                  infoout, wavePSV_visc.pr, wavePSV_visc.pp, wavePSV_visc.pq, fipjp, f, g, bip, bjm, cip, cjm, d, e, dip, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.K_x_half, wavePSV_PML.a_x_half, 
-                                  wavePSV_PML.b_x_half, wavePSV_PML.K_y, wavePSV_PML.a_y, wavePSV_PML.b_y, wavePSV_PML.K_y_half, wavePSV_PML.a_y_half, wavePSV_PML.b_y_half, wavePSV_PML.psi_vxx, wavePSV_PML.psi_vyy, 
-                                  wavePSV_PML.psi_vxy, wavePSV_PML.psi_vyx);
+	    	update_s_visc_PML(1, NX, 1, NY, (*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).ux, (*wavePSV).uy, (*wavePSV).uxy, (*wavePSV).uyx, (*wavePSV).psxx, (*wavePSV).psyy, (*wavePSV).psxy, ppi, pu, puipjp, prho, hc,
+                                  infoout, (*wavePSV).pr, (*wavePSV).pp, (*wavePSV).pq, fipjp, f, g, bip, bjm, cip, cjm, d, e, dip, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, 
+                                  (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_vxx, (*wavePSV_PML).psi_vyy, 
+                                  (*wavePSV_PML).psi_vxy, (*wavePSV_PML).psi_vyx);
 	    else
-	   	update_s_elastic_PML(1, NX, 1, NY, wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.ux, wavePSV_el.uy, wavePSV_el.uxy, wavePSV_el.uyx, wavePSV_el.psxx, wavePSV_el.psyy, wavePSV_el.psxy, ppi, pu, puipjp, 
-                                     wavePSV_PML.absorb_coeff, prho, hc, infoout, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.K_x_half, wavePSV_PML.a_x_half, wavePSV_PML.b_x_half, wavePSV_PML.K_y, wavePSV_PML.a_y, 
-                                     wavePSV_PML.b_y, wavePSV_PML.K_y_half, wavePSV_PML.a_y_half, wavePSV_PML.b_y_half, wavePSV_PML.psi_vxx, wavePSV_PML.psi_vyy, wavePSV_PML.psi_vxy, wavePSV_PML.psi_vyx, mode);  
+	   	update_s_elastic_PML(1, NX, 1, NY, (*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).ux, (*wavePSV).uy, (*wavePSV).uxy, (*wavePSV).uyx, (*wavePSV).psxx, (*wavePSV).psyy, (*wavePSV).psxy, ppi, pu, puipjp, 
+                                     (*wavePSV_PML).absorb_coeff, prho, hc, infoout, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, 
+                                     (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_vxx, (*wavePSV_PML).psi_vyy, (*wavePSV_PML).psi_vxy, (*wavePSV_PML).psi_vyx, mode);  
 
 
 	    /* explosive source */
 	   if (QUELLTYP==1) 	
-	   psource(nt,wavePSV_el.psxx,wavePSV_el.psyy,srcpos_loc,signals,nsrc_loc,0);
+	   psource(nt,(*wavePSV).psxx,(*wavePSV).psyy,srcpos_loc,signals,nsrc_loc,0);
 	   
 	   /* moment tensor source */
 	   if (QUELLTYP==5) 	
-	   msource(nt,wavePSV_el.psxx,wavePSV_el.psyy,wavePSV_el.psxy,srcpos_loc,signals,nsrc_loc,0);
+	   msource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy,srcpos_loc,signals,nsrc_loc,0);
 
 	   if ((FREE_SURF) && (POS[2]==0)){
 	   	if (L)    /* viscoelastic */
-			surface_PML(1, wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.psxx, wavePSV_el.psyy, wavePSV_el.psxy, wavePSV_visc.pp, wavePSV_visc.pq, ppi, pu, prho, ptaup, ptaus, etajm, peta, hc, wavePSV_PML.K_x, 
-                                    wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.psi_vxxs);
+			surface_PML(1, (*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).psxx, (*wavePSV).psyy, (*wavePSV).psxy, (*wavePSV).pp, (*wavePSV).pq, ppi, pu, prho, ptaup, ptaus, etajm, peta, hc, (*wavePSV_PML).K_x, 
+                                    (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).psi_vxxs);
 		else      /* elastic */
-	   		surface_elastic_PML(1, wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.psxx, wavePSV_el.psyy, wavePSV_el.psxy, ppi, pu, prho, hc, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.psi_vxxs);
+	   		surface_elastic_PML(1, (*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).psxx, (*wavePSV).psyy, (*wavePSV).psxy, ppi, pu, prho, hc, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).psi_vxxs);
 	   }
 
 
@@ -213,7 +213,7 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 
 
 	   /* stress exchange between PEs */
-	    exchange_s(wavePSV_el.psxx,wavePSV_el.psyy,wavePSV_el.psxy, 
+	    exchange_s((*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy, 
 	      bufferlef_to_rig, bufferrig_to_lef, 
 	      buffertop_to_bot, bufferbot_to_top,
 	      req_send, req_rec);
@@ -228,14 +228,14 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 		if (SEISMO){
 			seismo_ssg(nt, ntr, recpos_loc, sectionvx, sectionvy, 
 				sectionp, sectioncurl, sectiondiv, 
-				wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.psxx, wavePSV_el.psyy, ppi, pu, prho, hc);
+				(*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).psxx, (*wavePSV).psyy, ppi, pu, prho, hc);
 			/*lsamp+=NDT;*/
 		}
 
 	   /* WRITE SNAPSHOTS TO DISK */
 	   if ((SNAP) && (nt==lsnap) && (nt<=TSNAP2/DT)){
 
-	      snap(FP,nt,++nsnap,wavePSV_el.pvx,wavePSV_el.pvy,wavePSV_el.psxx,wavePSV_el.psyy,pu,ppi,hc);
+	      snap(FP,nt,++nsnap,(*wavePSV).pvx,(*wavePSV).pvy,(*wavePSV).psxx,(*wavePSV).psyy,pu,ppi,hc);
 
 	      lsnap=lsnap+iround(TSNAPINC/DT);
 	   }
@@ -255,8 +255,8 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 	    
 		for (i=1;i<=NX;i=i+IDXI){
 		    for (j=1;j<=NY;j=j+IDYI){
-			 forward_prop_rho_x[imat1]=wavePSV_el.pvxp1[j][i];
-			 forward_prop_rho_y[imat1]=wavePSV_el.pvyp1[j][i];
+			 forward_prop_rho_x[imat1]=(*wavePSV).pvxp1[j][i];
+			 forward_prop_rho_y[imat1]=(*wavePSV).pvyp1[j][i];
 		         imat1++;                                   
 		    }
 		}   
@@ -266,14 +266,14 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 		    
 			/* gradients with data integration */
 		        if(GRAD_FORM==1){
-			   forward_prop_x[imat]=wavePSV_el.psxx[j][i];
-			   forward_prop_y[imat]=wavePSV_el.psyy[j][i];
+			   forward_prop_x[imat]=(*wavePSV).psxx[j][i];
+			   forward_prop_y[imat]=(*wavePSV).psyy[j][i];
 		        }
 		    
 			/* gradients without data integration */
 			if(GRAD_FORM==2){
-		           forward_prop_x[imat]=wavePSV_el.ux[j][i];
-			   forward_prop_y[imat]=wavePSV_el.uy[j][i];
+		           forward_prop_x[imat]=(*wavePSV).ux[j][i];
+			   forward_prop_y[imat]=(*wavePSV).uy[j][i];
 			}
 		    
 			imat++;
@@ -286,12 +286,12 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 		    
 			/* gradients with data integration */
 		        if(GRAD_FORM==1){
-	 	          forward_prop_u[imat2]=wavePSV_el.psxy[j][i];
+	 	          forward_prop_u[imat2]=(*wavePSV).psxy[j][i];
 			}
 
 			/* gradients without data integration */
 		        if(GRAD_FORM==2){
-	 	          forward_prop_u[imat2]=wavePSV_el.uxy[j][i];
+	 	          forward_prop_u[imat2]=(*wavePSV).uxy[j][i];
 		        }
 
 			imat2++;
@@ -302,7 +302,7 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 	    }
 	   
 	    if((EPRECOND==1)||(EPRECOND==3)){
-	      eprecond(Ws,wavePSV_el.pvx,wavePSV_el.pvy);
+	      eprecond(Ws,(*wavePSV).pvx,(*wavePSV).pvy);
 	    }
 	 
 	    hin++;
@@ -321,12 +321,12 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 		    for (i=1;i<=NX;i=i+IDXI){   
 			for (j=1;j<=NY;j=j+IDYI){ 
 		                                   
-			   	waveconv_rho_shot[j][i]+=(wavePSV_el.pvxp1[j][i]*forward_prop_rho_x[imat])+(wavePSV_el.pvyp1[j][i]*forward_prop_rho_y[imat]);
+			   	waveconv_rho_shot[j][i]+=((*wavePSV).pvxp1[j][i]*forward_prop_rho_x[imat])+((*wavePSV).pvyp1[j][i]*forward_prop_rho_y[imat]);
 			
 			   	/* mu-gradient with data integration */
 			   	if(GRAD_FORM==1){
 			
-				   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(wavePSV_el.psxx[j][i]+wavePSV_el.psyy[j][i]);			  
+				   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*((*wavePSV).psxx[j][i]+(*wavePSV).psyy[j][i]);			  
 
 		                   if(INVMAT1==1){
 				       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -339,9 +339,9 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 				   } 
 			                
 				   if(muss>0.0){
-				      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * wavePSV_el.psxy[j][i])) 
-		                          + ((1.0/4.0) * ((forward_prop_x[imat] + forward_prop_y[imat]) * (wavePSV_el.psxx[j][i] + wavePSV_el.psyy[j][i])) / ((lamss+muss)*(lamss+muss)))  
-		                          + ((1.0/4.0) * ((forward_prop_x[imat] - forward_prop_y[imat]) * (wavePSV_el.psxx[j][i] - wavePSV_el.psyy[j][i])) / (muss*muss));
+				      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * (*wavePSV).psxy[j][i])) 
+		                          + ((1.0/4.0) * ((forward_prop_x[imat] + forward_prop_y[imat]) * ((*wavePSV).psxx[j][i] + (*wavePSV).psyy[j][i])) / ((lamss+muss)*(lamss+muss)))  
+		                          + ((1.0/4.0) * ((forward_prop_x[imat] - forward_prop_y[imat]) * ((*wavePSV).psxx[j][i] - (*wavePSV).psyy[j][i])) / (muss*muss));
 				   }
 				   
 		                }
@@ -349,7 +349,7 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 				/* Vs-gradient without data integration (stress-velocity in non-conservative form) */
 		                if(GRAD_FORM==2){
 			
-				   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(wavePSV_el.psxx[j][i]+wavePSV_el.psyy[j][i]);
+				   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*((*wavePSV).psxx[j][i]+(*wavePSV).psyy[j][i]);
 
 		                   if(INVMAT1==1){
 				       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -366,9 +366,9 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 				      tmp = (1.0/(4.0*(lamss+muss)*(lamss+muss))) - (1.0/(4.0*muss*muss));
 				      tmp1 = (1.0/(4.0*(lamss+muss)*(lamss+muss))) + (1.0/(4.0*muss*muss));
 			
-				      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * wavePSV_el.psxy[j][i])) 
-		                                           + ( tmp1 * (forward_prop_x[imat] * wavePSV_el.psxx[j][i] + forward_prop_y[imat] * wavePSV_el.psyy[j][i]))  
-		                                           + ( tmp  * (forward_prop_x[imat] * wavePSV_el.psyy[j][i] + forward_prop_y[imat] * wavePSV_el.psxx[j][i]));	  
+				      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * (*wavePSV).psxy[j][i])) 
+		                                           + ( tmp1 * (forward_prop_x[imat] * (*wavePSV).psxx[j][i] + forward_prop_y[imat] * (*wavePSV).psyy[j][i]))  
+		                                           + ( tmp  * (forward_prop_x[imat] * (*wavePSV).psyy[j][i] + forward_prop_y[imat] * (*wavePSV).psxx[j][i]));	  
 					  
 				   } 
 		                  
@@ -379,7 +379,7 @@ void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct 
 		    }  
 		  
 		  if(EPRECOND==1){
-		     eprecond(Wr,wavePSV_el.pvx,wavePSV_el.pvy);
+		     eprecond(Wr,(*wavePSV).pvx,(*wavePSV).pvy);
 		  }
 		                                                                                                                       
 	    hin++;

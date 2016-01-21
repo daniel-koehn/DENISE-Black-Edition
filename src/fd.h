@@ -28,16 +28,12 @@
 
 /* declaration of data-structures */
 
-/* PSV elastic wavefield variables */
-struct wavePSV_el{
+/* PSV (visco)-elastic wavefield variables */
+struct wavePSV{
    float  ** pvx, ** pvy, **  pvxp1, **  pvyp1, **  pvxm1, **  pvym1;
-   float  **  psxx, **  psxy, **  psyy, ** ux, ** uy, ** uxy, ** uyx, ** uttx, ** utty;	
-}; 
-
-/* PSV visco-elastic wavefield variables */
-struct wavePSV_visc{
-   float ***pr, ***pp, ***pq;	
-};
+   float  ** psxx, **  psxy, **  psyy, ** ux, ** uy, ** uxy, ** uyx, ** uttx, ** utty;
+   float *** pr, ***pp, ***pq;
+} wavePSV; 
 
 /* PSV PML variables*/
 struct wavePSV_PML{
@@ -46,7 +42,7 @@ struct wavePSV_PML{
    float * alpha_prime_y_half, * a_y_half, * b_y_half, ** psi_sxx_x, ** psi_syy_y, ** psi_sxy_y; 
    float ** psi_sxy_x, ** psi_vxx, ** psi_vyy, ** psi_vxy, ** psi_vyx, ** psi_vxxs;
    float  **  absorb_coeff;
-};
+} wavePSV_PML;
 
 
 /* declaration of functions */
@@ -67,7 +63,7 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 
 void spat_filt(float ** waveconv, int iter, int sws);
 
-void alloc_PSV(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct wavePSV_PML wavePSV_PML);
+void alloc_PSV(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML);
 
 void av_mat(float **  pi, float **  u, 
 float **  ppijm, float **  puip, float ** pujm);
@@ -119,7 +115,7 @@ void conv_FD(float * temp_TS, float * temp_TS1, float * temp_conv, int ns);
 /*void DFT(int ishot, int nt, float ** vx, float ** vy, float ** sxx, float ** syy, float ** sxy, float *** green_vx,  
 float *** greeni_vx, float *** green_vy, float *** greeni_vy, float *** green_sxx, float *** greeni_sxx, float *** green_syy, float *** greeni_syy, float *** green_sxy, float *** greeni_sxy); */
 
-void dealloc_PSV(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct wavePSV_PML wavePSV_PML);
+void dealloc_PSV(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML);
 
 float dotp(float * vec1, float *vec2, int n1, int n2, int sw);
 
@@ -268,7 +264,7 @@ float **  srcpos_loc, float ** signals, int nsrc, int sw);
 void psource_rsg(int nt, float ** sxx, float ** syy,
 float **  srcpos_loc, float ** signals, int nsrc);
 
-void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct wavePSV_PML wavePSV_PML, float ** ppi, float ** pu, 
+void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, float ** ppi, float ** pu, 
         float ** puipjp, float **prho, float  **prip, float **prjp, 
         float *hc, int infoout, float **fipjp, float **f, float **g, float *bip, float *bjm, 
         float *cip, float *cjm, float ***d, float ***e,  float ***dip, float **ptaup, float **ptaus, 
