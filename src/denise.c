@@ -570,6 +570,85 @@ NTSTI=NTST/DTINV;
 nxny=NX*NY;
 NXNYI=(NX/IDXI)*(NY/IDYI);
 
+/* define data structures for PSV problem */
+struct wavePSV_el wavePSV_el;
+struct wavePSV_visc wavePSV_visc;
+struct wavePSV_PML wavePSV_PML;
+
+/* allocate memory for PSV forward problem */
+/* alloc_PSV(wavePSV_el,wavePSV_visc,wavePSV_PML); */
+
+nd = FDORDER/2 + 1;	
+
+        /* memory allocation for elastic wavefield variables */
+        wavePSV_el.psxx =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.psxy =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.psyy =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.pvx  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.pvy  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.pvxp1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.pvyp1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.pvxm1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.pvym1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.ux   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.uy   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.uxy  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.uyx  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.uttx   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	wavePSV_el.utty   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+
+        /* memory allocation for visco-elastic wavefield variables */
+	if (L > 0) {
+	    wavePSV_visc.pr = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
+	    wavePSV_visc.pp = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
+	    wavePSV_visc.pq = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
+	}
+
+        /* memory allocation for PML variables */
+        if(FW>0){
+
+	  wavePSV_PML.d_x = vector(1,2*FW);
+	  wavePSV_PML.K_x = vector(1,2*FW);
+	  wavePSV_PML.alpha_prime_x = vector(1,2*FW);
+	  wavePSV_PML.a_x = vector(1,2*FW);
+	  wavePSV_PML.b_x = vector(1,2*FW);
+	  
+	  wavePSV_PML.d_x_half = vector(1,2*FW);
+	  wavePSV_PML.K_x_half = vector(1,2*FW);
+	  wavePSV_PML.alpha_prime_x_half = vector(1,2*FW);
+	  wavePSV_PML.a_x_half = vector(1,2*FW);
+	  wavePSV_PML.b_x_half = vector(1,2*FW);
+
+	  wavePSV_PML.d_y = vector(1,2*FW);
+	  wavePSV_PML.K_y = vector(1,2*FW);
+	  wavePSV_PML.alpha_prime_y = vector(1,2*FW);
+	  wavePSV_PML.a_y = vector(1,2*FW);
+	  wavePSV_PML.b_y = vector(1,2*FW);
+	  
+	  wavePSV_PML.d_y_half = vector(1,2*FW);
+	  wavePSV_PML.K_y_half = vector(1,2*FW);
+	  wavePSV_PML.alpha_prime_y_half = vector(1,2*FW);
+	  wavePSV_PML.a_y_half = vector(1,2*FW);
+	  wavePSV_PML.b_y_half = vector(1,2*FW);
+
+	  wavePSV_PML.psi_sxx_x =  matrix(1,NY,1,2*FW); 
+	  wavePSV_PML.psi_syy_y =  matrix(1,2*FW,1,NX);
+	  wavePSV_PML.psi_sxy_y =  matrix(1,2*FW,1,NX);
+	  wavePSV_PML.psi_sxy_x =  matrix(1,NY,1,2*FW);
+	  wavePSV_PML.psi_vxx   =  matrix(1,NY,1,2*FW);
+	  wavePSV_PML.psi_vxxs  =  matrix(1,NY,1,2*FW); 
+	  wavePSV_PML.psi_vyy   =  matrix(1,2*FW,1,NX);
+	  wavePSV_PML.psi_vxy   =  matrix(1,2*FW,1,NX);
+	  wavePSV_PML.psi_vyx   =  matrix(1,NY,1,2*FW);
+   
+        }
+
+/* calculate damping coefficients for CPMLs (PSV problem)*/
+if(FW>0){PML_pro(wavePSV_PML.d_x, wavePSV_PML.K_x, wavePSV_PML.alpha_prime_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.d_x_half, wavePSV_PML.K_x_half, wavePSV_PML.alpha_prime_x_half, wavePSV_PML.a_x_half, 
+                 wavePSV_PML.b_x_half, wavePSV_PML.d_y, wavePSV_PML.K_y, wavePSV_PML.alpha_prime_y, wavePSV_PML.a_y, wavePSV_PML.b_y, wavePSV_PML.d_y_half, wavePSV_PML.K_y_half, wavePSV_PML.alpha_prime_y_half, 
+                 wavePSV_PML.a_y_half, wavePSV_PML.b_y_half);
+}
+
 /* Variables for the L-BFGS method */
 
 if(GRAD_METHOD==2){
@@ -1019,7 +1098,7 @@ if((INV_STF)&&(iter==1)&&(INVMAT<=1)){
 	} 
 
         /* forward problem */
-        psv(ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
+        psv(wavePSV_el,wavePSV_visc,wavePSV_PML,ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
 	bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,nsrc_loc,srcpos_loc, 
 	recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl,forward_prop_rho_x, 
 	forward_prop_rho_y,forward_prop_x,forward_prop_y,forward_prop_u,waveconv_shot,waveconv_u_shot, waveconv_rho_shot, 
@@ -1160,7 +1239,7 @@ nsnap=0;
 if(RTMOD==0){  
 
    /* solve forward problem */
-   psv(ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
+   psv(wavePSV_el,wavePSV_visc,wavePSV_PML,ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
    bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,nsrc_loc,srcpos_loc, 
    recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl,forward_prop_rho_x, 
    forward_prop_rho_y,forward_prop_x,forward_prop_y,forward_prop_u,waveconv_shot,waveconv_u_shot, waveconv_rho_shot, 
@@ -1478,7 +1557,7 @@ if ((SEISMO)&&(iter==1)&&(INVMAT<=1)&&(ishot==1)){
     }
                                     
    /* solve adjoint problem */
-   psv(ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
+   psv(wavePSV_el,wavePSV_visc,wavePSV_PML,ppi,pu,puipjp,prho,prip,prjp,hc,infoout,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,
    bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,ntr,srcpos_loc_back, 
    recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl,forward_prop_rho_x, 
    forward_prop_rho_y,forward_prop_x,forward_prop_y,forward_prop_u,waveconv_shot,waveconv_u_shot, waveconv_rho_shot, 
@@ -2169,6 +2248,9 @@ if(EPRECOND==2){
 /* ====================================== */
 
 } /* End of FWI-workflow loop */
+
+/* deallocate memory for PSV forward problem */
+dealloc_PSV(wavePSV_el,wavePSV_visc,wavePSV_PML);
 
 /* deallocation of memory */
 free_matrix(Vp0,-nd+1,NY+nd,-nd+1,NX+nd);

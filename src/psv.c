@@ -10,7 +10,8 @@
 
 #include "fd.h"
 
-void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip, float **prjp, 
+void psv(struct wavePSV_el wavePSV_el, struct wavePSV_visc wavePSV_visc, struct wavePSV_PML wavePSV_PML, float ** ppi, float ** pu, 
+        float ** puipjp, float **prho, float  **prip, float **prjp, 
         float *hc, int infoout, float **fipjp, float **f, float **g, float *bip, float *bjm, 
         float *cip, float *cjm, float ***d, float ***e,  float ***dip, float **ptaup, float **ptaus, 
         float *etajm, float *peta, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
@@ -32,87 +33,9 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 
         /* local variables */
 	int i,j,nt,lsamp,lsnap,nsnap, nd, hin1, imat, imat1, imat2;
-        float tmp, tmp1, muss, lamss;	
+        float tmp, tmp1, muss, lamss;
 
-	float * d_x, * K_x, * alpha_prime_x, * a_x, * b_x, * d_x_half, * K_x_half, * alpha_prime_x_half; 
-	float * a_x_half, * b_x_half, * d_y, * K_y, * alpha_prime_y, * a_y, * b_y, * d_y_half, * K_y_half; 
-	float * alpha_prime_y_half, * a_y_half, * b_y_half, ** psi_sxx_x, ** psi_syy_y, ** psi_sxy_y; 
-	float ** psi_sxy_x, ** psi_vxx, ** psi_vyy, ** psi_vxy, ** psi_vyx, ** psi_vxxs;
-	float  **  absorb_coeff;
-
-	float  **  psxx, **  psxy, **  psyy, ** ux, ** uy, ** uxy, ** uyx, ** uttx, ** utty;
-	float  **  pvx, **  pvy, **  pvxp1, **  pvyp1, **  pvxm1, **  pvym1;
-
-        float ***pr=NULL, ***pp=NULL, ***pq=NULL;
-
-	/* memory allocation for elastic wavefield variables */
         nd = FDORDER/2 + 1;
-	psxx =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	psxy =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	psyy =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	pvx  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	pvy  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	pvxp1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	pvyp1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	pvxm1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	pvym1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	ux   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	uy   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	uxy  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	uyx  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	uttx   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	utty   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-
-        /* memory allocation for visco-elastic wavefield variables */
-	if (L > 0) {
-	    pr = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-	    pp = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-	    pq = f3tensor(-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-	}
-
-        /* memory allocation for PML variables */
-        if(FW>0){
-
-	  d_x = vector(1,2*FW);
-	  K_x = vector(1,2*FW);
-	  alpha_prime_x = vector(1,2*FW);
-	  a_x = vector(1,2*FW);
-	  b_x = vector(1,2*FW);
-	  
-	  d_x_half = vector(1,2*FW);
-	  K_x_half = vector(1,2*FW);
-	  alpha_prime_x_half = vector(1,2*FW);
-	  a_x_half = vector(1,2*FW);
-	  b_x_half = vector(1,2*FW);
-
-	  d_y = vector(1,2*FW);
-	  K_y = vector(1,2*FW);
-	  alpha_prime_y = vector(1,2*FW);
-	  a_y = vector(1,2*FW);
-	  b_y = vector(1,2*FW);
-	  
-	  d_y_half = vector(1,2*FW);
-	  K_y_half = vector(1,2*FW);
-	  alpha_prime_y_half = vector(1,2*FW);
-	  a_y_half = vector(1,2*FW);
-	  b_y_half = vector(1,2*FW);
-
-	  psi_sxx_x =  matrix(1,NY,1,2*FW); 
-	  psi_syy_y =  matrix(1,2*FW,1,NX);
-	  psi_sxy_y =  matrix(1,2*FW,1,NX);
-	  psi_sxy_x =  matrix(1,NY,1,2*FW);
-	  psi_vxx   =  matrix(1,NY,1,2*FW);
-	  psi_vxxs  =  matrix(1,NY,1,2*FW); 
-	  psi_vyy   =  matrix(1,2*FW,1,NX);
-	  psi_vxy   =  matrix(1,2*FW,1,NX);
-	  psi_vyx   =  matrix(1,NY,1,2*FW);
-   
-        }
-
-	/* calculate damping coefficients for CPMLs*/
-	if(FW>0){PML_pro(d_x, K_x, alpha_prime_x, a_x, b_x, d_x_half, K_x_half, alpha_prime_x_half, a_x_half, b_x_half, 
-		 d_y, K_y, alpha_prime_y, a_y, b_y, d_y_half, K_y_half, alpha_prime_y_half, a_y_half, b_y_half);
-        }
 
 	/*MPI_Barrier(MPI_COMM_WORLD);*/
         
@@ -144,6 +67,7 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		}
 
         }
+
 	/* time domain filtering*/
 	/*if ((TIME_FILT)&&(INVMAT!=10)){*/
 
@@ -175,12 +99,18 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		MPI_Barrier(MPI_COMM_WORLD);
 	}*/
 			    
-		/* initialize wavefield with zero */
-		/*if (L){
-			zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pr,pp,pq);
-		}else{	
-			zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,pvx,pvy,psxx,psyy,psxy,ux,uy,uxy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs);	
-		}*/                                                         
+	/* initialize PSV wavefields with zero */
+	if (L){
+		zero_fdveps_visc(-nd+1,NY+nd,-nd+1,NX+nd, wavePSV_el.pvx,wavePSV_el.pvy,wavePSV_el.psxx,wavePSV_el.psyy,wavePSV_el.psxy,
+                                 wavePSV_el.ux,wavePSV_el.uy,wavePSV_el.uxy,wavePSV_el.pvxp1, wavePSV_el.pvyp1,wavePSV_PML.psi_sxx_x,wavePSV_PML.psi_sxy_x,
+                                 wavePSV_PML.psi_vxx,wavePSV_PML.psi_vyx,wavePSV_PML.psi_syy_y,wavePSV_PML.psi_sxy_y,wavePSV_PML.psi_vyy,wavePSV_PML.psi_vxy,
+                                 wavePSV_PML.psi_vxxs,wavePSV_visc.pr,wavePSV_visc.pp,wavePSV_visc.pq);
+	}else{	
+		zero_fdveps(-nd+1,NY+nd,-nd+1,NX+nd,wavePSV_el.pvx,wavePSV_el.pvy,wavePSV_el.psxx,wavePSV_el.psyy,wavePSV_el.psxy,
+                            wavePSV_el.ux,wavePSV_el.uy,wavePSV_el.uxy,wavePSV_el.pvxp1, wavePSV_el.pvyp1,wavePSV_PML.psi_sxx_x,
+                            wavePSV_PML.psi_sxy_x,wavePSV_PML.psi_vxx,wavePSV_PML.psi_vyx,wavePSV_PML.psi_syy_y,wavePSV_PML.psi_sxy_y,
+                            wavePSV_PML.psi_vyy,wavePSV_PML.psi_vxy,wavePSV_PML.psi_vxxs);	
+	}                                                         
 	     
 	/*----------------------  loop over timesteps (forward model) ------------------*/
 
@@ -205,8 +135,8 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		        
 		/* Check if simulation is still stable */
 		/*if (isnan(pvy[NY/2][NX/2])) err(" Simulation is unstable !");*/
-		if (isnan(pvy[NY/2][NX/2])) {
-		   fprintf(FP,"\n Time step: %d; pvy: %f \n",nt,pvy[NY/2][NX/2]);
+		if (isnan(wavePSV_el.pvy[NY/2][NX/2])) {
+		   fprintf(FP,"\n Time step: %d; pvy: %f \n",nt,wavePSV_el.pvy[NY/2][NX/2]);
 		   err(" Simulation is unstable !");}
 
 		
@@ -219,13 +149,17 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 
 	      /* update of particle velocities */
               if(mode==0){
-	         update_v_PML(1, NX, 1, NY, nt, pvx, pvxp1, pvxm1, pvy, pvyp1, pvym1, uttx, utty, psxx, psyy, psxy, prip, prjp, srcpos_loc,signals,signals,nsrc_loc,absorb_coeff,hc,infoout,mode, K_x, a_x,
-		              b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_sxx_x, psi_syy_y, psi_sxy_y, psi_sxy_x);
+	         update_v_PML(1, NX, 1, NY, nt, wavePSV_el.pvx, wavePSV_el.pvxp1, wavePSV_el.pvxm1, wavePSV_el.pvy, wavePSV_el.pvyp1, wavePSV_el.pvym1, wavePSV_el.uttx, wavePSV_el.utty, wavePSV_el.psxx, wavePSV_el.psyy,       
+                              wavePSV_el.psxy, prip, prjp, srcpos_loc,signals,signals,nsrc_loc,wavePSV_PML.absorb_coeff,hc,infoout, mode, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.K_x_half, wavePSV_PML.a_x_half, 
+                              wavePSV_PML.b_x_half, wavePSV_PML.K_y, wavePSV_PML.a_y, wavePSV_PML.b_y, wavePSV_PML.K_y_half, wavePSV_PML.a_y_half, wavePSV_PML.b_y_half, wavePSV_PML.psi_sxx_x, wavePSV_PML.psi_syy_y, 
+                              wavePSV_PML.psi_sxy_y, wavePSV_PML.psi_sxy_x);
               }
 
               if(mode==1){
-	         update_v_PML(1, NX, 1, NY, nt, pvx, pvxp1, pvxm1, pvy, pvyp1, pvym1, uttx, utty, psxx, psyy, psxy, prip, prjp, srcpos_loc, sectionvxdiff, sectionvydiff,nsrc_loc,absorb_coeff,hc,infoout,mode, K_x, a_x,
-		              b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_sxx_x, psi_syy_y, psi_sxy_y, psi_sxy_x);
+	         update_v_PML(1, NX, 1, NY, nt, wavePSV_el.pvx, wavePSV_el.pvxp1, wavePSV_el.pvxm1, wavePSV_el.pvy, wavePSV_el.pvyp1, wavePSV_el.pvym1, wavePSV_el.uttx, wavePSV_el.utty, wavePSV_el.psxx, wavePSV_el.psyy, 
+                              wavePSV_el.psxy, prip, prjp, srcpos_loc, sectionvxdiff, sectionvydiff,nsrc_loc,wavePSV_PML.absorb_coeff,hc,infoout, mode, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.K_x_half,  
+                              wavePSV_PML.a_x_half, wavePSV_PML.b_x_half, wavePSV_PML.K_y, wavePSV_PML.a_y, wavePSV_PML.b_y, wavePSV_PML.K_y_half, wavePSV_PML.a_y_half, wavePSV_PML.b_y_half, wavePSV_PML.psi_sxx_x, 
+                              wavePSV_PML.psi_syy_y, wavePSV_PML.psi_sxy_y, wavePSV_PML.psi_sxy_x);
               }
 		                 
 		/*if (MYID==0){
@@ -235,7 +169,7 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		}*/
 		                                           
 		/* exchange of particle velocities between PEs */
-		exchange_v(pvx,pvy, bufferlef_to_rig, bufferrig_to_lef, buffertop_to_bot, bufferbot_to_top, req_send, req_rec);
+		exchange_v(wavePSV_el.pvx,wavePSV_el.pvy, bufferlef_to_rig, bufferrig_to_lef, buffertop_to_bot, bufferbot_to_top, req_send, req_rec);
 		                                                       
 		/*if (MYID==0){
 		  time5=MPI_Wtime();
@@ -244,27 +178,30 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		}*/                                                                                      	
 
 	    if (L)    /* viscoelastic */
-	    	update_s_visc_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, prho, hc, infoout,
-					pr, pp, pq, fipjp, f, g, bip, bjm, cip, cjm, d, e, dip,
-					K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx);
+	    	update_s_visc_PML(1, NX, 1, NY, wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.ux, wavePSV_el.uy, wavePSV_el.uxy, wavePSV_el.uyx, wavePSV_el.psxx, wavePSV_el.psyy, wavePSV_el.psxy, ppi, pu, puipjp, prho, hc,
+                                  infoout, wavePSV_visc.pr, wavePSV_visc.pp, wavePSV_visc.pq, fipjp, f, g, bip, bjm, cip, cjm, d, e, dip, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.K_x_half, wavePSV_PML.a_x_half, 
+                                  wavePSV_PML.b_x_half, wavePSV_PML.K_y, wavePSV_PML.a_y, wavePSV_PML.b_y, wavePSV_PML.K_y_half, wavePSV_PML.a_y_half, wavePSV_PML.b_y_half, wavePSV_PML.psi_vxx, wavePSV_PML.psi_vyy, 
+                                  wavePSV_PML.psi_vxy, wavePSV_PML.psi_vyx);
 	    else
-	   	update_s_elastic_PML(1, NX, 1, NY, pvx, pvy, ux, uy, uxy, uyx, psxx, psyy, psxy, ppi, pu, puipjp, absorb_coeff, prho, hc, infoout,
-		 	               K_x, a_x, b_x, K_x_half, a_x_half, b_x_half, K_y, a_y, b_y, K_y_half, a_y_half, b_y_half, psi_vxx, psi_vyy, psi_vxy, psi_vyx,mode);  
+	   	update_s_elastic_PML(1, NX, 1, NY, wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.ux, wavePSV_el.uy, wavePSV_el.uxy, wavePSV_el.uyx, wavePSV_el.psxx, wavePSV_el.psyy, wavePSV_el.psxy, ppi, pu, puipjp, 
+                                     wavePSV_PML.absorb_coeff, prho, hc, infoout, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.K_x_half, wavePSV_PML.a_x_half, wavePSV_PML.b_x_half, wavePSV_PML.K_y, wavePSV_PML.a_y, 
+                                     wavePSV_PML.b_y, wavePSV_PML.K_y_half, wavePSV_PML.a_y_half, wavePSV_PML.b_y_half, wavePSV_PML.psi_vxx, wavePSV_PML.psi_vyy, wavePSV_PML.psi_vxy, wavePSV_PML.psi_vyx, mode);  
 
 
 	    /* explosive source */
 	   if (QUELLTYP==1) 	
-	   psource(nt,psxx,psyy,srcpos_loc,signals,nsrc_loc,0);
+	   psource(nt,wavePSV_el.psxx,wavePSV_el.psyy,srcpos_loc,signals,nsrc_loc,0);
 	   
 	   /* moment tensor source */
 	   if (QUELLTYP==5) 	
-	   msource(nt,psxx,psyy,psxy,srcpos_loc,signals,nsrc_loc,0);
+	   msource(nt,wavePSV_el.psxx,wavePSV_el.psyy,wavePSV_el.psxy,srcpos_loc,signals,nsrc_loc,0);
 
 	   if ((FREE_SURF) && (POS[2]==0)){
 	   	if (L)    /* viscoelastic */
-			surface_PML(1, pvx, pvy, psxx, psyy, psxy, pp, pq, ppi, pu, prho, ptaup, ptaus, etajm, peta, hc, K_x, a_x, b_x, psi_vxxs);
+			surface_PML(1, wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.psxx, wavePSV_el.psyy, wavePSV_el.psxy, wavePSV_visc.pp, wavePSV_visc.pq, ppi, pu, prho, ptaup, ptaus, etajm, peta, hc, wavePSV_PML.K_x, 
+                                    wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.psi_vxxs);
 		else      /* elastic */
-	   		surface_elastic_PML(1, pvx, pvy, psxx, psyy, psxy, ppi, pu, prho, hc, K_x, a_x, b_x, psi_vxxs);
+	   		surface_elastic_PML(1, wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.psxx, wavePSV_el.psyy, wavePSV_el.psxy, ppi, pu, prho, hc, wavePSV_PML.K_x, wavePSV_PML.a_x, wavePSV_PML.b_x, wavePSV_PML.psi_vxxs);
 	   }
 
 
@@ -276,13 +213,11 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 
 
 	   /* stress exchange between PEs */
-	    exchange_s(psxx,psyy,psxy, 
+	    exchange_s(wavePSV_el.psxx,wavePSV_el.psyy,wavePSV_el.psxy, 
 	      bufferlef_to_rig, bufferrig_to_lef, 
 	      buffertop_to_bot, bufferbot_to_top,
 	      req_send, req_rec);
 
-
-	 
 	   /*if (MYID==0){
 	      time7=MPI_Wtime();
 	 	  time_av_s_exchange+=(time7-time6);
@@ -293,14 +228,14 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		if (SEISMO){
 			seismo_ssg(nt, ntr, recpos_loc, sectionvx, sectionvy, 
 				sectionp, sectioncurl, sectiondiv, 
-				pvx, pvy, psxx, psyy, ppi, pu, prho, hc);
+				wavePSV_el.pvx, wavePSV_el.pvy, wavePSV_el.psxx, wavePSV_el.psyy, ppi, pu, prho, hc);
 			/*lsamp+=NDT;*/
 		}
 
 	   /* WRITE SNAPSHOTS TO DISK */
 	   if ((SNAP) && (nt==lsnap) && (nt<=TSNAP2/DT)){
 
-	      snap(FP,nt,++nsnap,pvx,pvy,psxx,psyy,pu,ppi,hc);
+	      snap(FP,nt,++nsnap,wavePSV_el.pvx,wavePSV_el.pvy,wavePSV_el.psxx,wavePSV_el.psyy,pu,ppi,hc);
 
 	      lsnap=lsnap+iround(TSNAPINC/DT);
 	   }
@@ -320,8 +255,8 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 	    
 		for (i=1;i<=NX;i=i+IDXI){
 		    for (j=1;j<=NY;j=j+IDYI){
-			 forward_prop_rho_x[imat1]=pvxp1[j][i];
-			 forward_prop_rho_y[imat1]=pvyp1[j][i];
+			 forward_prop_rho_x[imat1]=wavePSV_el.pvxp1[j][i];
+			 forward_prop_rho_y[imat1]=wavePSV_el.pvyp1[j][i];
 		         imat1++;                                   
 		    }
 		}   
@@ -331,14 +266,14 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		    
 			/* gradients with data integration */
 		        if(GRAD_FORM==1){
-			   forward_prop_x[imat]=psxx[j][i];
-			   forward_prop_y[imat]=psyy[j][i];
+			   forward_prop_x[imat]=wavePSV_el.psxx[j][i];
+			   forward_prop_y[imat]=wavePSV_el.psyy[j][i];
 		        }
 		    
 			/* gradients without data integration */
 			if(GRAD_FORM==2){
-		           forward_prop_x[imat]=ux[j][i];
-			   forward_prop_y[imat]=uy[j][i];
+		           forward_prop_x[imat]=wavePSV_el.ux[j][i];
+			   forward_prop_y[imat]=wavePSV_el.uy[j][i];
 			}
 		    
 			imat++;
@@ -351,12 +286,12 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		    
 			/* gradients with data integration */
 		        if(GRAD_FORM==1){
-	 	          forward_prop_u[imat2]=psxy[j][i];
+	 	          forward_prop_u[imat2]=wavePSV_el.psxy[j][i];
 			}
 
 			/* gradients without data integration */
 		        if(GRAD_FORM==2){
-	 	          forward_prop_u[imat2]=uxy[j][i];
+	 	          forward_prop_u[imat2]=wavePSV_el.uxy[j][i];
 		        }
 
 			imat2++;
@@ -367,7 +302,7 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 	    }
 	   
 	    if((EPRECOND==1)||(EPRECOND==3)){
-	      eprecond(Ws,pvx,pvy);
+	      eprecond(Ws,wavePSV_el.pvx,wavePSV_el.pvy);
 	    }
 	 
 	    hin++;
@@ -386,12 +321,12 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		    for (i=1;i<=NX;i=i+IDXI){   
 			for (j=1;j<=NY;j=j+IDYI){ 
 		                                   
-			   	waveconv_rho_shot[j][i]+=(pvxp1[j][i]*forward_prop_rho_x[imat])+(pvyp1[j][i]*forward_prop_rho_y[imat]);
+			   	waveconv_rho_shot[j][i]+=(wavePSV_el.pvxp1[j][i]*forward_prop_rho_x[imat])+(wavePSV_el.pvyp1[j][i]*forward_prop_rho_y[imat]);
 			
 			   	/* mu-gradient with data integration */
 			   	if(GRAD_FORM==1){
 			
-				   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);			  
+				   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(wavePSV_el.psxx[j][i]+wavePSV_el.psyy[j][i]);			  
 
 		                   if(INVMAT1==1){
 				       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -404,9 +339,9 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 				   } 
 			                
 				   if(muss>0.0){
-				      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * psxy[j][i])) 
-		                          + ((1.0/4.0) * ((forward_prop_x[imat] + forward_prop_y[imat]) * (psxx[j][i] + psyy[j][i])) / ((lamss+muss)*(lamss+muss)))  
-		                          + ((1.0/4.0) * ((forward_prop_x[imat] - forward_prop_y[imat]) * (psxx[j][i] - psyy[j][i])) / (muss*muss));
+				      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * wavePSV_el.psxy[j][i])) 
+		                          + ((1.0/4.0) * ((forward_prop_x[imat] + forward_prop_y[imat]) * (wavePSV_el.psxx[j][i] + wavePSV_el.psyy[j][i])) / ((lamss+muss)*(lamss+muss)))  
+		                          + ((1.0/4.0) * ((forward_prop_x[imat] - forward_prop_y[imat]) * (wavePSV_el.psxx[j][i] - wavePSV_el.psyy[j][i])) / (muss*muss));
 				   }
 				   
 		                }
@@ -414,7 +349,7 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 				/* Vs-gradient without data integration (stress-velocity in non-conservative form) */
 		                if(GRAD_FORM==2){
 			
-				   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(psxx[j][i]+psyy[j][i]);
+				   waveconv_shot[j][i]+= (forward_prop_x[imat]+forward_prop_y[imat])*(wavePSV_el.psxx[j][i]+wavePSV_el.psyy[j][i]);
 
 		                   if(INVMAT1==1){
 				       muss = prho[j][i] * pu[j][i] * pu[j][i];
@@ -431,9 +366,9 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 				      tmp = (1.0/(4.0*(lamss+muss)*(lamss+muss))) - (1.0/(4.0*muss*muss));
 				      tmp1 = (1.0/(4.0*(lamss+muss)*(lamss+muss))) + (1.0/(4.0*muss*muss));
 			
-				      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * psxy[j][i])) 
-		                                           + ( tmp1 * (forward_prop_x[imat] * psxx[j][i] + forward_prop_y[imat] * psyy[j][i]))  
-		                                           + ( tmp  * (forward_prop_x[imat] * psyy[j][i] + forward_prop_y[imat] * psxx[j][i]));	  
+				      waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*(forward_prop_u[imat] * wavePSV_el.psxy[j][i])) 
+		                                           + ( tmp1 * (forward_prop_x[imat] * wavePSV_el.psxx[j][i] + forward_prop_y[imat] * wavePSV_el.psyy[j][i]))  
+		                                           + ( tmp  * (forward_prop_x[imat] * wavePSV_el.psyy[j][i] + forward_prop_y[imat] * wavePSV_el.psxx[j][i]));	  
 					  
 				   } 
 		                  
@@ -444,7 +379,7 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
 		    }  
 		  
 		  if(EPRECOND==1){
-		     eprecond(Wr,pvx,pvy);
+		     eprecond(Wr,wavePSV_el.pvx,wavePSV_el.pvy);
 		  }
 		                                                                                                                       
 	    hin++;
@@ -506,73 +441,5 @@ void psv(float ** ppi, float ** pu, float ** puipjp, float **prho, float  **prip
           }*/
 
 	   }/*--------------------  End  of loop over timesteps ----------*/		
-
-           /* deallocate memory */
-
-           /* PML variables */
-           if(FW>0){
-
-	      free_vector(d_x,1,2*FW);
-	      free_vector(K_x,1,2*FW);
-	      free_vector(alpha_prime_x,1,2*FW);
-	      free_vector(a_x,1,2*FW);
-	      free_vector(b_x,1,2*FW);
-
-	      free_vector(d_x_half,1,2*FW);
-	      free_vector(K_x_half,1,2*FW);
-	      free_vector(alpha_prime_x_half,1,2*FW);
-	      free_vector(a_x_half,1,2*FW);
-	      free_vector(b_x_half,1,2*FW);
-
-	      free_vector(d_y,1,2*FW);
-	      free_vector(K_y,1,2*FW);
-	      free_vector(alpha_prime_y,1,2*FW);
-	      free_vector(a_y,1,2*FW);
-	      free_vector(b_y,1,2*FW);
-
-	      free_vector(d_y_half,1,2*FW);
-	      free_vector(K_y_half,1,2*FW);
-	      free_vector(alpha_prime_y_half,1,2*FW);
-	      free_vector(a_y_half,1,2*FW);
-	      free_vector(b_y_half,1,2*FW);
-
-	      free_matrix(psi_sxx_x,1,NY,1,2*FW);
-	      free_matrix(psi_syy_y,1,2*FW,1,NX);
-	      free_matrix(psi_sxy_x,1,NY,1,2*FW);
-	      free_matrix(psi_sxy_y,1,2*FW,1,NX);
-	      free_matrix(psi_vxx,1,NY,1,2*FW);
-	      free_matrix(psi_vxxs,1,NY,1,2*FW);
-	      free_matrix(psi_vyy,1,2*FW,1,NX);
-	      free_matrix(psi_vxy,1,2*FW,1,NX);
-	      free_matrix(psi_vyx,1,NY,1,2*FW);
-
-	      /*absorb_coeff=  matrix(1,NY,1,NX);
-	      free_matrix(absorb_coeff,1,NY,1,NX);*/
-
-           }
-
-           /* elastic wavefield variables */
-           free_matrix(psxx,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(psxy,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(psyy,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(pvx,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(pvy,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(pvxp1,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(pvyp1,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(pvxm1,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(pvym1,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(ux,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(uy,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(uxy,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(uyx,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(uttx,-nd+1,NY+nd,-nd+1,NX+nd);
-	   free_matrix(utty,-nd+1,NY+nd,-nd+1,NX+nd);
-
-           /*visco-elastic wavefield variables */
-           if(L > 0) {
-	      free_f3tensor(pr,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-	      free_f3tensor(pp,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-	      free_f3tensor(pq,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-           }
 
 }

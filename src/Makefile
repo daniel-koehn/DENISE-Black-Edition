@@ -105,6 +105,7 @@ FDVEPS_UTIL = \
 	writedsk.c 
 
 DENISE= \
+        alloc_PSV.c \
 	denise.c \
 	dotp.c \
 	stf.c \
@@ -127,6 +128,7 @@ DENISE= \
 	holbergcoeff.c \
         householder.c \
 	comm_ini.c \
+        dealloc_PSV.c \
 	exchange_v.c \
 	exchange_s.c \
 	exchange_L2.c \
