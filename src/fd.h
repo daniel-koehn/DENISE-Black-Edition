@@ -44,6 +44,23 @@ struct wavePSV_PML{
    float  **  absorb_coeff;
 } wavePSV_PML;
 
+/* PSV material parameters */
+struct matPSV{
+   float  **prho, **prip, **prjp, **ppi, **pu, **puipjp;
+   float **ptaus, **ptaup, *etaip, *etajm, *peta, **ptausipjp, **fipjp, ***dip, *bip, *bjm;
+   float *cip, *cjm, ***d, ***e, **f, **g;
+} matPSV;
+
+/* PSV FWI variables */
+struct fwiPSV{
+   float  **  prhonp1, **pripnp1, **prjpnp1, **punp1, **ppinp1;
+   float  ** Vp0, ** Vs0, ** Rho0;
+   float  **waveconv, **waveconv_lam, **waveconv_mu, **waveconv_rho, **waveconv_rho_s, **waveconv_u;
+   float **waveconv_shot, **waveconv_u_shot, **waveconv_rho_shot;
+   float ** gradg, ** gradp,** gradg_rho, ** gradp_rho, ** gradg_u, ** gradp_u;
+   float  *forward_prop_x, *forward_prop_y, *forward_prop_rho_x, *forward_prop_u, *forward_prop_rho_y;
+} fwiPSV;
+
 
 /* declaration of functions */
 
@@ -62,6 +79,10 @@ void taper_grad(float ** waveconv, float ** taper_coeff, float **srcpos, int nsh
 void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int nshots, int **recpos, int ntr, int ishot);
 
 void spat_filt(float ** waveconv, int iter, int sws);
+
+void alloc_fwiPSV(struct fwiPSV *fwiPSV);
+
+void alloc_matPSV(struct matPSV *matPSV);
 
 void alloc_PSV(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML);
 
@@ -264,16 +285,11 @@ float **  srcpos_loc, float ** signals, int nsrc, int sw);
 void psource_rsg(int nt, float ** sxx, float ** syy,
 float **  srcpos_loc, float ** signals, int nsrc);
 
-void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, float ** ppi, float ** pu, 
-        float ** puipjp, float **prho, float  **prip, float **prjp, 
-        float *hc, int infoout, float **fipjp, float **f, float **g, float *bip, float *bjm, 
-        float *cip, float *cjm, float ***d, float ***e,  float ***dip, float **ptaup, float **ptaus, 
-        float *etajm, float *peta, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
+void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV,
+        struct fwiPSV *fwiPSV, float *hc, int infoout, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
         float ** buffertop_to_bot, float ** bufferbot_to_top, int ishot, int nshots, int nsrc_loc, 
         float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **sectionp, 
         float **sectionvx, float **sectionvy, float **sectiondiv, float **sectioncurl, 
-        float *forward_prop_rho_x, float *forward_prop_rho_y, float *forward_prop_x, float *forward_prop_y, 
-        float *forward_prop_u, float **waveconv_shot, float **waveconv_u_shot, float **waveconv_rho_shot, 
         float **Ws, float **Wr, float **sectionvxdiff, float **sectionvydiff, int hin, int *DTINV_help, 
         int mode, MPI_Request * req_send, MPI_Request * req_rec);
 

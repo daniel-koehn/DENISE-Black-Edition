@@ -105,6 +105,8 @@ FDVEPS_UTIL = \
 	writedsk.c 
 
 DENISE= \
+        alloc_fwiPSV.c \
+        alloc_matPSV.c \
         alloc_PSV.c \
 	denise.c \
 	dotp.c \
