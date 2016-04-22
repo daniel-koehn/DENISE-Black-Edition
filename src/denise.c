@@ -166,13 +166,17 @@ if(FP==NULL) {
 		printf("\n==================================================================\n");
 		printf(" Cannot open Denise input file %s \n",fileinp);
 		printf("\n==================================================================\n\n");
-		err(" --- ");
 	}
+        err(" --- ");
 }
 
 
 /* read input file *.inp */
 read_par(FP);
+
+printf("MYID = %d \t NPROCX = %d \t NPROCY = %d \t NPROC = %d \t NP = %d \n",MYID,NPROCX,NPROCY,NPROC,NP);
+
+MPI_Barrier(MPI_COMM_WORLD);
 
 /* define default values */
 SPATFILTER=0;
@@ -213,8 +217,6 @@ INV_VP_ITER=0;
 INV_VS_ITER=0;
 
 GAMMA_GRAV=0;
-	
-exchange_par();
 
 /* read parameters from workflow-file (stdin) */
 fileinp=argv[2];
@@ -834,7 +836,6 @@ L2_all_shots=0.0;
 energy_all_shots=0.0;
 
 EPSILON=0.0;  /* test step length */
-exchange_par();
 
 /* set gradient and preconditioning matrices 0 before next iteration*/
 if(INVMAT<=1){

@@ -50,23 +50,6 @@ IFLAGS=-I./../libcseife
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< $(IFLAGS)
-
-AUTO_PICK_SRC = \
-        auto_pick.c \
-        read_par.c \
-        exchange_par.c \
-        inseis.c \
-        calc_res.c \
-        util.c \
-        receiver.c \
-        splitrec.c \
-        stalta.c \
-        mer.c \
-        timedomain_filt.c \
-        time_window.c \
-        sources.c \
-        write_par.c \
-        initproc.c
         
 SNAPMERGE_SCR = \
 	snapmerge.c \
@@ -76,9 +59,8 @@ SNAPMERGE_SCR = \
 	writedsk.c \
 	util.c 
 
-FDVEPS_UTIL = \
+DENISE_UTIL = \
 	absorb.c \
-	exchange_par.c \
 	info.c \
 	initproc.c \
 	$(MODEL) \
@@ -156,7 +138,6 @@ DENISE= \
 	av_rho.c \
 	av_tau.c \
 	median.c \
-	exchange_par.c \
         extend_mod.c \
 	info.c \
         init_grad.c \
@@ -176,7 +157,6 @@ DENISE= \
 	merge2.c \
 	mergemod.c \
 	median_src.c \
-	max_grad.c \
 	model_freq_out.c \
 	note.c \
 	norm.c \
@@ -227,89 +207,15 @@ DENISE= \
 	zero_fdveps_visc.c \
 	zero_LBFGS.c \
 	zero_hessian.c
-
-DENISE_ES_SRC_SSG= \
-	denise_es.c \
-        calc_mat_change_test.c \
-        calc_res.c \
-        calc_opt_step.c \
-	calc_opt_step_test.c \
-	checkfd_ssg_elastic.c \
-	psource.c \
-	holbergcoeff.c\
-	comm_ini.c\
-	exchange_v.c \
-	exchange_s.c \
-	exchange_L2.c \
-	exchange_par.c \
-	exchange_mod_es.c \
-	fft.c \
-	fft_filt.c \
-	snap_ssg.c \
-	seismo_ssg.c \
-	surface_elastic_2nd.c \
-	update_v_ssg.c \
-	update_s_elastic_ssg.c \
-	absorb.c \
-	av_mue.c \
-	av_rho.c \
-	median.c \
-	info.c \
-	inseis.c \
-	initproc.c \
-	interpol.c \
-	LU_decomp.c \
-	$(MODEL_EL) \
-	matcopy_elastic.c \
-	merge2.c \
-	mergemod.c \
-	max_grad.c \
-	note.c \
-	outseis.c \
-	output_source_signal.c \
-	readdsk.c \
-	read_par.c \
-	read_checkpoint.c\
-	readmod_elastic.c \
-	readmod_elastic_es.c \
-    	receiver.c \
-	rd_sour.c \
-	saveseis.c \
-	save_checkpoint.c\
-	sources.c \
-	solvelin.c \
-	spat_filt.c \
-	splitsrc.c \
-	splitsrc_back.c \
-	splitrec.c \
-	stalta.c \
-	taper.c \
-	taper_grad.c \
-	time_window.c \
-	util.c \
-	wavelet.c \
-	wavelet_stf.c \
-	writemod.c \
-	write_par.c \
-	writedsk.c \
-	zero_fdveps.c
-
-AUTO_PICK_OBJ = $(AUTO_PICK_SRC:%.c=%.o)	
+	
 SNAPMERGE_OBJ = $(SNAPMERGE_SCR:%.c=%.o)
-DENISE_OBJ = $(DENISE:%.c=%.o)
-DENISE_ES_OBJ_SSG = $(DENISE_ES_SRC_SSG:%.c=%.o)
-
-auto_pick:	$(AUTO_PICK_OBJ)
-	$(CC) $(SFLAGS) $(AUTO_PICK_OBJ) -o ../bin/autopick $(LFLAGS)        
+DENISE_OBJ = $(DENISE:%.c=%.o)      
 
 snapmerge:	$(SNAPMERGE_OBJ)
 	$(CC) $(SFLAGS) $(SNAPMERGE_OBJ) -o ../bin/snapmerge $(LFLAGS)
 
 denise:		$(DENISE_OBJ)
 	$(CC) $(SFLAGS) $(DENISE_OBJ) -o $(EXEC)/denise $(LFLAGS)
-
-denise_es:		$(DENISE_ES_OBJ_SSG)
-	$(CC) $(LFLAGS) $(DENISE_ES_OBJ_SSG) -o $(EXEC)/denise_es
 
 clean:
 	find . -name "*.o" -exec rm {} \; 

@@ -81,8 +81,6 @@ L2=0.0;
 
 alphanom = 0.0;
 alphadenom = 0.0;
-
-exchange_par();
  
 if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
     

@@ -25,7 +25,7 @@ extern char SNAP_FILE[STRING_SIZE], SOURCE_FILE[STRING_SIZE], REC_FILE[STRING_SI
 extern char SEIS_FILE_VX[STRING_SIZE], SEIS_FILE_VY[STRING_SIZE], CHECKPTFILE[STRING_SIZE];
 extern char SEIS_FILE_CURL[STRING_SIZE], SEIS_FILE_DIV[STRING_SIZE], SEIS_FILE_P[STRING_SIZE];
 extern char JACOBIAN[STRING_SIZE],DATA_DIR[STRING_SIZE];
-extern int  NPROCX, NPROCY, MYID, IDX, IDY, CHECKPTREAD, CHECKPTWRITE; 
+extern int  NPROC, NPROCX, NPROCY, MYID, IDX, IDY, CHECKPTREAD, CHECKPTWRITE; 
 extern int GRADT1, GRADT2, GRADT3, GRADT4, ITERMAX, INVMAT1, INVMAT, QUELLTYPB;
 extern int HESSIAN, GRAD_METHOD, NFREQ;
 extern float FC_HESS_START, FC_HESS_INC;
@@ -89,10 +89,7 @@ extern int BACK_DENSITY;
 /* definition of local variables */
 char s[74];
 int  c=0, lineno=0, l;
-
-
-
-if (MYID == 0){ 
+ 
    while ((c=getc(fp_in)) != EOF){
       if ((c=='\n') && (getc(fp_in)!='#')){     
 	 lineno++;
@@ -466,7 +463,9 @@ if (MYID == 0){
 	 }
 	 }
       }
-   }
+
+/* define total number of MPI processes*/
+NPROC = NPROCX*NPROCY;
 
 fclose(fp_in);
 

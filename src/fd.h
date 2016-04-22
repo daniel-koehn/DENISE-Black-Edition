@@ -146,14 +146,6 @@ void eprecond(float ** W, float ** vx, float ** vy);
 
 void eprecond1(float ** We, float ** Ws, float ** Wr);
 
-void exchange_rsg(float ** vx, float ** vy, float ** vz,
-float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-float ** buffertop_to_bot, float ** bufferbot_to_top);
-
-void exchange_rsg_4th(float ** vx, float ** vy, float ** vz,
-float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-float ** buffertop_to_bot, float ** bufferbot_to_top);
-
 void exchange_v(float ** vx, float ** vy,  
 float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
 float ** buffertop_to_bot, float ** bufferbot_to_top,
@@ -163,8 +155,6 @@ void exchange_s(float ** sxx, float ** syy,
 float ** sxy, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
 float ** buffertop_to_bot, float ** bufferbot_to_top,
 MPI_Request * req_send, MPI_Request * req_rec);
-
-void exchange_par(void);
 
 void exchange_mod_es(float ** matmod, int ncptot, int nparameter);
 
@@ -238,8 +228,6 @@ void matcopy_elastic(float ** prho, float ** ppi, float ** pu);
 void matcopy_ani(float ** rho, float **  c11, float **  c15, float **  c13, 
 float **  c35, float **  c33, float **  c55, float ** taus,
 float ** taup);
-
-void max_grad(float  **  waveconv, float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float **  pi, float **  u);
 			  
 void merge(int nsnap, int type);
 
@@ -425,28 +413,6 @@ float **  vx, float **   vy, float **   sxx, float **   syy,
 float **   sxy, float *** r, float *** p, float *** q,
 float ** ppi, float ** pu, float **uipjp, float ** taup, float ** taus, 
 float **tausipjp, float *   etaip, float *   etajm, float * peta, float *hc);
-
-
-void update_s_rsg(int nx1, int nx2, int ny1, int ny2,
-float ** pvx, float ** pvy, float ** psxx, float ** psyy,
-float ** psxy, float *** pr, float *** pp, float ***pq,
-float  **  ppi, float  **  pu, float ** ptaup,
-float ** ptaus, float * etaip,
-float * etajm, float * peta, float ** absorb_coeff);
-
-void update_s_rsg_4th(int nx1, int nx2, int ny1, int ny2,
-float ** pvx, float ** pvy, float ** psxx, float ** psyy,
-float ** psxy, float *** pr, float *** pp, float ***pq,
-float  **  ppi, float  **  pu, float ** ptaup,
-float ** ptaus, float * etaip,
-float * etajm, float * peta);
-
-void update_s_ani(int nx1, int nx2, int ny1, int ny2,
-float **  vx, float **   vy, float **   sxx, float **   syy,
-float **   sxy, float *** r, float *** p, float *** q,
-float  ** c11, float  **  c15, float  ** c13, float  **  c35, 
-float  ** c33, float  **  c55, float **   ptaup, float **   ptaus, 
-float *   etaip, float *   etajm, float * peta);
 
 void update_s_elastic(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float **   vy, float **   sxx, float **   syy,

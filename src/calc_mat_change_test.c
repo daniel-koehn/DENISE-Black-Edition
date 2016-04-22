@@ -119,10 +119,8 @@ float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  
 	   if (iter<INV_VP_ITER){EPSILON = 0.0;}
 	   epsilon1=EPSILON;
 	   MPI_Allreduce(&EPSILON,&epsilon1,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
-	
-	   if (MYID==0)  EPSILON=epsilon1;
+	   EPSILON=epsilon1;
 
-	   exchange_par();
 	
 	
 	/* parameter 2 */
@@ -134,9 +132,7 @@ float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  
            epsilon1=EPSILON_u;
 	   MPI_Allreduce(&EPSILON_u,&epsilon1,1,MPI_FLOAT,MPI_MIN,MPI_COMM_WORLD);
 	
-	   if (MYID==0)  EPSILON_u=epsilon1;
-
-	   exchange_par();		
+	   EPSILON_u=epsilon1;		
 	
 	
 	/* parameter 3 */
@@ -149,9 +145,7 @@ float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  
            epsilon1=EPSILON_rho;
 	   MPI_Allreduce(&EPSILON_rho,&epsilon1,1,MPI_FLOAT,MPI_MIN,MPI_COMM_WORLD);
 	
-	   if (MYID==0)  EPSILON_rho=epsilon1;
-
-	   exchange_par();	
+	   EPSILON_rho=epsilon1;	
 	   
         if(MYID==0){
 	  printf("MYID = %d \t pimaxr = %e \t gradmaxr = %e \n",MYID,pimaxr,gradmaxr);
