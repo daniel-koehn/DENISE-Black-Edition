@@ -11,12 +11,9 @@
 #include "fd.h"
 
 void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV,
-        struct fwiPSV *fwiPSV, float *hc, int infoout, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-        float ** buffertop_to_bot, float ** bufferbot_to_top, int ishot, int nshots, int nsrc_loc, 
-        float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **sectionp, 
-        float **sectionvx, float **sectionvy, float **sectiondiv, float **sectioncurl, 
-        float **Ws, float **Wr, float **sectionvxdiff, float **sectionvydiff, int hin, int *DTINV_help, 
-        int mode, MPI_Request * req_send, MPI_Request * req_rec){
+        struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, float *hc, int infoout, int ishot, int nshots, int nsrc_loc, 
+        float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **Ws, float **Wr, float **sectionvxdiff, float **sectionvydiff, 
+        int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
 	extern float DT, DH, TSNAP1, TSNAP2, TSNAPINC;
@@ -164,7 +161,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		}*/
 		                                           
 		/* exchange of particle velocities between PEs */
-		exchange_v((*wavePSV).pvx,(*wavePSV).pvy, bufferlef_to_rig, bufferrig_to_lef, buffertop_to_bot, bufferbot_to_top, req_send, req_rec);
+		exchange_v((*wavePSV).pvx,(*wavePSV).pvy, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
 		                                                       
 		/*if (MYID==0){
 		  time5=MPI_Wtime();
@@ -211,8 +208,8 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
 	   /* stress exchange between PEs */
 	    exchange_s((*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy, 
-	      bufferlef_to_rig, bufferrig_to_lef, 
-	      buffertop_to_bot, bufferbot_to_top,
+	      (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, 
+	      (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top,
 	      req_send, req_rec);
 
 	   /*if (MYID==0){
@@ -223,8 +220,8 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
 		/* store amplitudes at receivers in section-arrays */
 		if (SEISMO){
-			seismo_ssg(nt, ntr, recpos_loc, sectionvx, sectionvy, 
-				sectionp, sectioncurl, sectiondiv, 
+			seismo_ssg(nt, ntr, recpos_loc, (*seisPSV).sectionvx, (*seisPSV).sectionvy, 
+				(*seisPSV).sectionp, (*seisPSV).sectioncurl, (*seisPSV).sectiondiv, 
 				(*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).psxx, (*wavePSV).psyy, (*matPSV).ppi, (*matPSV).pu, (*matPSV).prho, hc);
 			/*lsamp+=NDT;*/
 		}

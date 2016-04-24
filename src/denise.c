@@ -64,10 +64,10 @@ int lsnap, nsnap=0, lsamp=0, buffsize, invtime, invtimer, sws, swstestshot, snap
 int ntr=0, ntr_loc=0, ntr_glob=0, nsrc=0, nsrc_loc=0, nsrc_glob=0, ishot, irec, nshots=0, nshots1, Lcount, itest, Lcountsum, itestshot;
 
 float pum, ppim, ppim1, ppim2, thetaf, thetab, e33, e33b, e11, e11b, muss, lamss; 
-float memdyn, memmodel, memseismograms, membuffer, memtotal, dngn, fphi, sum, avggrad, beta, betan, betaz, betaLog, betaVp, betaVs, betarho, eps_scale, L2old;
-float fac1, fac2, wavefor, waverecipro, dump, dump1, epsilon, gradsign, mun, eps1, gradplastiter, gradglastiter, gradclastiter, betar, sig_max, sig_max1;
+float membuffer, dngn, fphi, sum, avggrad, beta, betan, betaz, betaLog, betaVp, betaVs, betarho, eps_scale, L2old;
+float wavefor, waverecipro, dump, dump1, epsilon, gradsign, mun, eps1, gradplastiter, gradglastiter, gradclastiter, betar, sig_max, sig_max1;
 float signL1, RMS, opteps_vp, opteps_vs, opteps_rho, Vs, Vp, Vp_avg, C_vp, Vs_avg, C_vs, Cd, rho_avg, C_rho, Vs_sum, Vp_sum, rho_sum, Zp, Zs;
-float freqshift, dfreqshift, memfwt, memfwt1, memfwtdata;
+float freqshift, dfreqshift;
 char *buff_addr, ext[10], *fileinp;
 char jac[225];
 
@@ -79,18 +79,14 @@ float L2, L2sum, L2_all_shots, L2sum_all_shots, *L2t, alphanomsum, alphanom, alp
 
 float energy, energy_sum, energy_all_shots, energy_sum_all_shots;
 
-float  ** sectionvx=NULL, ** sectionvy=NULL, ** sectionp=NULL, ** sectionpnp1=NULL,
-	** sectioncurl=NULL, ** sectiondiv=NULL, ** sectionvxdata=NULL, ** sectionvxdiff=NULL, ** sectionvxdiffold=NULL, ** sectionvydiffold=NULL,
-	** sectionvydiff=NULL, ** sectionvydata=NULL, ** sectionpn=NULL, ** sectionread=NULL, ** sectionvy_conv=NULL, ** sectionvy_obs=NULL,** sectionvx_conv=NULL,** sectionvx_obs=NULL,
-	* source_time_function=NULL;
+float ** sectionvxdata=NULL, ** sectionvxdiff=NULL, ** sectionvxdiffold=NULL, ** sectionvydiffold=NULL;
+float ** sectionvydiff=NULL, ** sectionvydata=NULL, ** sectionread=NULL;
 float ** sectionpdata=NULL, ** sectionpdiff=NULL, ** sectionpdiffold=NULL;	
 float ** taper_coeff, * epst1, * epst2,  * epst3;
 float  ** srcpos=NULL, **srcpos_loc=NULL, ** srcpos1=NULL, **srcpos_loc_back=NULL, ** signals=NULL, ** signals_rec=NULL, *hc=NULL, ** dsignals=NULL;
 int   ** recpos=NULL, ** recpos_loc=NULL;
 /*int   ** tracekill=NULL, TRKILL, DTRKILL;*/
 int * DTINV_help;
-     
-float ** bufferlef_to_rig,  ** bufferrig_to_lef, ** buffertop_to_bot, ** bufferbot_to_top; 
 
 /* Variables for step length calculation */
 int step1, step2, step3=0, itests, iteste, countstep;
@@ -117,8 +113,6 @@ float ** Ws, **Wr, **We;
 int stagemax=0, nstage;
 
 int * recswitch=NULL;
-float ** fulldata=NULL, ** fulldata_vx=NULL, ** fulldata_vy=NULL;
-float ** fulldata_p=NULL, ** fulldata_curl=NULL,  ** fulldata_div=NULL;
 
 /*vector for abort criterion*/
 float * L2_hist=NULL;
@@ -173,8 +167,6 @@ if(FP==NULL) {
 
 /* read input file *.inp */
 read_par(FP);
-
-printf("MYID = %d \t NPROCX = %d \t NPROCY = %d \t NPROC = %d \t NP = %d \n",MYID,NPROCX,NPROCY,NPROC,NP);
 
 MPI_Barrier(MPI_COMM_WORLD);
 
@@ -276,6 +268,14 @@ NYG=NY;
 NX = IENDX;
 NY = IENDY;
 
+/* define data structures for PSV problem */
+struct wavePSV;
+struct wavePSV_PML;
+struct matPSV;
+struct fwiPSV;
+struct mpiPSV;
+struct seisPSV;
+
 if (SEISMO){
 
    recpos=receiver(FP, &ntr, ishot);
@@ -294,35 +294,10 @@ if (SEISMO){
 
 if(N_STREAMER==0){
 
-   if (ntr>0){
-           switch (SEISMO){
-           case 1 : /* particle velocities only */
-                   sectionvx=matrix(1,ntr,1,ns);
-                   sectionvy=matrix(1,ntr,1,ns);
-                   break;
-           case 2 : /* pressure only */
-                   sectionp=matrix(1,ntr,1,ns);
-                   break;
-           case 3 : /* curl and div only */
-                   sectioncurl=matrix(1,ntr,1,ns);
-                   sectiondiv=matrix(1,ntr,1,ns);
-                   break;
-           case 4 : /* everything */
-                   sectionvx=matrix(1,ntr,1,ns);
-                   sectionvy=matrix(1,ntr,1,ns);
-                   sectioncurl=matrix(1,ntr,1,ns);
-                   sectiondiv=matrix(1,ntr,1,ns);
-                   sectionp=matrix(1,ntr,1,ns);
-                   break;
-           case 5: /* pressure and particle velocities only */
-                   sectionvx=matrix(1,ntr,1,ns);
-                   sectionvy=matrix(1,ntr,1,ns);
-                   sectionp=matrix(1,ntr,1,ns);
-                   break;
-           }
-   }
-
    /* Memory for seismic data */
+   alloc_seisPSV(ntr,ns,&seisPSV);
+
+   /* Memory for FWI seismic data */
    sectionread=matrix(1,ntr_glob,1,ns);
    
    if((QUELLTYPB==1)||(QUELLTYPB==3)){
@@ -341,34 +316,34 @@ if(N_STREAMER==0){
      sectionpdata=matrix(1,ntr,1,ns);
      sectionpdiff=matrix(1,ntr,1,ns);
      sectionpdiffold=matrix(1,ntr,1,ns);
-   }
+   }  
 
 }
 
 if(SEISMO){
-  fulldata = matrix(1,ntr_glob,1,NT);
+  seisPSV.fulldata = matrix(1,ntr_glob,1,NT);
 }
 
 if(SEISMO==1){
-  fulldata_vx = matrix(1,ntr_glob,1,NT);
-  fulldata_vy = matrix(1,ntr_glob,1,NT);
+  seisPSV.fulldata_vx = matrix(1,ntr_glob,1,NT);
+  seisPSV.fulldata_vy = matrix(1,ntr_glob,1,NT);
 }
 
 if(SEISMO==2){
-  fulldata_p = matrix(1,ntr_glob,1,NT);
+  seisPSV.fulldata_p = matrix(1,ntr_glob,1,NT);
 }
 
 if(SEISMO==3){
-  fulldata_curl = matrix(1,ntr_glob,1,NT); 
-  fulldata_div = matrix(1,ntr_glob,1,NT);
+  seisPSV.fulldata_curl = matrix(1,ntr_glob,1,NT); 
+  seisPSV.fulldata_div = matrix(1,ntr_glob,1,NT);
 }
 
 if(SEISMO==4){
-  fulldata_vx = matrix(1,ntr_glob,1,NT);
-  fulldata_vy = matrix(1,ntr_glob,1,NT);
-  fulldata_p = matrix(1,ntr_glob,1,NT); 
-  fulldata_curl = matrix(1,ntr_glob,1,NT);
-  fulldata_div = matrix(1,ntr_glob,1,NT); 
+  seisPSV.fulldata_vx = matrix(1,ntr_glob,1,NT);
+  seisPSV.fulldata_vy = matrix(1,ntr_glob,1,NT);
+  seisPSV.fulldata_p = matrix(1,ntr_glob,1,NT); 
+  seisPSV.fulldata_curl = matrix(1,ntr_glob,1,NT);
+  seisPSV.fulldata_div = matrix(1,ntr_glob,1,NT); 
 }
 
 /* memory allocation for abort criterion*/
@@ -399,45 +374,12 @@ NTDTINV=ceil((float)NT/(float)DTINV);		/* round towards next higher integer valu
 IDXI=1;
 IDYI=1;
 
-/*allocate memory for dynamic, static and buffer arrays */
-fac1=(NX+FDORDER)*(NY+FDORDER);
-fac2=sizeof(float)*pow(2.0,-20.0);
-
 nd = FDORDER/2 + 1;
 fdo3 = 2*nd;
-
-if (L){
-	memdyn=(5.0+3.0*(float)L)*fac1*fac2;
-	memmodel=(12.0+3.0*(float)L)*fac1*fac2;
-	
-} else {
-	memdyn=5.0*fac1*fac2;
-	memmodel=6.0*fac1*fac2;
-}
-memseismograms=nseismograms*ntr*ns*fac2;
-
-memfwt=5.0*((NX/IDXI)+FDORDER)*((NY/IDYI)+FDORDER)*NTDTINV*fac2;
-memfwt1=20.0*NX*NY*fac2;
-memfwtdata=6.0*ntr*ns*fac2;
-
-membuffer=2.0*fdo3*(NY+NX)*fac2;
 buffsize=2.0*2.0*fdo3*(NX +NY)*sizeof(MPI_FLOAT);
-memtotal=memdyn+memmodel+memseismograms+memfwt+memfwt1+memfwtdata+membuffer+(buffsize*pow(2.0,-20.0));
 
-
-if (MYID==0){
-   fprintf(FP,"\n **Message from main (printed by PE %d):\n",MYID);
-   fprintf(FP," Size of local grids: NX=%d \t NY=%d\n",NX,NY);
-   fprintf(FP," Each process is now trying to allocate memory for:\n");
-   fprintf(FP," Dynamic variables: \t\t %6.2f MB\n", memdyn);
-   fprintf(FP," Static variables: \t\t %6.2f MB\n", memmodel);
-   fprintf(FP," Seismograms: \t\t\t %6.2f MB\n", memseismograms);
-   fprintf(FP," Buffer arrays for grid exchange:%6.2f MB\n", membuffer);
-   fprintf(FP," Network Buffer for MPI_Bsend: \t %6.2f MB\n", buffsize*pow(2.0,-20.0));
-   fprintf(FP," ------------------------------------------------ \n");
-   fprintf(FP," Total memory required: \t %6.2f MB.\n\n", memtotal);
-   }
-
+/* calculate memory requirements for PSV forward problem */
+mem_PSV(nseismograms,ntr,ns,fdo3,nd,buffsize);
 
 /* allocate buffer for buffering messages */
 buff_addr=malloc(buffsize);
@@ -515,12 +457,6 @@ NTSTI=NTST/DTINV;
 nxny=NX*NY;
 NXNYI=(NX/IDXI)*(NY/IDYI);
 
-/* define data structures for PSV problem */
-struct wavePSV;
-struct wavePSV_PML;
-struct matPSV;
-struct fwiPSV;
-
 /* allocate memory for PSV forward problem */
 alloc_PSV(&wavePSV,&wavePSV_PML);
 
@@ -535,6 +471,9 @@ alloc_matPSV(&matPSV);
 
 /* allocate memory for PSV FWI parameters */
 alloc_fwiPSV(&fwiPSV);
+
+/* allocate memory for PSV MPI variables */
+alloc_mpiPSV(&mpiPSV);
 
 /* Variables for the l-BFGS method */
 if(GRAD_METHOD==2){
@@ -579,13 +518,6 @@ if((EPRECOND==1)||(EPRECOND==3)){
 
 taper_coeff=  matrix(1,NY,1,NX);
 
-/* memory allocation for buffer arrays in which the wavefield
-	   information which is exchanged between neighbouring PEs is stored */
-bufferlef_to_rig = matrix(1,NY,1,fdo3);
-bufferrig_to_lef = matrix(1,NY,1,fdo3);
-buffertop_to_bot = matrix(1,NX,1,fdo3);
-bufferbot_to_top = matrix(1,NX,1,fdo3);
-
 /* memory for source position definition */
 srcpos1=fmatrix(1,8,1,1);
 
@@ -609,7 +541,6 @@ nsrc_glob=nsrc;
 
 
 /* create model grids */
-
 if(L){
 	if (READMOD) readmod(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup,matPSV.peta);
 		else model(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup,matPSV.peta);
@@ -863,35 +794,10 @@ if(N_STREAMER>0){
       ntr=ntr_loc;
    }
 
-   if (ntr>0){
-           switch (SEISMO){
-           case 1 : /* particle velocities only */
-                   sectionvx=matrix(1,ntr,1,ns);
-                   sectionvy=matrix(1,ntr,1,ns);
-                   break;
-           case 2 : /* pressure only */
-                   sectionp=matrix(1,ntr,1,ns);
-                   break;
-           case 3 : /* curl and div only */
-                   sectioncurl=matrix(1,ntr,1,ns);
-                   sectiondiv=matrix(1,ntr,1,ns);
-                   break;
-           case 4 : /* everything */
-                   sectionvx=matrix(1,ntr,1,ns);
-                   sectionvy=matrix(1,ntr,1,ns);
-                   sectioncurl=matrix(1,ntr,1,ns);
-                   sectiondiv=matrix(1,ntr,1,ns);
-                   sectionp=matrix(1,ntr,1,ns);
-                   break;
-           case 5: /* pressure and particle velocities only */
-                   sectionvx=matrix(1,ntr,1,ns);
-                   sectionvy=matrix(1,ntr,1,ns);
-                   sectionp=matrix(1,ntr,1,ns);
-                   break;
-           }
-   }
-
    /* Memory for seismic data */
+   alloc_seisPSV(ntr,ns,&seisPSV);
+
+   /* Memory for FWI seismic data */
    sectionread=matrix(1,ntr_glob,1,ns);
    
    if((QUELLTYPB==1)||(QUELLTYPB==3)){
@@ -953,12 +859,10 @@ if((INV_STF)&&(iter==1)&&(INVMAT<=1)){
 	} 
 
         /* forward problem */
-        psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,hc,infoout,
-	bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,nsrc_loc,srcpos_loc, 
-	recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl, 
-	Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,0,req_send,req_rec);
+        psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,hc,infoout,ishot,nshots,nsrc_loc,srcpos_loc, 
+	recpos_loc,signals,ns,ntr,Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,0,req_send,req_rec);
 	
-        catseis(sectionvy, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);	   
+        catseis(seisPSV.sectionvy, seisPSV.fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);	   
 
 	/* estimate STF */	
 	   if (nsrc_loc>0){
@@ -968,16 +872,11 @@ if((INV_STF)&&(iter==1)&&(INVMAT<=1)){
 	      inseis(fprec,ishot,sectionread,ntr_glob,ns,2,iter);
 
 	      if (TIME_FILT){
-		 timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
-
-		 if (TIME_FILT==2){  /* apply band-pass*/
-		    timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
-		 }
-
+                 apply_tdfilt(sectionread,ntr_glob,ns,ORDER,FC,FC_START);
 	      }
 
-	      stf(sectionread,fulldata_vy,ntr_glob,ishot,ns,iter,nshots,signals,recpos,srcpos);
-	      /*saveseis_glob(FP,sectionread,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);*/
+	      stf(sectionread,seisPSV.fulldata_vy,ntr_glob,ishot,ns,iter,nshots,signals,recpos,srcpos);
+	      /*saveseis_glob(FP,sectionread,seisPSV.fulldata_vy,seisPSV.sectionp,seisPSV.sectioncurl,seisPSV.sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);*/
 	      
 	   }
 
@@ -1027,11 +926,7 @@ if (nsrc_loc){if(QUELLART==6){
 if ((TIME_FILT)&&(INVMAT!=10)&&(INV_STF==0)){
 	
 	/* time domain filtering of the source signal */
-	timedomain_filt(signals,FC,ORDER,nsrc_loc,ns,1);
-
-        if(TIME_FILT==2){ /* band-pass filter */
-          timedomain_filt(signals,FC_START,ORDER,nsrc_loc,ns,2);
-        }
+        apply_tdfilt(signals,nsrc_loc,ns,ORDER,FC,FC_START);
 
 }
 
@@ -1093,39 +988,37 @@ nsnap=0;
 if(RTMOD==0){  
 
    /* solve forward problem */
-   psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,hc,infoout,
-   bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,nsrc_loc,srcpos_loc, 
-   recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl, 
-   Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,0,req_send,req_rec);
+   psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,hc,infoout,ishot,nshots,nsrc_loc,
+   srcpos_loc, recpos_loc,signals,ns,ntr,Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,0,req_send,req_rec);
 
 } /* end if(RTMOD==0) */	
 
 if ((SEISMO==1)&&(INVMAT==10)){
         
-        catseis(sectionvx, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
-	catseis(sectionvy, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectionvx, seisPSV.fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
+	catseis(seisPSV.sectionvy, seisPSV.fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
 	
 	if (MYID==0){
-	   saveseis_glob(FP,fulldata_vx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);  
+	   saveseis_glob(FP,seisPSV.fulldata_vx,seisPSV.fulldata_vy,seisPSV.sectionp,seisPSV.sectioncurl,seisPSV.sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);  
 	}
 }
 
 if ((SEISMO==2)&&(INVMAT==10)){  
 
-        catseis(sectionp, fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectionp, seisPSV.fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
 
         if (MYID==0){
-           saveseis_glob(FP,sectionvx,sectionvy,fulldata_p,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);
+           saveseis_glob(FP,seisPSV.sectionvx,seisPSV.sectionvy,seisPSV.fulldata_p,seisPSV.sectioncurl,seisPSV.sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);
         }
 }
 
 if ((SEISMO==3)&&(INVMAT==10)){  
 
-        catseis(sectioncurl, fulldata_curl, recswitch, ntr_glob, MPI_COMM_WORLD);
-        catseis(sectiondiv, fulldata_div, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectioncurl, seisPSV.fulldata_curl, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectiondiv, seisPSV.fulldata_div, recswitch, ntr_glob, MPI_COMM_WORLD);
 
         if (MYID==0){
-           saveseis_glob(FP,sectionvx,sectionvy,sectionp,fulldata_curl,fulldata_div,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);
+           saveseis_glob(FP,seisPSV.sectionvx,seisPSV.sectionvy,seisPSV.sectionp,seisPSV.fulldata_curl,seisPSV.fulldata_div,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);
         }
 
 }
@@ -1133,14 +1026,14 @@ if ((SEISMO==3)&&(INVMAT==10)){
 
 if ((SEISMO==4)&&(INVMAT==10)){  
 
-        catseis(sectionvx, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
-        catseis(sectionvy, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
-        catseis(sectionp, fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
-        catseis(sectioncurl, fulldata_curl, recswitch, ntr_glob, MPI_COMM_WORLD);
-        catseis(sectiondiv, fulldata_div, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectionvx, seisPSV.fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectionvy, seisPSV.fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectionp, seisPSV.fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectioncurl, seisPSV.fulldata_curl, recswitch, ntr_glob, MPI_COMM_WORLD);
+        catseis(seisPSV.sectiondiv, seisPSV.fulldata_div, recswitch, ntr_glob, MPI_COMM_WORLD);
 
         if (MYID==0){
-           saveseis_glob(FP,fulldata_vx,fulldata_vy,fulldata_p,fulldata_curl,fulldata_div,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);
+           saveseis_glob(FP,seisPSV.fulldata_vx,seisPSV.fulldata_vy,seisPSV.fulldata_p,seisPSV.fulldata_curl,seisPSV.fulldata_div,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);
         }         
  
 }
@@ -1165,13 +1058,7 @@ if((QUELLTYPB==1)||(QUELLTYPB==3)){ /* if QUELLTYPB */
 inseis(fprec,ishot,sectionread,ntr_glob,ns,1,iter);
 
 if (TIME_FILT){
-
-   timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
-
-   if(TIME_FILT==2){ /* band-pass */
-     timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
-   }
-
+   apply_tdfilt(sectionread,ntr_glob,ns,ORDER,FC,FC_START);
 }
 
 h=1;
@@ -1190,27 +1077,21 @@ if(TIMELAPSE==1){
   inseis(fprec,ishot,sectionread,ntr_glob,ns,9,iter);
 
   if (TIME_FILT){
-
-     timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
-
-     if(TIME_FILT==2){ /* band-pass */
-       timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
-     }
-
+   apply_tdfilt(sectionread,ntr_glob,ns,ORDER,FC,FC_START);
   }
   
   /* calculate vx_mod(t1) - vx_mod(t0) */
 h=1;
 for(i=1;i<=ntr;i++){
    for(j=1;j<=ns;j++){
-           sectionvx[h][j]=sectionvx[h][j]-sectionread[recpos_loc[3][i]][j];
+           seisPSV.sectionvx[h][j]=seisPSV.sectionvx[h][j]-sectionread[recpos_loc[3][i]][j];
    }
    h++;
 }
                       
 } /* end of TIMELAPSE */
 
-  L2=calc_res(sectionvxdata,sectionvx,sectionvxdiff,sectionvxdiffold,ntr,ns,LNORM,L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);     
+  L2=calc_res(sectionvxdata,seisPSV.sectionvx,sectionvxdiff,sectionvxdiffold,ntr,ns,LNORM,L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);     
   if(swstestshot==1){energy=calc_energy(sectionvxdata,ntr,ns,energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
 
   L2_all_shots=calc_misfit(sectionvxdiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
@@ -1225,13 +1106,7 @@ if((QUELLTYPB==1)||(QUELLTYPB==2)){ /* if QUELLTYPB */
 inseis(fprec,ishot,sectionread,ntr_glob,ns,2,iter);
 
 if (TIME_FILT){
-
-   timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
- 
-   if(TIME_FILT==2){ /* apply band-pass */
-     timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
-   }
-
+   apply_tdfilt(sectionread,ntr_glob,ns,ORDER,FC,FC_START);
 }
 
 h=1;
@@ -1249,28 +1124,22 @@ if(TIMELAPSE==1){
     /* read synthetic seismic data at time step t0 vy */
     inseis(fprec,ishot,sectionread,ntr_glob,ns,10,iter); 
 
-    if (TIME_FILT){
-	
-       timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
-
-       if(TIME_FILT==2){ /* apply band-pass */
-         timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
-       }
-
+    if (TIME_FILT){	
+       apply_tdfilt(sectionread,ntr_glob,ns,ORDER,FC,FC_START);
     }
    
     /* calculate vy_mod(t1) - vy_mod(t0) */
     h=1;
     for(i=1;i<=ntr;i++){
        for(j=1;j<=ns;j++){
-	     sectionvy[h][j]=sectionvy[h][j]-sectionread[recpos_loc[3][i]][j];
+	     seisPSV.sectionvy[h][j]=seisPSV.sectionvy[h][j]-sectionread[recpos_loc[3][i]][j];
        }
        h++;
     }
                                
 } /* end of TIMELAPSE */
                                
-L2=calc_res(sectionvydata,sectionvy,sectionvydiff,sectionvydiffold,ntr,ns,LNORM,L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
+L2=calc_res(sectionvydata,seisPSV.sectionvy,sectionvydiff,sectionvydiffold,ntr,ns,LNORM,L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
 if(swstestshot==1){energy=calc_energy(sectionvydata,ntr,ns,energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
 
 L2_all_shots=calc_misfit(sectionvydiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
@@ -1286,13 +1155,7 @@ if(QUELLTYPB==4){ /* if QUELLTYPB */
 inseis(fprec,ishot,sectionread,ntr_glob,ns,11,iter);
 
 if (TIME_FILT){
-
-   timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
-
-   if(TIME_FILT==2){ /* apply band-pass */
-     timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
-   }
-
+   apply_tdfilt(sectionread,ntr_glob,ns,ORDER,FC,FC_START);
 }
 
 h=1;
@@ -1311,27 +1174,21 @@ if(TIMELAPSE==1){
     inseis(fprec,ishot,sectionread,ntr_glob,ns,15,iter);
 
     if (TIME_FILT){
-
-       timedomain_filt(sectionread,FC,ORDER,ntr_glob,ns,1);
-
-       if(TIME_FILT==2){ /* apply band-pass */
-         timedomain_filt(sectionread,FC_START,ORDER,ntr_glob,ns,2);
-       }
-
+       apply_tdfilt(sectionread,ntr_glob,ns,ORDER,FC,FC_START);
     }
 
     /* calculate p_mod(t1) - p_mod(t0) */
     h=1;
     for(i=1;i<=ntr;i++){
        for(j=1;j<=ns;j++){
-             sectionp[h][j]=sectionp[h][j]-sectionread[recpos_loc[3][i]][j];
+             seisPSV.sectionp[h][j]=seisPSV.sectionp[h][j]-sectionread[recpos_loc[3][i]][j];
        }
        h++;
     }
 
 } /* end of TIMELAPSE */
 
-L2=calc_res(sectionpdata,sectionp,sectionpdiff,sectionpdiffold,ntr,ns,LNORM,L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
+L2=calc_res(sectionpdata,seisPSV.sectionp,sectionpdiff,sectionpdiffold,ntr,ns,LNORM,L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
 if(swstestshot==1){energy=calc_energy(sectionpdata,ntr,ns,energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
 
 L2_all_shots=calc_misfit(sectionpdiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
@@ -1353,41 +1210,41 @@ if ((SEISMO)&&(iter==1)&&(INVMAT<=1)&&(ishot==1)){
 
    if(QUELLTYPB==1){
    
-      catseis(sectionvxdiff, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
-      catseis(sectionvydiff, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
+      catseis(sectionvxdiff, seisPSV.fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
+      catseis(sectionvydiff, seisPSV.fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
       
       if (MYID==0){
-         saveseis_glob(FP,fulldata_vx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+         saveseis_glob(FP,seisPSV.fulldata_vx,seisPSV.fulldata_vy,seisPSV.sectionp,seisPSV.sectioncurl,seisPSV.sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
       }
       
    }
    
    if(QUELLTYPB==2){
    
-      catseis(sectionvydiff, fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
+      catseis(sectionvydiff, seisPSV.fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
       
       if (MYID==0){
-         saveseis_glob(FP,fulldata_vy,fulldata_vy,sectionvy,sectionvy,sectionvy,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+         saveseis_glob(FP,seisPSV.fulldata_vy,seisPSV.fulldata_vy,seisPSV.sectionvy,seisPSV.sectionvy,seisPSV.sectionvy,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
       }
       
    }
    
    if(QUELLTYPB==3){
    
-      catseis(sectionvxdiff, fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
+      catseis(sectionvxdiff, seisPSV.fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
       
       if (MYID==0){
-         saveseis_glob(FP,fulldata_vx,fulldata_vy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+         saveseis_glob(FP,seisPSV.fulldata_vx,seisPSV.fulldata_vy,seisPSV.sectionp,seisPSV.sectioncurl,seisPSV.sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
       }
       
    }
    
    if(QUELLTYPB==4){
    
-      catseis(sectionpdiff, fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
+      catseis(sectionpdiff, seisPSV.fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
       
       if (MYID==0){
-         saveseis_glob(FP,sectionvx,sectionvy,fulldata_p,sectioncurl,sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
+         saveseis_glob(FP,seisPSV.sectionvx,seisPSV.sectionvy,seisPSV.fulldata_p,seisPSV.sectioncurl,seisPSV.sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
       }
       
    }   
@@ -1407,19 +1264,11 @@ if ((SEISMO)&&(iter==1)&&(INVMAT<=1)&&(ishot==1)){
     }
                                     
    /* solve adjoint problem */
-   psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,hc,infoout,
-   bufferlef_to_rig,bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,ishot,nshots,ntr,srcpos_loc_back, 
-   recpos_loc,signals,ns,ntr,sectionp,sectionvx,sectionvy,sectiondiv,sectioncurl, 
-   Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,1,req_send,req_rec);                
+   psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,hc,infoout,ishot,nshots,ntr,
+   srcpos_loc_back, recpos_loc,signals,ns,ntr,Ws,Wr,sectionvxdiff,sectionvydiff,hin,DTINV_help,1,req_send,req_rec);                
 
 
 /*----------------------  loop over timesteps (backpropagation) ------------------*/
-
-	
-/*if ((ntr > 0) && (SEISMO)){
-	saveseis(FP,sectionpdiff,sectionvy,sectionp,sectioncurl,sectiondiv,recpos,recpos_loc,ntr,srcpos1,ishot,ns,0);
-}*/
-
 
 /* partially assemble Laplace-domain gradients */                 
 /*if(INVMAT==1){
@@ -1661,24 +1510,24 @@ if(N_STREAMER>0){
  
            switch (SEISMO){
            case 1 : /* particle velocities only */
-                   free_matrix(sectionvx,1,ntr,1,ns);
-                   free_matrix(sectionvy,1,ntr,1,ns);
-                   sectionvx=NULL;
-                   sectionvy=NULL;
+                   free_matrix(seisPSV.sectionvx,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectionvy,1,ntr,1,ns);
+                   seisPSV.sectionvx=NULL;
+                   seisPSV.sectionvy=NULL;
                    break;
             case 2 : /* pressure only */
-                   free_matrix(sectionp,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectionp,1,ntr,1,ns);
                    break;
             case 3 : /* curl and div only */
-                   free_matrix(sectioncurl,1,ntr,1,ns);
-                   free_matrix(sectiondiv,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectioncurl,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectiondiv,1,ntr,1,ns);
                    break;
             case 4 : /* everything */
-                   free_matrix(sectionvx,1,ntr,1,ns);
-                   free_matrix(sectionvy,1,ntr,1,ns);
-                   free_matrix(sectionp,1,ntr,1,ns);
-                   free_matrix(sectioncurl,1,ntr,1,ns);
-                   free_matrix(sectiondiv,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectionvx,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectionvy,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectionp,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectioncurl,1,ntr,1,ns);
+                   free_matrix(seisPSV.sectiondiv,1,ntr,1,ns);
                    break;
 
             }
@@ -2115,10 +1964,10 @@ free_matrix(fwiPSV.waveconv,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiPSV.waveconv_lam,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiPSV.waveconv_shot,-nd+1,NY+nd,-nd+1,NX+nd);
 
-free_matrix(bufferlef_to_rig,1,NY,1,fdo3);
-free_matrix(bufferrig_to_lef,1,NY,1,fdo3);
-free_matrix(buffertop_to_bot,1,NX,1,fdo3);
-free_matrix(bufferbot_to_top,1,NX,1,fdo3);
+free_matrix(mpiPSV.bufferlef_to_rig,1,NY,1,fdo3);
+free_matrix(mpiPSV.bufferrig_to_lef,1,NY,1,fdo3);
+free_matrix(mpiPSV.buffertop_to_bot,1,NX,1,fdo3);
+free_matrix(mpiPSV.bufferbot_to_top,1,NX,1,fdo3);
 
 free_vector(hc,0,6);
 
@@ -2199,24 +2048,24 @@ if (nsrc_loc>0){
  
             switch (SEISMO){
             case 1 : /* particle velocities only */
-                    free_matrix(sectionvx,1,ntr,1,ns);
-                    free_matrix(sectionvy,1,ntr,1,ns);
-                    sectionvx=NULL;
-                    sectionvy=NULL;
+                    free_matrix(seisPSV.sectionvx,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectionvy,1,ntr,1,ns);
+                    seisPSV.sectionvx=NULL;
+                    seisPSV.sectionvy=NULL;
                     break;
              case 2 : /* pressure only */
-                    free_matrix(sectionp,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectionp,1,ntr,1,ns);
                     break;
              case 3 : /* curl and div only */
-                    free_matrix(sectioncurl,1,ntr,1,ns);
-                    free_matrix(sectiondiv,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectioncurl,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectiondiv,1,ntr,1,ns);
                     break;
              case 4 : /* everything */
-                    free_matrix(sectionvx,1,ntr,1,ns);
-                    free_matrix(sectionvy,1,ntr,1,ns);
-                    free_matrix(sectionp,1,ntr,1,ns);
-                    free_matrix(sectioncurl,1,ntr,1,ns);
-                    free_matrix(sectiondiv,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectionvx,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectionvy,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectionp,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectioncurl,1,ntr,1,ns);
+                    free_matrix(seisPSV.sectiondiv,1,ntr,1,ns);
                     break;
 
              }
@@ -2247,29 +2096,29 @@ if (nsrc_loc>0){
  }
 
  if(SEISMO){
-  free_matrix(fulldata,1,ntr_glob,1,NT); 
+  free_matrix(seisPSV.fulldata,1,ntr_glob,1,NT); 
  }
 
  if(SEISMO==1){
-  free_matrix(fulldata_vx,1,ntr_glob,1,NT);
-  free_matrix(fulldata_vy,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_vx,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_vy,1,ntr_glob,1,NT);
  }
 
  if(SEISMO==2){
-  free_matrix(fulldata_p,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_p,1,ntr_glob,1,NT);
  } 
  
  if(SEISMO==3){
-  free_matrix(fulldata_curl,1,ntr_glob,1,NT);
-  free_matrix(fulldata_div,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_curl,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_div,1,ntr_glob,1,NT);
  }
 
  if(SEISMO==4){
-  free_matrix(fulldata_vx,1,ntr_glob,1,NT);
-  free_matrix(fulldata_vy,1,ntr_glob,1,NT);
-  free_matrix(fulldata_p,1,ntr_glob,1,NT); 
-  free_matrix(fulldata_curl,1,ntr_glob,1,NT);
-  free_matrix(fulldata_div,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_vx,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_vy,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_p,1,ntr_glob,1,NT); 
+  free_matrix(seisPSV.fulldata_curl,1,ntr_glob,1,NT);
+  free_matrix(seisPSV.fulldata_div,1,ntr_glob,1,NT);
  }
 
  free_ivector(DTINV_help,1,NT);

@@ -61,6 +61,22 @@ struct fwiPSV{
    float  *forward_prop_x, *forward_prop_y, *forward_prop_rho_x, *forward_prop_u, *forward_prop_rho_y;
 } fwiPSV;
 
+/* PSV seismogram variables */
+struct seisPSV{
+   float ** sectionvx, ** sectionvy, ** sectionp, ** sectioncurl, ** sectiondiv;
+   float ** fulldata, ** fulldata_vx, ** fulldata_vy;
+   float ** fulldata_p, ** fulldata_curl,  ** fulldata_div;
+} seisPSV;
+
+/* Acquisition geometry */
+/*struct acq{
+   
+} acq;*/
+
+/* PSV MPI variables */
+struct mpiPSV{
+   float ** bufferlef_to_rig,  ** bufferrig_to_lef, ** buffertop_to_bot, ** bufferbot_to_top;
+} mpiPSV;
 
 /* declaration of functions */
 
@@ -84,7 +100,13 @@ void alloc_fwiPSV(struct fwiPSV *fwiPSV);
 
 void alloc_matPSV(struct matPSV *matPSV);
 
+void alloc_mpiPSV(struct mpiPSV *mpiPSV);
+
+void alloc_seisPSV(int ntr, int ns, struct seisPSV *seisPSV);
+
 void alloc_PSV(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML);
+
+void apply_tdfilt(float **section, int ntr, int ns, int order, float fc2, float fc1);
 
 void av_mat(float **  pi, float **  u, 
 float **  ppijm, float **  puip, float ** pujm);
@@ -202,12 +224,15 @@ void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int 
            
 double LU_decomp(double  **A, double *x, double *b,int n);
 
-float minimum_m(float **mat, int nx, int ny);
 float maximum_m(float **mat, int nx, int ny);
+
+void median_src(float ** waveconv,float ** taper_coeff, float **srcpos, int nshots, int **recpos, int ntr, int iter, int sws);
+
+void mem_PSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize);
 
 void mer(float **sectionp, int ntr, int nst, float *picked_times, int ishot);
 
-void median_src(float ** waveconv,float ** taper_coeff, float **srcpos, int nshots, int **recpos, int ntr, int iter, int sws);
+float minimum_m(float **mat, int nx, int ny);
 
 void model(float  **  rho, float **  pi, float **  u, 
 float **  taus, float **  taup, float *  eta);
@@ -274,10 +299,8 @@ void psource_rsg(int nt, float ** sxx, float ** syy,
 float **  srcpos_loc, float ** signals, int nsrc);
 
 void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV,
-        struct fwiPSV *fwiPSV, float *hc, int infoout, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-        float ** buffertop_to_bot, float ** bufferbot_to_top, int ishot, int nshots, int nsrc_loc, 
-        float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **sectionp, 
-        float **sectionvx, float **sectionvy, float **sectiondiv, float **sectioncurl, 
+        struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, float *hc, int infoout, int ishot, int nshots, 
+        int nsrc_loc, float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, 
         float **Ws, float **Wr, float **sectionvxdiff, float **sectionvydiff, int hin, int *DTINV_help, 
         int mode, MPI_Request * req_send, MPI_Request * req_rec);
 

@@ -32,7 +32,7 @@ EXEC= ../bin
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
 CC=mpicc
 LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-CFLAGS=-O3 -fno-stack-protector
+CFLAGS=-O3 -w -fno-stack-protector
 SFLAGS=-L./../libcseife
 IFLAGS=-I./../libcseife
 
@@ -89,7 +89,10 @@ DENISE_UTIL = \
 DENISE= \
         alloc_fwiPSV.c \
         alloc_matPSV.c \
+        alloc_mpiPSV.c \
         alloc_PSV.c \
+        alloc_seisPSV.c \
+        apply_tdfilt.c \
 	denise.c \
 	dotp.c \
 	stf.c \
@@ -154,6 +157,7 @@ DENISE= \
 	$(MODEL_EL) \
 	matcopy.c \
 	matcopy_elastic.c \
+        mem_PSV.c \
 	merge2.c \
 	mergemod.c \
 	median_src.c \
