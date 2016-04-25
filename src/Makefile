@@ -92,16 +92,19 @@ DENISE= \
         alloc_mpiPSV.c \
         alloc_PSV.c \
         alloc_seisPSV.c \
+        alloc_seisPSVfull.c \
+        alloc_seisPSVfwi.c \
         apply_tdfilt.c \
+        ass_gradPSV.c \
 	denise.c \
 	dotp.c \
-	stf.c \
 	window_cos.c \
 	calc_envelope.c \
 	calc_hilbert.c \
         calc_mat_change_test.c \
         calc_res.c \
         calc_res_grav.c \
+        calc_res_PSV.c \
 	calc_misfit.c \
         calc_opt_step.c \
 	calc_opt_step_test.c \
@@ -167,6 +170,8 @@ DENISE= \
 	outseis.c \
 	outseis_vector.c \
 	outseis_glob.c \
+        outseis_PSVfor.c \
+        outseis_PSVres.c \
 	catseis.c \
 	output_source_signal.c \
 	PCG.c \
@@ -193,6 +198,8 @@ DENISE= \
 	splitsrc_back.c \
 	splitrec.c \
 	stalta.c \
+	stf.c \
+	stf_psv.c \
 	taper.c \
 	taper_grad.c \
 	taper_grad_shot.c \

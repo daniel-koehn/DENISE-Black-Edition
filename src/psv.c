@@ -11,8 +11,8 @@
 #include "fd.h"
 
 void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV,
-        struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, float *hc, int infoout, int ishot, int nshots, int nsrc_loc, 
-        float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **Ws, float **Wr, float **sectionvxdiff, float **sectionvydiff, 
+        struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, float *hc, int ishot, int nshots, int nsrc_loc, 
+        float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **Ws, float **Wr, 
         int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
@@ -24,7 +24,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	extern FILE *FP;
 
         /* local variables */
-	int i,j,nt,lsamp,lsnap,nsnap, nd, hin1, imat, imat1, imat2;
+	int i,j,nt,lsamp,lsnap,nsnap, nd, hin1, imat, imat1, imat2, infoout;
         float tmp, tmp1, muss, lamss;
 
         nd = FDORDER/2 + 1;
@@ -149,8 +149,8 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
               if(mode==1){
 	         update_v_PML(1, NX, 1, NY, nt, (*wavePSV).pvx, (*wavePSV).pvxp1, (*wavePSV).pvxm1, (*wavePSV).pvy, (*wavePSV).pvyp1, (*wavePSV).pvym1, (*wavePSV).uttx, (*wavePSV).utty, (*wavePSV).psxx, (*wavePSV).psyy, 
-                              (*wavePSV).psxy, (*matPSV).prip, (*matPSV).prjp, srcpos_loc, sectionvxdiff, sectionvydiff,nsrc_loc,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, 
-                              (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, 
+                              (*wavePSV).psxy, (*matPSV).prip, (*matPSV).prjp, srcpos_loc, (*seisPSVfwi).sectionvxdiff, (*seisPSVfwi).sectionvydiff,nsrc_loc,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x,
+ 	                      (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, 
                               (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_sxx_x, (*wavePSV_PML).psi_syy_y, (*wavePSV_PML).psi_sxy_y, (*wavePSV_PML).psi_sxy_x);
               }
 		                 

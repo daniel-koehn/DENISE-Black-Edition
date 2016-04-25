@@ -100,10 +100,6 @@ float FC_HESS_START, FC_HESS_INC, FC;
 /* parameters for wavenumber domain  damping */
 float WD_DAMP, WD_DAMP1;
 
-/* parameters for DC removal */
-int DC_REMOVE, ORDER_DC;
-float FC_DC;
-
 /* Reverse time modelling parameter */
 int RTMOD;
 
