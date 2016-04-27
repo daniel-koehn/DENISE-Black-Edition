@@ -8,7 +8,7 @@
 
 #include "fd.h"
 
-void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, int nfstart_jac, float ** waveconv, float C_vp, float ** gradp, float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, 
+void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float C_vp, float ** gradp, float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, 
             float * alpha_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, float * q_LBFGS, float * r_LBFGS, float * beta_LBFGS, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec){
 
 	extern int NX, NY, IDX, IDY, SPATFILTER;
@@ -78,26 +78,6 @@ for (i=1;i<=NX;i=i+IDX){
    }
 }
 
-/* save gradient for output as inversion result */
-if(iter==nfstart_jac){
-	sprintf(jac,"%s_p_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	FP3=fopen(jac,"wb");
-
-        	for (i=1;i<=NX;i=i+IDX){
-           	for (j=1;j<=NY;j=j+IDY){
-                	fwrite(&waveconv[j][i],sizeof(float),1,FP3);
-           	}
-        	}
-	
-	fclose(FP3);
-
-	MPI_Barrier(MPI_COMM_WORLD);
-          
-	/* merge gradient file */ 
-	sprintf(jac,"%s_p_it%d.old",JACOBIAN,iter);
-	if (MYID==0) mergemod(jac,3);
-}
-
 /* =================================================================================================================================================== */
 /* ===================================================================================================================================================== */
 /* ===================================================== GRADIENT Vs/Zs/mu ================================================================================== */
@@ -146,26 +126,6 @@ for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
 	  gradp_u[j][i] = waveconv_u[j][i];
    }
-}
-
-/* save gradient for output as inversion result */
-if(iter==nfstart_jac){
-	sprintf(jac,"%s_p_u_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	FP3=fopen(jac,"wb");
-
-        	for (i=1;i<=NX;i=i+IDX){
-           	for (j=1;j<=NY;j=j+IDY){
-                	fwrite(&waveconv_u[j][i],sizeof(float),1,FP3);
-           	}
-        	}
-	
-	fclose(FP3);
-
-	MPI_Barrier(MPI_COMM_WORLD);
-          
-	/* merge gradient file */ 
-	sprintf(jac,"%s_p_u_it%d.old",JACOBIAN,iter);
-	if (MYID==0) mergemod(jac,3);
 }
 
 /* ===================================================================================================================================================== */
@@ -222,26 +182,6 @@ for (i=1;i<=NX;i=i+IDX){
 	if (MYID==0){
    	fprintf(FP,"\n Spatial filter is applied to gradient (written by PE %d)\n",MYID);}
 spat_filt(waveconv_rho,iter,3);}*/
-
-/* save gradient for output as inversion result */
-if(iter==nfstart_jac){
-	sprintf(jac,"%s_p_rho_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	FP3=fopen(jac,"wb");
-
-        	for (i=1;i<=NX;i=i+IDX){
-           	for (j=1;j<=NY;j=j+IDY){
-                	fwrite(&waveconv_rho[j][i],sizeof(float),1,FP3);
-           	}
-        	}
-	
-	fclose(FP3);
-
-	MPI_Barrier(MPI_COMM_WORLD);
-          
-	/* merge gradient file */ 
-	sprintf(jac,"%s_p_rho_it%d.old",JACOBIAN,iter);
-	if (MYID==0) mergemod(jac,3);
-}
 
 /* calculate H^-1 * waveconv, using the L-BFGS method, if iter > 1 */
 /* --------------------------------------------------------------------- */

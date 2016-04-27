@@ -7,7 +7,7 @@
 
 #include "fd.h"
 
-void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float C_vp, float ** gradp, int nfstart_jac,
+void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float C_vp, float ** gradp,
 	     float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho){
 
 	extern int NX, NY, IDX, IDY, SPATFILTER, GRAD_FILTER;
@@ -93,32 +93,6 @@ for (i=1;i<=NX;i=i+IDX){
 	 gradp[j][i] = waveconv[j][i];
    }
 }
-
-
-/* save gradient for output as inversion result */
-if(iter==nfstart_jac){
-	sprintf(jac,"%s_p_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	FP3=fopen(jac,"wb");
-
-        	for (i=1;i<=NX;i=i+IDX){
-           	for (j=1;j<=NY;j=j+IDY){
-                	fwrite(&waveconv[j][i],sizeof(float),1,FP3);
-           	}
-        	}
-	
-	fclose(FP3);
-
-	MPI_Barrier(MPI_COMM_WORLD);
-          
-	/* merge gradient file */ 
-	sprintf(jac,"%s_p_it%d.old",JACOBIAN,iter);
-	if (MYID==0) mergemod(jac,3);
-	MPI_Barrier(MPI_COMM_WORLD);
-	sprintf(jac,"%s_p_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	remove(jac);
-}
-
-
 
 /* calculate conjugate gradient direction, if iter > 1 (after Mora 1987) */
 /* --------------------------------------------------------------------- */
@@ -332,30 +306,6 @@ for (i=1;i<=NX;i=i+IDX){
 }
 
 
-/* save gradient for output as inversion result */
-if(iter==nfstart_jac){
-	sprintf(jac,"%s_p_u_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	FP3=fopen(jac,"wb");
-
-        	for (i=1;i<=NX;i=i+IDX){
-           	for (j=1;j<=NY;j=j+IDY){
-                	fwrite(&waveconv_u[j][i],sizeof(float),1,FP3);
-           	}
-        	}
-	
-	fclose(FP3);
-
-	MPI_Barrier(MPI_COMM_WORLD);
-          
-	/* merge gradient file */ 
-	sprintf(jac,"%s_p_u_it%d.old",JACOBIAN,iter);
-	if (MYID==0) mergemod(jac,3);
-	MPI_Barrier(MPI_COMM_WORLD);
-	sprintf(jac,"%s_p_u_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	remove(jac);
-}
-
-
 /* calculate conjugate gradient direction, if iter > 1 (after Mora 1987) */
 /* --------------------------------------------------------------------- */
 if(GRAD_METHOD!=3){
@@ -563,32 +513,6 @@ for (i=1;i<=NX;i=i+IDX){
 	gradp_rho[j][i]=waveconv_rho[j][i];
    }
 }
-
-
-
-/* save gradient for output as inversion result */
-if(iter==nfstart_jac){
-	sprintf(jac,"%s_p_rho_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	FP3=fopen(jac,"wb");
-
-        	for (i=1;i<=NX;i=i+IDX){
-           	for (j=1;j<=NY;j=j+IDY){
-                	fwrite(&waveconv_rho[j][i],sizeof(float),1,FP3);
-           	}
-        	}
-	
-	fclose(FP3);
-
-	MPI_Barrier(MPI_COMM_WORLD);
-          
-	/* merge gradient file */ 
-	sprintf(jac,"%s_p_rho_it%d.old",JACOBIAN,iter);
-	if (MYID==0) mergemod(jac,3);
-	MPI_Barrier(MPI_COMM_WORLD);
-	sprintf(jac,"%s_p_rho_it%d.old.%i%i",JACOBIAN,iter,POS[1],POS[2]);
-	remove(jac);
-}
-
 
 
 /* calculate conjugate gradient direction, if iter > 1 (after Mora 1987) */

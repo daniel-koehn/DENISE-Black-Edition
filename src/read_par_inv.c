@@ -38,6 +38,7 @@ fscanf(fp,"%f%i%f%f%i%i%f%f%f%i%i%i%i%f%f%i%i%i%f%f%i%i%f%f%i%f",&PRO,&TIME_FILT
 fclose(fp);
 
 if(MYID==0){
+
    printf("=========================================== \n");
    printf("       FWI-stage %d of %d \n",nstage,stagemax);
    printf("=========================================== \n");
@@ -59,12 +60,12 @@ if(MYID==0){
 	if (TIME_FILT){
 	   printf(" TIME_FILT=%d: Time domain filtering is applied \n",TIME_FILT);
 
-           if (TIME_FILT==1){
+           if (FC_START<=0.0){
 		printf(" Applying FWI with lowpass filter for corner frequency %f Hz\n",FC_END);
 		printf(" Order of lowpass filter is:\t%d\n\n",ORDER);
            }
 
-           if (TIME_FILT==2){
+           if (FC_START>0.0){
 		printf(" Applying FWI with bandpass filter for corner frequency %f Hz and %f Hz \n",FC_START,FC_END);
 		printf(" Order of bandpass filter at lower and upper frequencies are:\t%d\n\n",ORDER);
            }

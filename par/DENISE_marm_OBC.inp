@@ -163,13 +163,6 @@ read_taper_from_file_(yes=1)_(SWS_TAPER_FILE) = 0
 #
 # ----- Output of inverted models ----- #
 output_of_models_(INV_MODELFILE) = model/modelTest
-first_model_to_be_saved_(nfstart) = 2000
-increment_between_saved_models_(nf) = 2000
-#
-#
-# ----- Output of gradients ----- #
-first_gradient_to_be_saved(nfstart_jac) = 2000
-increment_between_saved_gradients_(nf_jac) = 1
 #
 #
 # ----- Upper and lower limits for model parameters ----- #

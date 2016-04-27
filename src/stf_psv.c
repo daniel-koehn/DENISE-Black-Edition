@@ -10,10 +10,9 @@
 
 #include "fd.h"
 
-void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV,
-        struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, 
-        float ** srcpos_loc,  float ** srcpos, int ** recpos_loc, int ** recpos, float ** signals, int ns, int ntr, int ntr_glob, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, 
-        int * recswitch, MPI_Request * req_send, MPI_Request * req_rec){
+void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, 
+             struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, int ns, int ntr, int ntr_glob, int iter, float **Ws, 
+             float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
         extern int QUELLART, ORDER, ORDER_SPIKE, TIME_FILT, RUN_MULTIPLE_SHOTS;
@@ -28,22 +27,21 @@ void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct ma
         QUELLART = 6;
 
 	/* calculate wavelet for each source point */
-        signals=NULL;
-	signals=wavelet(srcpos_loc,nsrc_loc,ishot);
+        (*acq).signals=NULL;
+	(*acq).signals=wavelet((*acq).srcpos_loc,nsrc_loc,ishot);
 
 	if (nsrc_loc){if(QUELLART==6){
 
    		/* time domain filtering of the source signal */
-   		apply_tdfilt(signals,nsrc_loc,ns,ORDER_SPIKE,FC_SPIKE_2,FC_SPIKE_1);
+   		apply_tdfilt((*acq).signals,nsrc_loc,ns,ORDER_SPIKE,FC_SPIKE_2,FC_SPIKE_1);
 
 	   }
 	} 
 
         /* forward problem */
-        psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,hc,ishot,nshots,nsrc_loc,srcpos_loc, 
-	recpos_loc,signals,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+        psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
 	
-        catseis((*seisPSV).sectionvy, (*seisPSV).fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);	   
+        catseis((*seisPSV).sectionvy, (*seisPSV).fulldata_vy, (*acq).recswitch, ntr_glob, MPI_COMM_WORLD);	   
 
 	/* estimate STF */	
 	   if (nsrc_loc>0){
@@ -56,7 +54,7 @@ void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct ma
                  apply_tdfilt((*seisPSVfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);
 	      }
 
-	      stf((*seisPSVfwi).sectionread,(*seisPSV).fulldata_vy,ntr_glob,ishot,ns,iter,nshots,signals,recpos,srcpos);
+	      stf((*seisPSVfwi).sectionread,(*seisPSV).fulldata_vy,ntr_glob,ishot,ns,iter,nshots,(*acq).signals,(*acq).recpos,(*acq).srcpos);
 	      /*saveseis_glob(FP,seisPSVfwi.sectionread,seisPSV.fulldata_vy,seisPSV.sectionp,seisPSV.sectioncurl,seisPSV.sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);*/
 	      
 	   }

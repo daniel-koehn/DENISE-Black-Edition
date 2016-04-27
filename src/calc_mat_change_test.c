@@ -8,7 +8,7 @@
 
 #include "fd.h"
 float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  pi, float **  pinp1, float **  u, float **  unp1, int iter, 
-                          int epstest, int INVMAT, float eps_scale, int itest, int nfstart){
+                          int epstest, int INVMAT, float eps_scale, int itest){
 
 
 	/*--------------------------------------------------------------------------*/
@@ -221,66 +221,30 @@ float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  
 	}
 	
 	if(itest==0){
-	/*sprintf(modfile,"model/waveform_test_model_vp_it_%d.bin",iter);*/
-	/*sprintf(modfile,"model/waveform_test_model_vp.bin");*/
-	sprintf(modfile,"%s_vp.bin",INV_MODELFILE);
-        writemod(modfile,pinp1,3);
-	
-	MPI_Barrier(MPI_COMM_WORLD);
 
-        if (MYID==0) mergemod(modfile,3);
-
-        /*sprintf(modfile,"model/waveform_test_model_vs_it_%d.bin",iter);*/
-        /*sprintf(modfile,"model/waveform_test_model_vs.bin");*/
-	sprintf(modfile,"%s_vs.bin",INV_MODELFILE);
+	   sprintf(modfile,"%s_vp.bin",INV_MODELFILE);
+           writemod(modfile,pinp1,3);
 	
-        writemod(modfile,unp1,3);
-	
-	MPI_Barrier(MPI_COMM_WORLD);
+	   MPI_Barrier(MPI_COMM_WORLD);
 
-        if (MYID==0) mergemod(modfile,3);
-	
+           if (MYID==0) mergemod(modfile,3);
 
-	/*sprintf(modfile,"model/waveform_test_model_rho_it_%d.bin",iter);*/
-        /*sprintf(modfile,"model/waveform_test_model_rho.bin");*/
-	sprintf(modfile,"%s_rho.bin",INV_MODELFILE);
-	writemod(modfile,rho,3);
+	   sprintf(modfile,"%s_vs.bin",INV_MODELFILE);
 	
-	MPI_Barrier(MPI_COMM_WORLD);
+           writemod(modfile,unp1,3);
+	
+	   MPI_Barrier(MPI_COMM_WORLD);
 
-        if (MYID==0) mergemod(modfile,3);}
-        
-        if((itest==0)&&(iter==nfstart)){
-        /*sprintf(modfile,"model/waveform_test_model_vp_it_%d.bin",iter);*/
-	sprintf(modfile,"%s_vp_it_%d.bin",INV_MODELFILE,iter);
-	writemod(modfile,pinp1,3);
-                                        
-	MPI_Barrier(MPI_COMM_WORLD);
-                                                
-	if (MYID==0) mergemod(modfile,3);
-	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_vp_it_%d.bin.%i%i",INV_MODELFILE,iter,POS[1],POS[2]);
-	remove(modfile);	
-                                                        
-	/*sprintf(modfile,"model/waveform_test_model_vs_it_%d.bin",iter);*/
-	sprintf(modfile,"%s_vs_it_%d.bin",INV_MODELFILE,iter);
-	writemod(modfile,unp1,3);
-	MPI_Barrier(MPI_COMM_WORLD);
-                                                                                                        
-	if (MYID==0) mergemod(modfile,3);
-	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_vs_it_%d.bin.%i%i",INV_MODELFILE,iter,POS[1],POS[2]);
-	remove(modfile);                                                                                                                        
-                                                                                                                                
-	/*sprintf(modfile,"model/waveform_test_model_rho_it_%d.bin",iter);*/
-	sprintf(modfile,"%s_rho_it_%d.bin",INV_MODELFILE,iter);
-	writemod(modfile,rho,3);
-	MPI_Barrier(MPI_COMM_WORLD);
-                                                                                                                                                                        
-	if (MYID==0) mergemod(modfile,3);}
-	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_rho_it_%d.bin.%i%i",INV_MODELFILE,iter,POS[1],POS[2]);
-	remove(modfile);
+           if (MYID==0) mergemod(modfile,3);
+	
+	   sprintf(modfile,"%s_rho.bin",INV_MODELFILE);
+	   writemod(modfile,rho,3);
+	
+	   MPI_Barrier(MPI_COMM_WORLD);
+
+           if (MYID==0) mergemod(modfile,3);
+
+        }
 
 	return eps_true;
 }

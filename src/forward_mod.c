@@ -31,7 +31,7 @@ void forward_mod(FILE *fprec, float ** waveconv, float ** waveconv_rho, float **
 
 
 /* calculate change in the material parameters */
-tmp=calc_mat_change_test(waveconv,waveconv_rho,waveconv_u,prho,prhonp1,ppi,ppinp1,pu,punp1,iter,1,INVMAT,eps_scale,1,nfstart);
+tmp=calc_mat_change_test(waveconv,waveconv_rho,waveconv_u,prho,prhonp1,ppi,ppinp1,pu,punp1,iter,1,INVMAT,eps_scale,1);
 
 /*char modfile[STRING_SIZE];
 

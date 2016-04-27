@@ -7,7 +7,7 @@
 
 #include "fd.h"
 
-float calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, FILE *fprec,
+float calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter,
                   int swstestshot){ 
 		
 /* global variables */
@@ -19,16 +19,16 @@ int i, j, h;
 float l2;
 
 if (MYID==0){
-printf("-------------------  \n");
-printf("Calculate residuals  \n");
-printf("-------------------  \n");
+   printf("-------------------  \n");
+   printf("Calculate residuals  \n");
+   printf("-------------------  \n");
 }
 
 /* read seismic data from SU file vx */
 /* --------------------------------- */
 if((QUELLTYPB==1)||(QUELLTYPB==3)){ /* if QUELLTYPB */
 
-inseis(fprec,ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,1,iter);
+inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,1,iter);
 
 if (TIME_FILT){
    apply_tdfilt((*seisPSVfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);
@@ -47,7 +47,7 @@ for(i=1;i<=ntr;i++){
 if(TIMELAPSE==1){
   
   /* read synthetic seismic data at time step t0 vx */
-  inseis(fprec,ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,9,iter);
+  inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,9,iter);
 
   if (TIME_FILT){
    apply_tdfilt((*seisPSVfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);
@@ -76,7 +76,7 @@ for(i=1;i<=ntr;i++){
 /* --------------------------------- */
 if((QUELLTYPB==1)||(QUELLTYPB==2)){ /* if QUELLTYPB */
 
-inseis(fprec,ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,2,iter);
+inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,2,iter);
 
 if (TIME_FILT){
    apply_tdfilt((*seisPSVfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);
@@ -95,7 +95,7 @@ for(i=1;i<=ntr;i++){
 if(TIMELAPSE==1){
   
     /* read synthetic seismic data at time step t0 vy */
-    inseis(fprec,ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,10,iter); 
+    inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,10,iter); 
 
     if (TIME_FILT){	
        apply_tdfilt((*seisPSVfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);
@@ -125,7 +125,7 @@ energy_all_shots=calc_energy((*seisPSVfwi).sectionvydata,ntr,ns,energy_all_shots
 /* --------------------------------- */
 if(QUELLTYPB==4){ /* if QUELLTYPB */
 
-inseis(fprec,ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,11,iter);
+inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,11,iter);
 
 if (TIME_FILT){
    apply_tdfilt((*seisPSVfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);
@@ -144,7 +144,7 @@ for(i=1;i<=ntr;i++){
 if(TIMELAPSE==1){
 
     /* read synthetic seismic data at time step t0 vy */
-    inseis(fprec,ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,15,iter);
+    inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,15,iter);
 
     if (TIME_FILT){
        apply_tdfilt((*seisPSVfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);

@@ -38,8 +38,6 @@ void write_par(FILE *fp){
 	extern float SRTRADIUS, EXP_TAPER_GRAD_HOR;
 	extern int MIN_ITER;
 	extern char INV_MODELFILE[STRING_SIZE];
-	extern int nfstart, nf;
-	extern int nfstart_jac, nf_jac;
 	extern float VPUPPERLIM, VPLOWERLIM, VSUPPERLIM, VSLOWERLIM, RHOUPPERLIM, RHOLOWERLIM;
 	
 	extern int DTINV, RTMOD;
@@ -360,11 +358,8 @@ void write_par(FILE *fp){
 	fprintf(fp," Log file for misfit in each iteration step: \n ");
 	fprintf(fp,"\t%s \n\n",MISFIT_LOG_FILE); 
 	
-	fprintf(fp," Output of inverted models: \n ");
-	fprintf(fp,"\t%s (nfstart=%d, nf=%d)\n\n",INV_MODELFILE,nfstart,nf);
-	
-	fprintf(fp," Output of jacobian: \n ");
-	fprintf(fp,"\t%s (nfstart_jac=%d, nf_jac=%d)\n\n\n",JACOBIAN,nfstart_jac,nf_jac);
+	fprintf(fp," Output of inverted models to: \n ");
+	fprintf(fp,"\t%s \n\n",INV_MODELFILE);
 		
 	fprintf(fp," --------------- Gradient tapering -------------------\n");
 	if (SWS_TAPER_GRAD_VERT==1){

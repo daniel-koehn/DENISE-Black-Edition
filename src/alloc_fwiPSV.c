@@ -31,34 +31,26 @@ void alloc_fwiPSV(struct fwiPSV *fwiPSV){
 	(*fwiPSV).waveconv_lam = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*fwiPSV).waveconv_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
-	if(INVMAT<=1){
-
-	  (*fwiPSV).gradg = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).gradp = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).gradg = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).gradp = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	  
-	  (*fwiPSV).gradg_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).gradp_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).waveconv_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).waveconv_rho_s = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).waveconv_rho_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).gradg_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).gradp_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).waveconv_rho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).waveconv_rho_s = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).waveconv_rho_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
-	  (*fwiPSV).gradg_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).gradp_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).waveconv_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).waveconv_mu = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	  (*fwiPSV).waveconv_u_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).gradg_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).gradp_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).waveconv_u = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).waveconv_mu = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).waveconv_u_shot = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
-	}
-
-	if(INVMAT==0){
-
-	  (*fwiPSV).forward_prop_x =  vector(1,NXNYI*(NTDTINV));
-	  (*fwiPSV).forward_prop_y =  vector(1,NXNYI*(NTDTINV));
-	  (*fwiPSV).forward_prop_rho_x =  vector(1,NXNYI*(NTDTINV));
-	  (*fwiPSV).forward_prop_rho_y =  vector(1,NXNYI*(NTDTINV));
-	  (*fwiPSV).forward_prop_u =  vector(1,NXNYI*(NTDTINV));
-
-	}
+	(*fwiPSV).forward_prop_x =  vector(1,NXNYI*(NTDTINV));
+	(*fwiPSV).forward_prop_y =  vector(1,NXNYI*(NTDTINV));
+	(*fwiPSV).forward_prop_rho_x =  vector(1,NXNYI*(NTDTINV));
+	(*fwiPSV).forward_prop_rho_y =  vector(1,NXNYI*(NTDTINV));
+	(*fwiPSV).forward_prop_u =  vector(1,NXNYI*(NTDTINV));
 
 }
 

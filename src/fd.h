@@ -76,9 +76,11 @@ struct seisPSVfwi{
 } seisPSVfwi;
 
 /* Acquisition geometry */
-/*struct acq{
-   
-} acq;*/
+struct acq{
+   int * recswitch, ** recpos, ** recpos_loc;
+   float ** srcpos, **srcpos_loc, ** srcpos1;
+   float ** srcpos_loc_back, ** signals;
+} acq;
 
 /* PSV MPI variables */
 struct mpiPSV{
@@ -136,13 +138,13 @@ void calc_envelope(float ** datatrace, float ** envelope, int ns, int ntr);
 
 void calc_hilbert(float ** datatrace, float ** envelope, int ns, int ntr);
 
-float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  pi, float **  pinp1, float **  u, float **  unp1, int iter, int epstest, int INVMAT, float eps_scale, int itest, int nfstart);
+float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  pi, float **  pinp1, float **  u, float **  unp1, int iter, int epstest, int INVMAT, float eps_scale, int itest);
 
 double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, float L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter);
 
 double calc_res_grav(int ngrav, float *gz_mod, float *gz_res);
 
-float calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, FILE *fprec,
+float calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter,
                   int swstestshot);
 
 double calc_misfit(float **sectiondiff, int ntr, int ns, int LNORM, float L2, int ntr_glob, int **recpos_loc, int nsrc_glob, int ishot);
@@ -198,6 +200,10 @@ void exchange_mod_es(float ** matmod, int ncptot, int nparameter);
 
 void extend_mod(float  **rho_grav, float  **rho_grav_ext, int nxgrav, int nygrav);
 
+void FD_PSV();
+
+void FWI_PSV(char * fileinp1);
+
 void forward_mod(FILE *fprec, float ** waveconv, float ** waveconv_rho, float ** waveconv_u, float ** prho, float ** prhonp1, float ** ppi, float ** ppinp1, int iter, float eps_scale, int nfstart,
         int nsrc, float ** puipjp, float ** prip, float ** prjp, float L2, int partest, float ** srcpos_loc, float ** srcpos, float ** srcpos1, float ** signals, int ns,
         int nd, float ** pvx, float ** pvy, float ** psxx, float ** psyy, float ** psxy, float ** ux, float ** uy, float ** pvxp1, float ** pvyp1, float ** psi_sxx_x, float ** psi_sxy_x,
@@ -235,7 +241,7 @@ void interpol(int ni1, int ni2, float **  intvar, int cfgt_check);
 
 void laplace_fourier_res(float **sectionvy_obs, float **sectionvy, float **sectiondiff, int ntr, int ntr_glob, int ns, int ishot, int nshots, int iter, int **recpos, int **recpos_loc, float **srcpos);
 
-void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, int nfstart_jac, float ** waveconv, float C_vp, float ** gradp, float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, 
+void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float C_vp, float ** gradp, float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, 
             float * alpha_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, float * q_LBFGS, float * r_LBFGS, float * beta_LBFGS, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
            
 double LU_decomp(double  **A, double *x, double *b,int n);
@@ -243,6 +249,8 @@ double LU_decomp(double  **A, double *x, double *b,int n);
 float maximum_m(float **mat, int nx, int ny);
 
 void median_src(float ** waveconv,float ** taper_coeff, float **srcpos, int nshots, int **recpos, int ntr, int iter, int sws);
+
+void mem_fwiPSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize, int ntr_glob);
 
 void mem_PSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize);
 
@@ -298,14 +306,16 @@ void  outseis_vector(FILE *fp, FILE *fpdata, int comp, float *section,
 int **recpos, int **recpos_loc, int ntr, float ** srcpos_loc,
 int nsrc, int ns, int seis_form, int ishot, int sws);
 
-void  inseis(FILE *fp, int comp, float **section, int ntr, int ns, int sws, int iter);
+void  inseis(int comp, float **section, int ntr, int ns, int sws, int iter);
 
 void  taper(float **sectionpdiff, int ntr, int ns);
 
 void  output_source_signal(FILE *fp, float **signals, int ns, int seis_form);
 
-void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float C_vp, float ** gradp, int nfstart_jac, 
+void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float C_vp, float ** gradp, 
 float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho);
+
+void physics_PSV(char * fileinp1);
 
 void PML_pro(float * d_x, float * K_x, float * alpha_prime_x, float * a_x, float * b_x, 
 float * d_x_half, float * K_x_half, float * alpha_prime_x_half, float * a_x_half, float * b_x_half,
@@ -318,10 +328,9 @@ float **  srcpos_loc, float ** signals, int nsrc, int sw);
 void psource_rsg(int nt, float ** sxx, float ** syy,
 float **  srcpos_loc, float ** signals, int nsrc);
 
-void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV,
-        struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, float *hc, int ishot, int nshots, 
-        int nsrc_loc, float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, 
-        int mode, MPI_Request * req_send, MPI_Request * req_rec);
+void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
 
 float *rd_sour(int *nts,FILE* fp_source);
 
@@ -414,10 +423,9 @@ float step_length_est(FILE *fprec, float ** waveconv, float ** waveconv_rho, flo
 
 void stf(float **sectionvy_obs, float **sectionvy, int ntr_glob, int ishot, int ns, int iter, int nshots, float **signals, int **recpos, float **srcpos);
 
-void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV,
-        struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, 
-        float ** srcpos_loc,  float ** srcpos, int ** recpos_loc, int ** recpos, float ** signals, int ns, int ntr, int ntr_glob, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, 
-        int * recswitch, MPI_Request * req_send, MPI_Request * req_rec);
+void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, 
+             struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, int ns, int ntr, int ntr_glob, int iter, float **Ws, 
+             float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
 
 void surface(int ndepth, float ** pvx, float ** pvy, 
 float ** psxx, float ** psyy,

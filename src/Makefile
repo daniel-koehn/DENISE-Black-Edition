@@ -125,6 +125,8 @@ DENISE= \
 	eprecond.c \
 	eprecond1.c \
 	forward_mod.c \
+        FD_PSV.c \
+        FWI_PSV.c \
         grav_grad.c \
         grav_mod.c \
 	snap_ssg.c \
@@ -160,6 +162,7 @@ DENISE= \
 	$(MODEL_EL) \
 	matcopy.c \
 	matcopy_elastic.c \
+        mem_fwiPSV.c \
         mem_PSV.c \
 	merge2.c \
 	mergemod.c \
@@ -175,6 +178,7 @@ DENISE= \
 	catseis.c \
 	output_source_signal.c \
 	PCG.c \
+        physics_PSV.c \
 	PML_pro.c \
         psv.c \
 	read_back_density.c \

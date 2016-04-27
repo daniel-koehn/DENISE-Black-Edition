@@ -5,7 +5,7 @@
 #include "fd.h"
 #include "segy.h"
 
-void  inseis(FILE *fp, int comp, float **section, int ntr, int ns, int sws, int iter){
+void  inseis(int comp, float **section, int ntr, int ns, int sws, int iter){
 
 	/* declaration of extern variables */
 	extern int NDT, MYID;

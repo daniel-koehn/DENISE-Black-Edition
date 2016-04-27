@@ -10,10 +10,9 @@
 
 #include "fd.h"
 
-void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV,
-        struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, float *hc, int ishot, int nshots, int nsrc_loc, 
-        float ** srcpos_loc, int ** recpos_loc, float ** signals, int ns, int ntr, float **Ws, float **Wr, 
-        int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec){
+void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
 	extern float DT, DH, TSNAP1, TSNAP2, TSNAPINC;
@@ -59,37 +58,6 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		}
 
         }
-
-	/* time domain filtering*/
-	/*if ((TIME_FILT)&&(INVMAT!=10)){*/
-
-	   /*time domain low pass filtering of the source signal */
-	   /*timedomain_filt(signals,FC,ORDER,nsrc_loc,ns,1);*/
-
-	   /*time domain band-pass filtering of the source signal */
-	   /*if(TIME_FILT==2){
-	     timedomain_filt(signals,FC_START,ORDER,nsrc_loc,ns,2);
-	   }*/
-
-	/*}*/
-
-	/*char  source_signal_file[STRING_SIZE];
-	sprintf(source_signal_file,"source_signal.%d.su.shot%d.it%d",MYID,ishot,iter);
-	fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
-	output_source_signal(fopen(source_signal_file,"w"),signals,NT,3);*/
-
-	/* output source signal e.g. for cross-correlation of comparison with analytical solutions */
-	/*if(RUN_MULTIPLE_SHOTS){
-
-		if(nsrc_loc>0){
-			   char  source_signal_file[STRING_SIZE];
-			   sprintf(source_signal_file,"%s_source_signal.%d.su.shot%d", MFILE, MYID,ishot);
-			   fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
-			   output_source_signal(fopen(source_signal_file,"w"),signals,NT,1);
-		}                                
-		                        
-		MPI_Barrier(MPI_COMM_WORLD);
-	}*/
 			    
 	/* initialize PSV wavefields with zero */
 	if (L){
@@ -131,7 +99,6 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		   fprintf(FP,"\n Time step: %d; pvy: %f \n",nt,(*wavePSV).pvy[NY/2][NX/2]);
 		   err(" Simulation is unstable !");}
 
-		
 	   infoout = !(nt%10000);
 
 	   if (MYID==0){
@@ -142,14 +109,14 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	      /* update of particle velocities */
               if(mode==0){
 	         update_v_PML(1, NX, 1, NY, nt, (*wavePSV).pvx, (*wavePSV).pvxp1, (*wavePSV).pvxm1, (*wavePSV).pvy, (*wavePSV).pvyp1, (*wavePSV).pvym1, (*wavePSV).uttx, (*wavePSV).utty, (*wavePSV).psxx, (*wavePSV).psyy,       
-                              (*wavePSV).psxy, (*matPSV).prip, (*matPSV).prjp, srcpos_loc,signals,signals,nsrc_loc,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, 
-                              (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, (*wavePSV_PML).a_y_half, 
-                              (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_sxx_x, (*wavePSV_PML).psi_syy_y, (*wavePSV_PML).psi_sxy_y, (*wavePSV_PML).psi_sxy_x);
+                              (*wavePSV).psxy, (*matPSV).prip, (*matPSV).prjp, (*acq).srcpos_loc,(*acq).signals,(*acq).signals,nsrc_loc,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, 
+                              (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, 
+                              (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_sxx_x, (*wavePSV_PML).psi_syy_y, (*wavePSV_PML).psi_sxy_y, (*wavePSV_PML).psi_sxy_x);
               }
 
               if(mode==1){
 	         update_v_PML(1, NX, 1, NY, nt, (*wavePSV).pvx, (*wavePSV).pvxp1, (*wavePSV).pvxm1, (*wavePSV).pvy, (*wavePSV).pvyp1, (*wavePSV).pvym1, (*wavePSV).uttx, (*wavePSV).utty, (*wavePSV).psxx, (*wavePSV).psyy, 
-                              (*wavePSV).psxy, (*matPSV).prip, (*matPSV).prjp, srcpos_loc, (*seisPSVfwi).sectionvxdiff, (*seisPSVfwi).sectionvydiff,nsrc_loc,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x,
+                              (*wavePSV).psxy, (*matPSV).prip, (*matPSV).prjp, (*acq).srcpos_loc_back, (*seisPSVfwi).sectionvxdiff, (*seisPSVfwi).sectionvydiff,ntr,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x,
  	                      (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, 
                               (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_sxx_x, (*wavePSV_PML).psi_syy_y, (*wavePSV_PML).psi_sxy_y, (*wavePSV_PML).psi_sxy_x);
               }
@@ -181,13 +148,24 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
                                      (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_vxx,  
                                      (*wavePSV_PML).psi_vyy, (*wavePSV_PML).psi_vxy, (*wavePSV_PML).psi_vyx, mode);  
 
+
 	    /* explosive source */
-	   if (QUELLTYP==1) 	
-	   psource(nt,(*wavePSV).psxx,(*wavePSV).psyy,srcpos_loc,signals,nsrc_loc,0);
+	   if (QUELLTYP==1){
+
+               if(mode==0){ 	
+	          psource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*acq).srcpos_loc,(*acq).signals,nsrc_loc,0);
+               }
+
+               /* here (*seisPSVfwi).sectionvydiff has to be replaced by (*seisPSVfwi).sectionpdiff */
+               if(mode==1){ 	
+	          psource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*acq).srcpos_loc_back,(*seisPSVfwi).sectionvydiff,nsrc_loc,1);
+               }
+
+           }
 	   
 	   /* moment tensor source */
 	   if (QUELLTYP==5) 	
-	   msource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy,srcpos_loc,signals,nsrc_loc,0);
+	   msource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy,(*acq).srcpos_loc,(*acq).signals,nsrc_loc,0);
 
 	   if ((FREE_SURF) && (POS[2]==0)){
 	   	if (L)    /* viscoelastic */
@@ -197,7 +175,6 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	   		surface_elastic_PML(1, (*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).psxx, (*wavePSV).psyy, (*wavePSV).psxy, (*matPSV).ppi, (*matPSV).pu, (*matPSV).prho, hc, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, 
                                             (*wavePSV_PML).b_x, (*wavePSV_PML).psi_vxxs);
 	   }
-
 
 	   /*if (MYID==0){
 	      time6=MPI_Wtime();
@@ -219,8 +196,8 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	      }  */
 
 		/* store amplitudes at receivers in section-arrays */
-		if (SEISMO){
-			seismo_ssg(nt, ntr, recpos_loc, (*seisPSV).sectionvx, (*seisPSV).sectionvy, 
+		if (SEISMO && (mode==0)){
+			seismo_ssg(nt, ntr, (*acq).recpos_loc, (*seisPSV).sectionvx, (*seisPSV).sectionvy, 
 				(*seisPSV).sectionp, (*seisPSV).sectioncurl, (*seisPSV).sectiondiv, 
 				(*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).psxx, (*wavePSV).psyy, (*matPSV).ppi, (*matPSV).pu, (*matPSV).prho, hc);
 			/*lsamp+=NDT;*/
@@ -245,7 +222,6 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
 	    /* save forward wavefields for time-domain inversion */
             /* ------------------------------------------------- */
-	    if(INVMAT==0){
 	    
 		for (i=1;i<=NX;i=i+IDXI){
 		    for (j=1;j<=NY;j=j+IDYI){
@@ -292,8 +268,6 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		    
 		    }
 		}
-	
-	    }
 	   
 	    if((EPRECOND==1)||(EPRECOND==3)){
 	      eprecond(Ws,(*wavePSV).pvx,(*wavePSV).pvy);
@@ -378,61 +352,6 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		                                                                                                                       
 	    hin++;
 	    }
-
-	   /* save forward wavefields for time-Laplace domain inversion */   
-	   /*if(INVMAT==1){
-	     
-	     time = (float)(nt*DT);
-	     tmp = exp(-GAMMA*(time+DT)*(time+DT));
-
-		for (i=1;i<=NX;i=i+IDXI){ 
-		    for (j=1;j<=NY;j=j+IDYI){
-
-			forward_propl_rho_x[j][i]+=pvxp1[j][i]*tmp;
-			forward_propl_rho_y[j][i]+=pvyp1[j][i]*tmp;
-
-		        if(GRAD_FORM==1){
-	 	          forward_propl_u[j][i]+=psxy[j][i]*tmp;
-			  forward_propl_x[j][i]+=psxx[j][i]*tmp;
-			  forward_propl_y[j][i]+=psyy[j][i]*tmp;
-			}
-
-		        if(GRAD_FORM==2){
-	 	          forward_propl_u[j][i]+=uxy[j][i]*tmp;
-			  forward_propl_x[j][i]+=ux[j][i]*tmp;
-			  forward_propl_y[j][i]+=uy[j][i]*tmp;
-		        }
-		
-		    }
-		}
-	
-	    }*/
-
-    	  /* save backpropagated wavefields for time-Laplace domain inversion */   
-          /*if(INVMAT==1){
-
-             for (i=1;i<=NX;i=i+IDXI){ 
-	        for (j=1;j<=NY;j=j+IDYI){
-	    
-	            back_prop_rho_x[j][i]+=pvxp1[j][i];
-		    back_prop_rho_y[j][i]+=pvyp1[j][i];
-
-                    if(GRAD_FORM==1){
- 	              back_prop_u[j][i]+=psxy[j][i];
-		      back_prop_x[j][i]+=psxx[j][i];
-	              back_prop_y[j][i]+=psyy[j][i];
-	            }
-
-                    if(GRAD_FORM==2){
- 	              back_prop_u[j][i]+=uxy[j][i];
-		      back_prop_x[j][i]+=ux[j][i];
-	              back_prop_y[j][i]+=uy[j][i];
-                    }
-		
-                 }
-             }
-	
-          }*/
 
 	   }/*--------------------  End  of loop over timesteps ----------*/		
 
