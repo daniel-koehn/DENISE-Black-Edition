@@ -203,7 +203,7 @@ void extend_mod(float  **rho_grav, float  **rho_grav_ext, int nxgrav, int nygrav
 
 void FD_PSV();
 
-void FWI_PSV(char * fileinp1);
+void FWI_PSV();
 
 /*void hessian(int nshots, int SHOTINC, float *** green_vx, float *** greeni_vx, float *** green_vy, float *** greeni_vy, float *** green_sxx, float *** greeni_sxx, float *** green_syy, float *** greeni_syy,
              float *** green_sxy, float *** greeni_sxy, float ** prho, float ** pu, float ** ppi, int iter);*/
@@ -308,7 +308,7 @@ void  output_source_signal(FILE *fp, float **signals, int ns, int seis_form);
 void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float C_vp, float ** gradp, 
 float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho);
 
-void physics_PSV(char * fileinp1);
+void physics_PSV();
 
 void PML_pro(float * d_x, float * K_x, float * alpha_prime_x, float * a_x, float * b_x, 
 float * d_x_half, float * K_x_half, float * alpha_prime_x_half, float * a_x_half, float * b_x_half,

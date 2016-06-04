@@ -5,7 +5,7 @@
 # description/name of the model: Marmousi-II
 #
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 5
+number_of_processors_in_x-direction_(NPROCX) = 2
 number_of_processors_in_y-direction_(NPROCY) = 3
 #
 #-------------------- FD order -----------------------------------
@@ -142,7 +142,7 @@ forward_modelling_only_(yes=10)_TD_FWT_(yes=0)_Laplace_FWT_(yes=1)_(INVMAT) = 10
 point_source_backpropagation_(x_and_y_components=1/y_comp=2/x_comp=3/p_comp=4)_(QUELLTYPB) = 1
 #
 #
-testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR) = 25,75,10
+testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR) = 25, 75, 10
 #
 #
 # ----- Definition of gradient taper geometry ----- #

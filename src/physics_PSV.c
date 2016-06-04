@@ -7,7 +7,7 @@
 
 #include "fd.h"
 
-void physics_PSV(char * fileinp1){
+void physics_PSV(){
 
 	/* global variables */
 	extern int INVMAT;
@@ -19,7 +19,7 @@ void physics_PSV(char * fileinp1){
 
 	/* 2D PSV Full Waveform Inversion */
 	if(INVMAT==0){
-	   FWI_PSV(fileinp1);
+	   FWI_PSV();
 	}
 
         /* 2D PSV Reverse Time Migration */

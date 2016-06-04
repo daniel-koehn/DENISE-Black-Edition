@@ -54,7 +54,7 @@ float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_P
         /* update material parameters for test step eps_scale */
 	tmp=calc_mat_change_test((*fwiPSV).waveconv,(*fwiPSV).waveconv_rho,(*fwiPSV).waveconv_u,(*fwiPSV).prho_old,(*matPSV).prho,(*fwiPSV).ppi_old,(*matPSV).ppi,(*fwiPSV).pu_old,(*matPSV).pu,iter,1,eps_scale,1);
 
-        L2 = obj_psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,itest,iter,Ws,Wr,hin,DTINV_help,eps_scale,req_send,req_rec);
+        L2 = obj_psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,itest,iter,Ws,Wr,hin,DTINV_help,eps_scale,req_send,req_rec);
         L2t[itest] = L2;
 
         epst1[itest]=eps_scale;
@@ -161,7 +161,8 @@ float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_P
 	  step2=1;
 	}
 
-	if(MYID==0){printf("iteste = %d \t itests = %d \t step1 = %d \t step2 = %d \t eps_scale = %e \t countstep = %d \t stepmax= %d \t scalefac = %e \t MYID = %d \t L2t[1] = %e \t L2t[2] = %e \t L2t[3] = \n",iteste,itests,*step1,step2,eps_scale,countstep,stepmax,scalefac,MYID,L2t[1],L2t[2],L2t[3]);}
+	if(MYID==0){
+        printf("iteste = %d \t itests = %d \t step1 = %d \t step2 = %d \t eps_scale = %e \t countstep = %d \t stepmax= %d \t scalefac = %e \t MYID = %d \t L2t[1] = %e \t L2t[2] = %e \t L2t[3] = %e \n",iteste,itests,*step1,step2,eps_scale,countstep,stepmax,scalefac,MYID,L2t[1],L2t[2],L2t[3]);}
 
 	} /* end of while loop */
 

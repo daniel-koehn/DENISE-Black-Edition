@@ -7,7 +7,7 @@
 
 #include "fd.h"
 
-void FWI_PSV(char * fileinp1){
+void FWI_PSV(){
 
 /* global variables */
 /* ---------------- */
@@ -30,6 +30,7 @@ extern int SWS_TAPER_CIRCULAR_PER_SHOT, GRAD_FORM, POS[3], SWS_TAPER_GRAD_VERT, 
 extern int SWS_TAPER_FILE, QUELLTYPB, MIN_ITER, MODEL_FILTER;
 extern float FC_END, EPSILON, PRO;
 extern char MISFIT_LOG_FILE[STRING_SIZE], JACOBIAN[STRING_SIZE];
+extern char *FILEINP1;
 
 /* local variables */
 int ns, nseismograms=0, nt, nd, fdo3, j, i, iter, h, hin, iter_true, SHOTINC, TIMEWIN, s=0;
@@ -128,11 +129,11 @@ SHOTINC=1;
 DTINV_help=ivector(1,NT);
 
 /* read parameters from workflow-file (stdin) */
-FP_stage=fopen(fileinp1,"r");
+FP_stage=fopen(FILEINP1,"r");
 if(FP_stage==NULL) {
 	if (MYID == 0){
 		printf("\n==================================================================\n");
-		printf(" Cannot open Denise workflow input file %s \n",fileinp1);
+		printf(" Cannot open Denise workflow input file %s \n",FILEINP1);
 		printf("\n==================================================================\n\n");
 		err(" --- ");
 	}
@@ -367,7 +368,7 @@ iter_true=1;
 for(nstage=1;nstage<=stagemax;nstage++){
 
 /* read workflow input file *.inp */
-FP_stage=fopen(fileinp1,"r");
+FP_stage=fopen(FILEINP1,"r");
 read_par_inv(FP_stage,nstage,stagemax);
 /*fclose(FP_stage);*/
 

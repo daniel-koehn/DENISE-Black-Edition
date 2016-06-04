@@ -1,6 +1,10 @@
 /*  --------------------------------------------------------------------------
  *   Solving the (visco)-elastic 2D PSV-forward problem by finite-differences 
  *   for a single shot 
+ *
+ *   mode = 0 - forward modelling only, STF estimation or FWI gradient calculation
+ *   mode = 1 - backpropagation of data residuals
+ *   mode = 2 - evaluation objective function for step length estimation  
  * 
  *   
  *   D. Koehn
@@ -107,7 +111,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	   }
 
 	      /* update of particle velocities */
-              if(mode==0){
+              if((mode==0)||(mode==2)){
 	         update_v_PML(1, NX, 1, NY, nt, (*wavePSV).pvx, (*wavePSV).pvxp1, (*wavePSV).pvxm1, (*wavePSV).pvy, (*wavePSV).pvyp1, (*wavePSV).pvym1, (*wavePSV).uttx, (*wavePSV).utty, (*wavePSV).psxx, (*wavePSV).psyy,       
                               (*wavePSV).psxy, (*matPSV).prip, (*matPSV).prjp, (*acq).srcpos_loc,(*acq).signals,(*acq).signals,nsrc_loc,(*wavePSV_PML).absorb_coeff,hc,infoout, mode, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, 
                               (*wavePSV_PML).b_x, (*wavePSV_PML).K_x_half, (*wavePSV_PML).a_x_half, (*wavePSV_PML).b_x_half, (*wavePSV_PML).K_y, (*wavePSV_PML).a_y, (*wavePSV_PML).b_y, (*wavePSV_PML).K_y_half, 
@@ -152,7 +156,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	    /* explosive source */
 	   if (QUELLTYP==1){
 
-               if(mode==0){ 	
+               if((mode==0)||(mode==2)){ 	
 	          psource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*acq).srcpos_loc,(*acq).signals,nsrc_loc,0);
                }
 
@@ -196,7 +200,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	      }  */
 
 		/* store amplitudes at receivers in section-arrays */
-		if (SEISMO && (mode==0)){
+		if (SEISMO && (mode==0 || mode==2)){
 			seismo_ssg(nt, ntr, (*acq).recpos_loc, (*seisPSV).sectionvx, (*seisPSV).sectionvy, 
 				(*seisPSV).sectionp, (*seisPSV).sectioncurl, (*seisPSV).sectiondiv, 
 				(*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).psxx, (*wavePSV).psyy, (*matPSV).ppi, (*matPSV).pu, (*matPSV).prho, hc);

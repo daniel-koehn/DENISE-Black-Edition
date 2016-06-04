@@ -50,15 +50,15 @@ needs. The total number of cores = NPROCX * NPROCY.
 
 8. Check if the modelling results are plausible, e.g. with Seismic Unix
 
-sugain qbal=1 < su/DENISE_MARMOUSI_y.su.shot1.it1 | suximage &
+sugain qbal=1 < su/DENISE_MARMOUSI_y.su.shot1 | suximage &
 
 9. In DENISE-Black-Edition/par/su generate the directory MARMOUSI_spike
 
 mkdir MARMOUSI_spike
 
-10. Move the data from /su to /su/MARMOUSI_spike with the shell script move_x_y.sh
+10. Move the data from /su to /su/MARMOUSI_spike 
 
-./move_x_y.sh
+mv DENISE_MARMOUSI_* MARMOUSI_spike/ 
 
 11. In DENISE-Black-Edition/par/DENISE_marm_OBC.inp change the following parameters
 

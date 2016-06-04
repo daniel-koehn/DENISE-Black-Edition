@@ -57,7 +57,7 @@
 #include "cseife.h"
 
 int main(int argc, char **argv){
-char * fileinp, * fileinp1;
+char * fileinp;
 
 /* Initialize MPI environment */
 MPI_Init(&argc,&argv);
@@ -71,7 +71,7 @@ if (MYID == 0) info(stdout);
 
 /* read parameters from parameter-file (stdin) */
 fileinp=argv[1];
-fileinp1=argv[2];
+FILEINP1=argv[2];
 FP=fopen(fileinp,"r");
 if(FP==NULL) {
 	if (MYID == 0){
@@ -95,7 +95,7 @@ PHYSICS = 1;
 /* Forward, FWI, RTM and RTMOD modules (2D PSV-problem) */
 /* ---------------------------------------------------- */
 if(PHYSICS==1){
-  physics_PSV(fileinp1);
+  physics_PSV();
 }
 
 MPI_Finalize();

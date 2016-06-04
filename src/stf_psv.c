@@ -39,8 +39,8 @@ void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct ma
 	} 
 
         /* forward problem */
-        psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
-	
+        psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);	
+
         catseis((*seisPSV).sectionvy, (*seisPSV).fulldata_vy, (*acq).recswitch, ntr_glob, MPI_COMM_WORLD);	   
 
 	/* estimate STF */	
