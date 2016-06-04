@@ -428,6 +428,7 @@ if (L) prepare_update_s(matPSV.etajm,matPSV.etaip,matPSV.peta,matPSV.fipjp,matPS
 
 
 if(iter_true==1){
+
     for (i=1;i<=NX;i=i+IDX){ 
 	for (j=1;j<=NY;j=j+IDY){
 	
@@ -643,7 +644,10 @@ if(RUN_MULTIPLE_SHOTS){
 /* solve forward problem */
 psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
 
-/* calculate objective function and data residuals */
+/* ===============================================
+   Calculate objective function and data residuals
+   =============================================== */
+
 if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){swstestshot=1;}
 
 if (ntr > 0){
@@ -660,7 +664,7 @@ if ((SEISMO)&&(iter==1)&&(ishot==1)){
    outseis_PSVres(&seisPSV,&seisPSVfwi,acq.recswitch,acq.recpos,acq.recpos_loc,ntr_glob,acq.srcpos,ishot,ns,nstage,FP);       
 }
                   	    		    
-/*==================================================================================
+/*================================================================================
                 Starting simulation (backward model)
 ==================================================================================*/
     
@@ -881,68 +885,8 @@ if((IDXI>1)||(IDYI>1)){
 
 }
 
-   
-/* IMPLEMENTATION OF TAPER IN denise.c, taper of seismic gradients only */
-/*==================== TAPER Vp/Zp/lambda =====================*/
-if (SWS_TAPER_GRAD_VERT){   /*vertical gradient taper is applied*/
-   taper_grad(fwiPSV.waveconv,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,1);}
-
-if (SWS_TAPER_GRAD_HOR){    /*horizontal gradient taper is applied*/
-   taper_grad(fwiPSV.waveconv,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,2);}
-
-if (SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
-   taper_grad(fwiPSV.waveconv,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,3);}
-
-/* apply Hessian^-1 and save in gradp */
-if (SWS_TAPER_FILE){
-   taper_grad(fwiPSV.waveconv,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,4);}
-
-/*================== TAPER Vs/Zs/mu ===========================*/
-if (SWS_TAPER_GRAD_VERT){    /*vertical gradient taper is applied*/
-   taper_grad(fwiPSV.waveconv_u,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,1);}
-
-if (SWS_TAPER_GRAD_HOR){    /*horizontal gradient taper is applied*/
-   taper_grad(fwiPSV.waveconv_u,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,2);}
-
-if(SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
-   taper_grad(fwiPSV.waveconv_u,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,3);}
-
-/* apply Hessian^-1 and save in gradp */
-if(SWS_TAPER_FILE){
-   taper_grad(fwiPSV.waveconv_u,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,5);}
-
-/*================== TAPER Rho ===========================*/
-if (SWS_TAPER_GRAD_VERT){    /*vertical gradient taper is applied*/
-   taper_grad(fwiPSV.waveconv_rho,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,1);}
-
-if (SWS_TAPER_GRAD_HOR){     /*horizontal gradient taper is applied*/
-   taper_grad(fwiPSV.waveconv_rho,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,2);}
-
-if (SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
-   taper_grad(fwiPSV.waveconv_rho,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,3);}
-
-/* apply Hessian^-1 and save in gradp */
-if (SWS_TAPER_FILE){
-   taper_grad(fwiPSV.waveconv_rho,taper_coeff,acq.srcpos,nsrc,acq.recpos,ntr_glob,6);}
-
-
-/* output of the seismic gradient for rho after taper  */
-  sprintf(jac,"%s_seis.%i%i",JACOBIAN,POS[1],POS[2]);
-  FP_GRAV=fopen(jac,"wb");       
-
-  for (i=1;i<=NX;i=i+IDX){
-      for (j=1;j<=NY;j=j+IDY){
-          fwrite(&fwiPSV.waveconv_rho[j][i],sizeof(float),1,FP_GRAV);
-      }
-  }
-
-  fclose(FP_GRAV);
-
-  MPI_Barrier(MPI_COMM_WORLD);
-
-  /* merge model file */
-  sprintf(jac,"%s_seis",JACOBIAN);          
-  if (MYID==0) mergemod(jac,3); 
+/* Preconditioning of gradients after shot summation */
+precond_PSV(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
 
 /* Add gravity gradient to FWI density gradient */
 /* -------------------------------------------- */
@@ -1003,12 +947,8 @@ if(iter==1){min_iter_help=MIN_ITER;}
 /* Estimate optimum step length ... */
 
 /* ... by line search (parabolic fitting) */
-/*eps_scale = step_length_est(fprec,fwiPSV.waveconv,fwiPSV.waveconv_rho,fwiPSV.waveconv_u,prho,prhonp1,ppi,ppinp1,iter,nfstart,nsrc,puipjp,prip,prjp,L2,partest,srcpos_loc,srcpos,srcpos1,signals,ns,
-                nd,pvx,pvy,psxx,psyy,psxy,ux,uy,pvxp1,pvyp1,psi_sxx_x,psi_sxy_x,psi_vxx,psi_vyx,psi_syy_y,psi_sxy_y,psi_vyy,psi_vxy,psi_vxxs,pvxm1,pvym1,uttx,utty,absorb_coeff,hc,K_x,
-                a_x,b_x,K_x_half,a_x_half,b_x_half,K_y,a_y,b_y,K_y_half,a_y_half,b_y_half,uxy,uyx,ntr,recpos_loc,sectionvx,sectionvy,sectionp,sectioncurl,sectiondiv,sectionread,ntr_glob,
-                sectionvxdata,sectionvxdiff,sectionvxdiffold,sectionvydata,sectionvydiff,sectionvydiffold,sectionpdata,sectionpdiff,sectionpdiffold,epst1,L2t,L2sum,energy_sum,bufferlef_to_rig,
-		bufferrig_to_lef,buffertop_to_bot,bufferbot_to_top,pu,punp1,itest,nsrc_glob,nsrc_loc,req_send,req_rec,pr,pp,pq,fipjp,f,g,bip,bjm,cip,cjm,d,e,dip,ptaup,ptaus,etajm,peta,etaip,
-                ptausipjp,recpos,&step1,&step3,C_vp,gradg,FC,nxgrav,nygrav,ngrav,gravpos,gz_mod,NZGRAV,recswitch,FP,ntr_loc);*/
+eps_scale = step_length_est_psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,iter,nsrc,ns,ntr,ntr_glob,epst1,L2t,nsrc_glob,nsrc_loc,&step1,&step3,nxgrav,nygrav,ngrav,gravpos,gz_mod,NZGRAV,
+                                ntr_loc,Ws,Wr,hin,DTINV_help,req_send,req_rec);
 
 /* no model update due to steplength estimation failed or update with the smallest steplength if the number of iteration is smaller than the minimum number of iteration per
 frequency MIN_ITER */
@@ -1051,8 +991,8 @@ s=0;
 
 
 /* calculate optimal change in the material parameters */
-eps_true=calc_mat_change_test(fwiPSV.waveconv,fwiPSV.waveconv_rho,fwiPSV.waveconv_u,matPSV.prho,fwiPSV.prhonp1,matPSV.ppi,fwiPSV.ppinp1,matPSV.pu,fwiPSV.punp1,iter,1,INVMAT,eps_scale,0);
-
+/*eps_true=calc_mat_change_test(fwiPSV.waveconv,fwiPSV.waveconv_rho,fwiPSV.waveconv_u,matPSV.prho,fwiPSV.prhonp1,matPSV.ppi,fwiPSV.ppinp1,matPSV.pu,fwiPSV.punp1,iter,1,INVMAT,eps_scale,0);*/
+eps_true=calc_mat_change_test(fwiPSV.waveconv,fwiPSV.waveconv_rho,fwiPSV.waveconv_u,fwiPSV.prho_old,matPSV.prho,fwiPSV.ppi_old,matPSV.ppi,fwiPSV.pu_old,matPSV.pu,iter,1,eps_scale,0);
 
 if (MODEL_FILTER){
 /* smoothing the velocity models vp and vs */
@@ -1131,16 +1071,14 @@ free_matrix(fwiPSV.Vs0,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiPSV.Rho0,-nd+1,NY+nd,-nd+1,NX+nd);
 
 free_matrix(matPSV.prho,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiPSV.prhonp1,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(fwiPSV.prho_old,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matPSV.prip,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matPSV.prjp,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiPSV.pripnp1,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiPSV.prjpnp1,-nd+1,NY+nd,-nd+1,NX+nd);
 
 free_matrix(matPSV.ppi,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiPSV.ppinp1,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(fwiPSV.ppi_old,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matPSV.pu,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiPSV.punp1,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(fwiPSV.pu_old,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matPSV.puipjp,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiPSV.waveconv,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiPSV.waveconv_lam,-nd+1,NY+nd,-nd+1,NX+nd);

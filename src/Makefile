@@ -107,11 +107,11 @@ DENISE= \
         calc_res_PSV.c \
 	calc_misfit.c \
         calc_opt_step.c \
-	calc_opt_step_test.c \
 	calc_energy.c \
 	checkfd_ssg_elastic.c \
 	checkfd_ssg_visc.c \
 	conv_FD.c \
+        copy_mat.c \
 	psource.c \
         msource.c \
 	hessian_out.c \
@@ -124,14 +124,13 @@ DENISE= \
 	exchange_L2.c \
 	eprecond.c \
 	eprecond1.c \
-	forward_mod.c \
         FD_PSV.c \
         FWI_PSV.c \
         grav_grad.c \
         grav_mod.c \
 	snap_ssg.c \
 	seismo_ssg.c \
-	step_length_est.c \
+	step_length_est_psv.c \
 	surface_elastic_2nd.c \
 	surface_elastic_PML.c \
 	surface_PML.c \
@@ -170,6 +169,7 @@ DENISE= \
 	model_freq_out.c \
 	note.c \
 	norm.c \
+        obj_psv.c \
 	outseis.c \
 	outseis_vector.c \
 	outseis_glob.c \
@@ -180,6 +180,7 @@ DENISE= \
 	PCG.c \
         physics_PSV.c \
 	PML_pro.c \
+        precond_PSV.c \
         psv.c \
 	read_back_density.c \
         read_density_glob.c \

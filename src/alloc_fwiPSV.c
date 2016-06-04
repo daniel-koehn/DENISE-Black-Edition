@@ -17,11 +17,9 @@ void alloc_fwiPSV(struct fwiPSV *fwiPSV){
 
         nd = FDORDER/2 + 1;	
 
-	(*fwiPSV).prhonp1 =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-        (*fwiPSV).pripnp1 =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	(*fwiPSV).prjpnp1 =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	(*fwiPSV).ppinp1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	(*fwiPSV).punp1   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).prho_old =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).ppi_old  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiPSV).pu_old   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
 	(*fwiPSV).Vp0  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*fwiPSV).Vs0  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);

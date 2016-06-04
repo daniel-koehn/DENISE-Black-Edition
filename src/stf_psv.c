@@ -48,7 +48,7 @@ void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct ma
 	       
 	      /* read seismic data from SU file vy */
 	      /* --------------------------------- */
-	      inseis(fprec,ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,2,iter);
+	      inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,2,iter);
 
 	      if (TIME_FILT){
                  apply_tdfilt((*seisPSVfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);

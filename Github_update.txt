@@ -1,0 +1,29 @@
+Git cloning ...
+---------------
+
+... the master branch
+
+git clone https://github.com/daniel-koehn/DENISE-Black-Edition.git
+
+... only the latest master branch update 
+
+git clone --depth=1 https://github.com/daniel-koehn/DENISE-Black-Edition.git  
+
+... a developing branch
+
+git clone -b branch_name https://github.com/daniel-koehn/DENISE-Black-Edition.git
+
+
+Update of Github DENISE-Black-Edition repository
+------------------------------------------------
+
+1. Move to DENISE-Black-Edition directory
+2. git add -A
+3. git commit -m "Comment on the latest update"
+
+For a specific branch ...
+4. git push origin branch_name
+
+For master branch ...
+4. git push origin master
+
