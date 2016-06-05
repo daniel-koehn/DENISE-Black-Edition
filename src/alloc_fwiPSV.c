@@ -10,7 +10,7 @@
 void alloc_fwiPSV(struct fwiPSV *fwiPSV){
 
         /* global variables */
-	extern int NX, NY, L, FW, FDORDER, INVMAT, NTDTINV, NXNYI;
+	extern int NX, NY, L, FW, FDORDER, NTDTINV, NXNYI;
 
 	/* local variables */
 	int nd;

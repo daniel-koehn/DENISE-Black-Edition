@@ -120,7 +120,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 	L2sum=0.0;
         printf("L2 = %e \n", L2);
 	MPI_Allreduce(&L2,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-	/*if((LNORM==2)&&(INVMAT!=1)){   
+	/*if(LNORM==2){   
 	  L2t[itest] = L2sum/energy_sum;
 	}*/
 

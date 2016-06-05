@@ -10,7 +10,7 @@
 void init_grad(float ** A){
 
         /* global variables */
-	extern int NX, NY, INVMAT;
+	extern int NX, NY;
 
 	/* local variables */
 	int i, j;

@@ -10,21 +10,21 @@
 void physics_PSV(){
 
 	/* global variables */
-	extern int INVMAT;
+	extern int MODE;
 
 	/* 2D PSV Forward Problem */
-	if(INVMAT==10){
+	if(MODE==0){
 	   FD_PSV();
 	}
 
 	/* 2D PSV Full Waveform Inversion */
-	if(INVMAT==0){
+	if(MODE==1){
 	   FWI_PSV();
 	}
 
         /* 2D PSV Reverse Time Migration */
-	/* if(INVMAT==2){
-	   FWI_PSV(fileinp1,req_send,req_rec,send_statuses,rec_statuses);
+	/* if(MODE==2){
+	   RTM_PSV();
 	}*/
 
 }

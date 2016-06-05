@@ -8,7 +8,7 @@ double calc_res(float **sectiondata, float **section, float **sectiondiff, float
 
 /* declaration of variables */
 extern float DT, DH, OFFSETC, FC, FC_START;
-extern int REC1, REC2, MYID, ORDER, INVMAT;
+extern int REC1, REC2, MYID, ORDER;
 extern int TRKILL, TIME_FILT, GRAD_FORM,ENV;
 extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, RTM, OFFSET_MUTE;
@@ -252,13 +252,9 @@ if(LNORM==7){
 
 /* Laplace-Fourier-domain residuals */
 /* -------------------------------- */
-if(INVMAT==1){
+/*if(INVMAT==1){
    laplace_fourier_res(sectiondata,section,sectiondiff,ntr,ntr_glob,ns,ishot,nsrc_glob,iter,recpos,recpos_loc,srcpos);
-}	
-
-/* Time-domain residuals */
-/* --------------------- */
-if(INVMAT!=1){
+}*/
                   
 /* calculate weighted data residuals and reverse time direction */
 for(i=1;i<=ntr;i++){	
@@ -445,9 +441,6 @@ for(i=1;i<=ntr;i++){
    if((TIMEWIN==1)||(TIMEWIN==2)){  
      time_window(sectiondiff, picked_times, iter, ntr_glob,recpos_loc, ntr, ns, ishot);
    }    
-
-
-} /* end of time domain residuals */
 
 /* calculate objective functions */
 /* ----------------------------- */

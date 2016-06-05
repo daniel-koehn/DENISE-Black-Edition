@@ -25,7 +25,7 @@ extern char GRAV_DATA_OUT[STRING_SIZE], GRAV_DATA_IN[STRING_SIZE], GRAV_STAT_POS
 extern float LAM_GRAV, GAMMA_GRAV, LAM_GRAV_GRAD, L2_GRAV_IT1;
 
 /* full waveform inversion */
-extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, INVMAT, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, EPRECOND;
+extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, EPRECOND;
 extern int SWS_TAPER_CIRCULAR_PER_SHOT, GRAD_FORM, POS[3], SWS_TAPER_GRAD_VERT, SWS_TAPER_GRAD_HOR, SWS_TAPER_GRAD_SOURCES;
 extern int SWS_TAPER_FILE, QUELLTYPB, MIN_ITER, MODEL_FILTER;
 extern float FC_END, EPSILON, PRO;
@@ -531,11 +531,9 @@ energy_all_shots=0.0;
 EPSILON=0.0;  /* test step length */
 
 /* set gradient and preconditioning matrices 0 before next iteration*/
-if(INVMAT<=1){
-   init_grad(fwiPSV.waveconv);
-   init_grad(fwiPSV.waveconv_rho);
-   init_grad(fwiPSV.waveconv_u);
-}
+init_grad(fwiPSV.waveconv);
+init_grad(fwiPSV.waveconv_rho);
+init_grad(fwiPSV.waveconv_u);
 
 itestshot=TESTSHOT_START;
 swstestshot=0;
@@ -794,7 +792,7 @@ MPI_Allreduce(&energy_all_shots,&energy_sum_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_CO
 L2t[1]=L2sum;
 L2t[4]=L2sum;
 
-/*if((LNORM==2)&&(INVMAT!=1)){
+/*if(LNORM==2){
      L2t[1]=L2sum/energy_sum;
      L2t[4]=L2sum/energy_sum;
 }
@@ -992,7 +990,6 @@ s=0;
 
 
 /* calculate optimal change in the material parameters */
-/*eps_true=calc_mat_change_test(fwiPSV.waveconv,fwiPSV.waveconv_rho,fwiPSV.waveconv_u,matPSV.prho,fwiPSV.prhonp1,matPSV.ppi,fwiPSV.ppinp1,matPSV.pu,fwiPSV.punp1,iter,1,INVMAT,eps_scale,0);*/
 eps_true=calc_mat_change_test(fwiPSV.waveconv,fwiPSV.waveconv_rho,fwiPSV.waveconv_u,fwiPSV.prho_old,matPSV.prho,fwiPSV.ppi_old,matPSV.ppi,fwiPSV.pu_old,matPSV.pu,iter,1,eps_scale,0);
 
 if (MODEL_FILTER){

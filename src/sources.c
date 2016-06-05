@@ -11,14 +11,14 @@
 float **sources(int *nsrc){
 
 	/* declaration of extern variables */
-	extern float PLANE_WAVE_DEPTH, PHI, TS, DH;
+	extern float TS, DH;
 	extern  char SOURCE_FILE[STRING_SIZE];
 	extern int MYID, NXG, NYG, SRCREC, RUN_MULTIPLE_SHOTS, QUELLTYP;
 	extern FILE *FP;
 
 	float **srcpos;
 	int   i, l, isrc=0, current_source=0, nvarin=0,nsrc_dummy;
-	float xsrc, ysrc, zsrc, tshift, fc, amp, tan_phi, dz, x;
+	float xsrc, ysrc, zsrc, tshift, fc, amp, dz, x;
 	char  cline[256];
 	FILE *fpsrc;
 
@@ -101,35 +101,7 @@ float **sources(int *nsrc){
 	      		}
 
 
-		} 
-		else if (PLANE_WAVE_DEPTH > 0) {  /* plane wave excitation */
-				fprintf(FP," Computing source nodes for plane wave excitation.\n");
-				fprintf(FP," depth= %5.2f meter, incidence angle= %5.2f degrees.\n",PLANE_WAVE_DEPTH, PHI);
-
-	
-				tan_phi=tan(PHI*PI/180.0);
-				
-				dz=(float)NXG*DH*tan_phi;
-				fprintf(FP," Message from function sources (written by PE %d):\n",MYID);				
-				fprintf(FP," Maximum depth of plane wave: %5.2f meter \n",PLANE_WAVE_DEPTH+dz);				
-				if ((PLANE_WAVE_DEPTH+dz)<=NYG*DH){			
-					*nsrc=NXG;
-					srcpos=matrix(1,6,1,*nsrc);
-					isrc=0;
-					for (i=1;i<=NXG;i++){
-						isrc++;
-						x=(float)i*DH;
-						srcpos[1][isrc]=x;
-						srcpos[2][isrc]=PLANE_WAVE_DEPTH+(tan_phi*x);
-						srcpos[3][isrc]=0.0;
-						srcpos[4][isrc]=0.0;
-						srcpos[5][isrc]=1.0/TS;
-						srcpos[6][isrc]=1.0;
-					}
-				}
-				else err(" Maximum depth of plane wave exceeds model depth. ");
-			}
-				
+		}		
 			fprintf(FP," Message from function sources (written by PE %d):\n",MYID);			
 
 		}

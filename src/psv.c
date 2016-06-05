@@ -21,9 +21,9 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
         /* global variables */
 	extern float DT, DH, TSNAP1, TSNAP2, TSNAPINC;
 	extern int MYID, FDORDER, FW, L, GRAD_FORM, FC_SPIKE_1, FC_SPIKE_2, ORDER_SPIKE;
-        extern int NX, NY, FREE_SURF, BOUNDARY, INVMAT, QUELLTYP, QUELLART, FDORDER;
+        extern int NX, NY, FREE_SURF, BOUNDARY, MODE, QUELLTYP, QUELLART, FDORDER;
 	extern int NPROCX, NPROCY, POS[3], NDT, SEISMO, IDXI, IDYI, GRAD_FORM, DTINV;
-        extern int SNAP, INVMAT1, INV_STF, EPRECOND, NTDTINV, NXNYI, NT, INVMAT;
+        extern int SNAP, INVMAT1, INV_STF, EPRECOND, NTDTINV, NXNYI, NT;
 	extern FILE *FP;
 
         /* local variables */
@@ -222,7 +222,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	      if (infoout)  fprintf(FP," total real time for timestep %d : %4.2f s.\n",nt,time8-time3);
 	      } */  		
 
-	if((nt==hin1)&&(mode==0)&&(INVMAT==0)){
+	if((nt==hin1)&&(mode==0)&&(MODE==1)){
 
 	    /* save forward wavefields for time-domain inversion */
             /* ------------------------------------------------- */

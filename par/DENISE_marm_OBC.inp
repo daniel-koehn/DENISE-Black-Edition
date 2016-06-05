@@ -4,8 +4,15 @@
 # description:
 # description/name of the model: Marmousi-II
 #
+# ------------------ DENISE Mode ---------------------------------
+# Operation mode:
+(forward_modelling_only=0;FWI=1)_(MODE) = 0
+#
+# ---------------- DENISE Physics -----------------------------
+(2D-PSV=1)_(PHYSICS) = 1
+#
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 2
+number_of_processors_in_x-direction_(NPROCX) = 5
 number_of_processors_in_y-direction_(NPROCY) = 3
 #
 #-------------------- FD order -----------------------------------
@@ -35,8 +42,6 @@ timestep_(in_seconds)_(DT) = 2.0e-3
 (ricker=1;fumue=2;from_SOURCE_FILE=3;SIN**3=4;Gaussian_deriv=5;Spike=6;Klauder=7)_(QUELLART) = 6
 point_source_(explosive=1;force_in_x=2;force_in_y=3;rotated_force=4;moment_tensor=5)_(QUELLTYP) = 1
 angle_of_rotated_directed_source_relative_to_y_direction_(in_degree)_(ANGLE) = 0.0
-depth_of_plane_wave_excitation_(no<=0)_(in_meter)_(PLANE_WAVE_DEPTH) = 0.0
-dip_of_plane_wave_from_vertical_(in_degrees)_(PHI) = 0.0
 SIGNAL_FILE = ./wavelet/wavelet_plexiglas
 duration_of_Klauder_wavelet_(in_seconds)_(TS) = 8.0
 read_source_positions_from_SOURCE_FILE_(yes=1)_(SRCREC) = 1
@@ -93,10 +98,6 @@ output_of_seismograms_(SEISMO) = 1
 read_receiver_positions_from_file_(yes=1)_(READREC) = 1
 REC_FILE = ./receiver/receiver_OBC.dat
 reference_point_for_receiver_coordinate_system_(REFREC) = 0.0 , 0.0
-# if READREC=1 the following three lines are ignored 
-position_of_first_receiver_(in_m)_(XREC1,YREC1) =  6.0 , 0.2
-position_of_last_receiver_(in_m)_(XREC2,YREC2) = 93 , 0.2
-distance_between_two_adjacent_receivers_(in_gridpoints)_(NGEOPH) = 80
 #
 #
 #-------------------- Towed streamer -------------------------------
@@ -124,21 +125,14 @@ filename_for_pressure_(SEIS_FILE_P) = su/DENISE_MARMOUSI_p.su
 log-file_for_information_about_progress_of_program_(LOG_FILE) = log/US.log
 info_of_processing_element_zero_to_stdout_(yes=1/no=0)_(LOG) = 1
 #----------------------------------------------------------------
-# check_pointing
-read_wavefield_from_checkpoint_file_(yes=1/no=0)_(CHECKPTREAD) = 0
-save_wavefield_to_checkpoint_file_(yes=1/no=0)_(CHECKPTWRITE) = 0
-checkpoint_file_(CHECKPTFILE) = tmp/checkpoint_fdveps
-#----------------------------------------------------------------
 # DENISE_elastic specific parameters
 number_of_TDFWI_iterations_(ITERMAX) = 600
 output_of_jacobian_(JACOBIAN) = jacobian/jacobian_Test
 seismograms_of_measured_data_(DATA_DIR) = su/MARMOUSI_spike/DENISE_MARMOUSI
 cosine_taper_(yes=1/no=0)_(TAPER) = 0
 taper_length_(in_rec_numbers)_(TAPERLENGTH) = 4
-Inverse_Type_(gradient=1/complete=2)_(INVTYPE) = 2
 gradient_taper_geometry_(GRADT1,GRADT2,GRADT3,GRADT4) = 21, 25, 490, 500
 type_of_material_parameters_to_invert_(Vp,Vs,rho=1/Zp,Zs,rho=2/lam,mu,rho=3)_(INVMAT1) = 1
-forward_modelling_only_(yes=10)_TD_FWT_(yes=0)_Laplace_FWT_(yes=1)_(INVMAT) = 10
 point_source_backpropagation_(x_and_y_components=1/y_comp=2/x_comp=3/p_comp=4)_(QUELLTYPB) = 1
 #
 #

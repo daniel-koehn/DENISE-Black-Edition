@@ -87,9 +87,8 @@ read_par(FP);
 
 MPI_Barrier(MPI_COMM_WORLD);
 
-/* Define physics (currently only 2D PSV is supported) */
-/* PHYSICS = 1 - 2D PSV */
-PHYSICS = 1;
+/* check if parameters for PHYSICS and MODE are correct */
+check_mode_phys();
 
 /* ---------------------------------------------------- */
 /* Forward, FWI, RTM and RTMOD modules (2D PSV-problem) */

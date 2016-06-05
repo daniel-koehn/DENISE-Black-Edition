@@ -22,7 +22,7 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 	float  vxx, vyy, vxy, vyx;
 	float  dhi;	
 	extern float DT, DH;
-	extern int MYID, FDORDER, INVMAT1, INVMAT, FW;
+	extern int MYID, FDORDER, INVMAT1, MODE, FW;
         extern int FREE_SURF, BOUNDARY, GRAD_FORM;
 	extern int NPROCX, NPROCY, POS[3];
 	extern FILE *FP;
@@ -122,7 +122,7 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
                                   g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
 				
 			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((INVMAT<=1)&&(GRAD_FORM==2)){
+			      if((MODE==1)&&(GRAD_FORM==2)){
 	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
 				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
 				uxy[j][i] = fipjp*(vyx+vxy)/DT;
@@ -218,7 +218,7 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
                                   g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
 				
 			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((INVMAT<=1)&&(GRAD_FORM==2)){
+			      if((MODE==1)&&(GRAD_FORM==2)){
 	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
 				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
 				uxy[j][i] = fipjp*(vyx+vxy)/DT;
@@ -318,7 +318,7 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
                                   g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
 			
 			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((INVMAT<=1)&&(GRAD_FORM==2)){
+			      if((MODE==1)&&(GRAD_FORM==2)){
 	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
 				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
 				uxy[j][i] = fipjp*(vyx+vxy)/DT;
@@ -423,7 +423,7 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
                                   g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
 				
 			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((INVMAT<=1)&&(GRAD_FORM==2)){
+			      if((MODE==1)&&(GRAD_FORM==2)){
 	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
 				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
 				uxy[j][i] = fipjp*(vyx+vxy)/DT;
@@ -536,7 +536,7 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
                                   g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
 				
 			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((INVMAT<=1)&&(GRAD_FORM==2)){
+			      if((MODE==1)&&(GRAD_FORM==2)){
 	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
 				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
 				uxy[j][i] = fipjp*(vyx+vxy)/DT;
@@ -655,7 +655,7 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
                                   g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
 				
 			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((INVMAT<=1)&&(GRAD_FORM==2)){
+			      if((MODE==1)&&(GRAD_FORM==2)){
 	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
 				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
 				uxy[j][i] = fipjp*(vyx+vxy)/DT;

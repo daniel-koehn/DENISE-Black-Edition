@@ -10,11 +10,11 @@
 void outseis_PSVfor(struct seisPSV *seisPSV, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int iter, FILE *FP){ 
 		
         /* global variables */
-	extern int SEISMO, MYID, INVMAT;	
+	extern int SEISMO, MYID, MODE;	
 	
         /* local variables */
 
-	if ((SEISMO==1)&&(INVMAT==10)){
+	if ((SEISMO==1)&&(MODE==0)){
 		
 		catseis((*seisPSV).sectionvx, (*seisPSV).fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
 		catseis((*seisPSV).sectionvy, (*seisPSV).fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
@@ -24,7 +24,7 @@ void outseis_PSVfor(struct seisPSV *seisPSV, int *recswitch, int  **recpos, int 
 		}
 	}
 
-	if ((SEISMO==2)&&(INVMAT==10)){  
+	if ((SEISMO==2)&&(MODE==0)){  
 
 		catseis((*seisPSV).sectionp, (*seisPSV).fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
 
@@ -33,7 +33,7 @@ void outseis_PSVfor(struct seisPSV *seisPSV, int *recswitch, int  **recpos, int 
 		}
 	}
 
-	if ((SEISMO==3)&&(INVMAT==10)){  
+	if ((SEISMO==3)&&(MODE==0)){  
 
 		catseis((*seisPSV).sectioncurl, (*seisPSV).fulldata_curl, recswitch, ntr_glob, MPI_COMM_WORLD);
 		catseis((*seisPSV).sectiondiv, (*seisPSV).fulldata_div, recswitch, ntr_glob, MPI_COMM_WORLD);
@@ -45,7 +45,7 @@ void outseis_PSVfor(struct seisPSV *seisPSV, int *recswitch, int  **recpos, int 
 	}
 
 
-	if ((SEISMO==4)&&(INVMAT==10)){  
+	if ((SEISMO==4)&&(MODE==0)){  
 
 		catseis((*seisPSV).sectionvx, (*seisPSV).fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
 		catseis((*seisPSV).sectionvy, (*seisPSV).fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);

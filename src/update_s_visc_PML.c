@@ -24,7 +24,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 	float  dhi, dthalbe;	
 	extern float DT, DH;
 	extern int MYID, FDORDER, FW, L, GRAD_FORM;
-        extern int FREE_SURF, BOUNDARY, INVMAT;
+        extern int FREE_SURF, BOUNDARY, MODE;
 	extern int NPROCX, NPROCY, POS[3];
 	extern FILE *FP;
 	double time1, time2;
@@ -149,7 +149,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((INVMAT<=1)&&(GRAD_FORM==2)){
+			if((MODE==1)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -262,7 +262,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((INVMAT<=1)&&(GRAD_FORM==2)){
+			if((MODE==1)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -379,7 +379,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((INVMAT<=1)&&(GRAD_FORM==2)){
+			if((MODE==1)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -502,7 +502,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 			
 			/* save forward wavefield for gradient calculation */
-			if((INVMAT<=1)&&(GRAD_FORM==2)){
+			if((MODE==1)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -627,7 +627,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 			
 			/* save forward wavefield for gradient calculation */
-			if((INVMAT<=1)&&(GRAD_FORM==2)){
+			if((MODE==1)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -758,7 +758,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 			
 			/* save forward wavefield for gradient calculation */
-			if((INVMAT<=1)&&(GRAD_FORM==2)){
+			if((MODE==1)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;

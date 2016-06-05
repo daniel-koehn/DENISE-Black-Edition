@@ -166,6 +166,8 @@ void checkfd_ssg_visc(FILE *fp, float ** prho, float ** ppi, float ** pu, float 
 void checkfd_rsg(FILE *fp, float ** prho, float ** ppi, float ** pu,
 float ** ptaus, float ** ptaup, float *peta);
 
+void check_mode_phys();
+
 void comm_ini(float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
 float ** buffertop_to_bot, float ** bufferbot_to_top, 
 MPI_Request *req_send, MPI_Request *req_rec);
@@ -444,41 +446,12 @@ float **puipjp, float **ppi, float **prho, float **ptaus, float **ptaup,
 float **ptausipjp, float **f, float **g, float *bip, float *bjm,
 float *cip, float *cjm, float ***dip, float ***d, float ***e);
 
-void update_s(int nx1, int nx2, int ny1, int ny2,
-float **  vx, float **   vy, float **   sxx, float **   syy,
-float **   sxy, float *** r, float *** p, float *** q,
-float ** ppi, float ** pu, float ** taup, float ** taus, 
-float *   etaip, float *   etajm, float * peta);
-
-void update_s_visc_hc(int nx1, int nx2, int ny1, int ny2,
-float **  vx, float **   vy, float **   sxx, float **   syy,
-float **   sxy, float *** r, float *** p, float *** q,
-float ** ppi, float ** pu, float **uipjp, float ** taup, float ** taus, 
-float **tausipjp, float *   etaip, float *   etajm, float * peta, float *hc);
-
-void update_s_elastic(int nx1, int nx2, int ny1, int ny2,
-float **  vx, float **   vy, float **   sxx, float **   syy,
-float **   sxy, float ** pi, float ** u, float ** uipjm, float ** absorb_coeff);
-
-void update_s_elastic_rsg(int nx1, int nx2, int ny1, int ny2,
-float **  vx, float **  vy, float **  sxx, float **  syy,
-float **  sxy, float  **   pi, float  **   u, float ** absorb_coeff);
-
-void update_s_elastic_hc(int nx1, int nx2, int ny1, int ny2,
-	float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
-	float **   sxy, float ** pi, float ** u, float ** uipjp, float ** absorb_coeff, float ** rho,
-	float *hc, int infoout);
-
 void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
 float **   sxy, float ** pi, float ** u, float ** uipjp, float ** absorb_coeff, float **rho, float *hc, int infoout,
 float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
 float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
 float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int sws);
-
-void update_s_elastic_hh(int nx1, int nx2, int ny1, int ny2,
-float **  vx, float **   vy, float **   sxx, float **   syy,
-float **   sxy, float ** pi, float ** u );
 
 void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
@@ -488,40 +461,12 @@ float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float
 float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
 float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx);
 
-
-void update_v(int nx1, int nx2, int ny1, int ny2, int nt,
-float **  pvx, float ** pvy, float ** psxx, float ** psyy,
-float ** psxy, float  ** prho,  
-float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff);
-
-	
-void update_v_hc(int nx1, int nx2, int ny1, int ny2, int nt,
-float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty, float ** sxx, float ** syy,
-float ** sxy, float  **rip, float **rjp,  
-float **  srcpos_loc, float ** signals, float ** signals1, int nsrc, float ** absorb_coeff,
-float *hc, int infoout, int sw);
-
 void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty,float ** sxx, float ** syy,
 float ** sxy, float  **rip, float **rjp, float **  srcpos_loc, float ** signals, float ** signals1, int nsrc, float ** absorb_coeff,
 float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
 float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
 float ** psi_sxx_x, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_syx_x);
-
-void update_v_hh(int nx1, int nx2, int ny1, int ny2, int nt,
-float **  pvx, float ** pvy, float ** psxx, float ** psyy,
-float ** psxy, float  ** prho,  
-float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff);
-
-void update_v_rsg(int nx1, int nx2, int ny1, int ny2, int nt,
-float **  pvx, float ** pvy, float ** psxx, float ** psyy,
-float ** psxy, float  ** prho,  
-float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff);
-
-void update_v_rsg_4th(int nx1, int nx2, int ny1, int ny2, int nt,
-float **  pvx, float ** pvy, float ** psxx, float ** psyy,
-float ** psxy, float  ** prho,  
-float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff);
 
 float ** wavelet(float ** srcpos_loc, int nsrc, int ishot);
 float ** wavelet_stf(int nsrc, int ishot, float ** signals_stf);

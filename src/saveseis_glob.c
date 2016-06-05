@@ -9,7 +9,7 @@ void saveseis_glob(FILE *fp, float **sectionvx, float **sectionvy,float **sectio
 float **sectioncurl, float **sectiondiv, int  **recpos, int  **recpos_loc, 
 int ntr, float ** srcpos, int ishot, int ns, int iter){ 
 		
-	extern int SEISMO, SEIS_FORMAT, MYID, RUN_MULTIPLE_SHOTS, INVMAT;	
+	extern int SEISMO, SEIS_FORMAT, MYID, RUN_MULTIPLE_SHOTS, MODE;	
 	extern char  SEIS_FILE_VX[STRING_SIZE], SEIS_FILE_VY[STRING_SIZE];
 	extern char  SEIS_FILE_CURL[STRING_SIZE], SEIS_FILE_DIV[STRING_SIZE], SEIS_FILE_P[STRING_SIZE];
 
@@ -33,7 +33,7 @@ int ntr, float ** srcpos, int ishot, int ns, int iter){
         }*/
 
 	
-	if(INVMAT<=1){
+	if(MODE==1){
 	  sprintf(vxf,"%s.shot%d.it%d",SEIS_FILE_VX,ishot,iter);
 	  sprintf(vyf,"%s.shot%d.it%d",SEIS_FILE_VY,ishot,iter);
 	  sprintf(pf,"%s.shot%d.it%d",SEIS_FILE_P,ishot,iter);
@@ -41,7 +41,7 @@ int ntr, float ** srcpos, int ishot, int ns, int iter){
           sprintf(divf,"%s.shot%d.it%d",SEIS_FILE_DIV,ishot,iter);
 	}
 		
-	if(INVMAT==10){
+	if(MODE==0){
 	  sprintf(vxf,"%s.shot%d",SEIS_FILE_VX,ishot);
 	  sprintf(vyf,"%s.shot%d",SEIS_FILE_VY,ishot);
 	  sprintf(pf,"%s.shot%d",SEIS_FILE_P,ishot);

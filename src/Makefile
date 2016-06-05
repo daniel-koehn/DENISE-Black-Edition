@@ -110,6 +110,7 @@ DENISE= \
 	calc_energy.c \
 	checkfd_ssg_elastic.c \
 	checkfd_ssg_visc.c \
+        check_mode_phys.c \
 	conv_FD.c \
         copy_mat.c \
 	psource.c \
@@ -134,10 +135,8 @@ DENISE= \
 	surface_elastic_2nd.c \
 	surface_elastic_PML.c \
 	surface_PML.c \
-	update_v_ssg.c \
 	update_v_PML.c \
 	prepare_update_s.c \
-	update_s_elastic_ssg.c \
 	update_s_elastic_PML.c \
 	update_s_visc_PML.c \
 	absorb.c \
@@ -188,14 +187,12 @@ DENISE= \
         read_grav_pos.c \
 	read_par.c \
 	read_par_inv.c \
-	read_checkpoint.c\
 	readmod.c \
 	readmod_elastic.c \
     	receiver.c \
 	rd_sour.c \
 	saveseis.c \
 	saveseis_glob.c \
-	save_checkpoint.c\
 	sources.c \
 	solvelin.c \
 	spat_filt.c \
