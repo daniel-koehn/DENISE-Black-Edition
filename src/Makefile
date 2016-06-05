@@ -127,6 +127,7 @@ DENISE= \
 	eprecond1.c \
         FD_PSV.c \
         FWI_PSV.c \
+        grad_obj_psv.c \
         grav_grad.c \
         grav_mod.c \
 	snap_ssg.c \

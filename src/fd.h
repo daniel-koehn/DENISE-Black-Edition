@@ -210,6 +210,11 @@ void FWI_PSV();
 /*void hessian(int nshots, int SHOTINC, float *** green_vx, float *** greeni_vx, float *** green_vy, float *** greeni_vy, float *** green_sxx, float *** greeni_sxx, float *** green_syy, float *** greeni_syy,
              float *** green_sxy, float *** greeni_sxy, float ** prho, float ** pu, float ** ppi, int iter);*/
 
+float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
+         int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
+         MPI_Request * req_send, MPI_Request * req_rec);
+
 void grav_grad(int ngrav, float **gravpos, float **grad_grav, float *gz_res);
 
 void grav_mod(float  **rho, int ngrav, float **gravpos, float *gz, int NXGRAV, int NYGRAV, int NZGRAV);
@@ -232,8 +237,7 @@ void interpol(int ni1, int ni2, float **  intvar, int cfgt_check);
 
 void laplace_fourier_res(float **sectionvy_obs, float **sectionvy, float **sectiondiff, int ntr, int ntr_glob, int ns, int ishot, int nshots, int iter, int **recpos, int **recpos_loc, float **srcpos);
 
-void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float C_vp, float ** gradp, float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, 
-            float * alpha_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, float * q_LBFGS, float * r_LBFGS, float * beta_LBFGS, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
+void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float ** gradp, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, float * alpha_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, float * q_LBFGS, float * r_LBFGS, float * beta_LBFGS, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
            
 double LU_decomp(double  **A, double *x, double *b,int n);
 
@@ -307,8 +311,8 @@ void  taper(float **sectionpdiff, int ntr, int ns);
 
 void  output_source_signal(FILE *fp, float **signals, int ns, int seis_form);
 
-void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float C_vp, float ** gradp, 
-float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho);
+void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** gradp, 
+float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho);
 
 void physics_PSV();
 

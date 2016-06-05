@@ -7,12 +7,13 @@
 
 #include "fd.h"
 
-void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float C_vp, float ** gradp,
-	     float ** waveconv_u, float C_vs, float ** gradp_u, float ** waveconv_rho, float C_rho, float ** gradp_rho){
+void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** gradp,
+	     float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho){
 
 	extern int NX, NY, IDX, IDY, SPATFILTER, GRAD_FILTER;
 	extern int SWS_TAPER_GRAD_VERT, SWS_TAPER_GRAD_HOR, SWS_TAPER_GRAD_SOURCES, SWS_TAPER_FILE;
 	extern int POS[3], MYID, GRAD_METHOD;
+        extern float C_vp, C_vs, C_rho;
 	extern char JACOBIAN[STRING_SIZE];
 	
 	char jac[225], jac2[225];

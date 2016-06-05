@@ -124,3 +124,6 @@ int ENV;
 /* parameters for towed streamer */
 int N_STREAMER;
 float REC_INCR_X, REC_INCR_Y;
+
+/* global average model parameters */
+float C_vp, C_vs, C_rho;
