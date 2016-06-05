@@ -102,8 +102,6 @@ initproc();
 
 NT=iround(TIME/DT); /* number of timesteps */
 
-printf("NT = %d \n",NT);
-
 /* output of parameters to log-file or stdout */
 if (MYID==0) write_par(FP);
 

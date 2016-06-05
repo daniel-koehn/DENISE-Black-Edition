@@ -31,13 +31,9 @@ void mem_PSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize)
 
 	memseismograms=nseismograms*ntr*ns*fac2;
 
-	memfwt=5.0*((NX/IDXI)+FDORDER)*((NY/IDYI)+FDORDER)*NTDTINV*fac2;
-	memfwt1=20.0*NX*NY*fac2;
-	memfwtdata=6.0*ntr*ns*fac2;
-
 	membuffer=2.0*fdo3*(NY+NX)*fac2;
 	buffsize=2.0*2.0*fdo3*(NX +NY)*sizeof(MPI_FLOAT);
-	memtotal=memdyn+memmodel+memseismograms+memfwt+memfwt1+memfwtdata+membuffer+(buffsize*pow(2.0,-20.0));
+	memtotal=memdyn+memmodel+memseismograms+membuffer+(buffsize*pow(2.0,-20.0));
 
 	if (MYID==0){
 	   printf("\n **Message from main (printed by PE %d):\n",MYID);

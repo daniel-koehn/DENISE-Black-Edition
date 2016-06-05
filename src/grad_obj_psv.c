@@ -17,7 +17,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
         /* global variables */
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
         extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND;
-        extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB;
+        extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, LOG;
         extern int ORDER_SPIKE, ORDER, SHOTINC;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
         extern float C_vp, C_vs, C_rho;
@@ -29,6 +29,8 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
         char source_signal_file[STRING_SIZE];
 
 	FILE *FP;
+
+	if ((MYID==0) && (LOG==1)) FP=stdout;
 
 	/* initialization of L2 calculation */
 	L2=0.0;
@@ -45,6 +47,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	itestshot=TESTSHOT_START;
 	swstestshot=0;
+        SHOTINC=1;
 
 	if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
@@ -73,10 +76,10 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	   }
 
 	   /* Memory for seismic data */
-	   alloc_seisPSV(ntr,ns,&seisPSV);
+	   alloc_seisPSV(ntr,ns,seisPSV);
 
 	   /* Memory for FWI seismic data */ 
-	   alloc_seisPSVfwi(ntr,ntr_glob,ns,&seisPSVfwi);
+	   alloc_seisPSVfwi(ntr,ntr_glob,ns,seisPSVfwi);
 
 	}
 
@@ -102,7 +105,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	==================================================================================*/
 
 	if((INV_STF)&&(iter==1)){
-	  stf_psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,ishot,nshots,nsrc_loc,nsrc,ns,ntr,ntr_glob,iter,Ws,Wr,hin,DTINV_help,req_send,req_rec);
+	  stf_psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,ishot,nshots,nsrc_loc,nsrc,ns,ntr,ntr_glob,iter,Ws,Wr,hin,DTINV_help,req_send,req_rec);
 	}
 	 
 	/*==================================================================================
@@ -149,7 +152,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	}
 				                                                      
 	/* solve forward problem */
-	psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+	psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
 
 	/* ===============================================
 	   Calculate objective function and data residuals
@@ -158,7 +161,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){swstestshot=1;}
 
 	if (ntr > 0){
-	   L2 += calc_res_PSV(&seisPSV,&seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
+	   L2 += calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
 	}
 
 	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
@@ -168,7 +171,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	/* output of time reversed residual seismograms */
 	if ((SEISMO)&&(iter==1)&&(ishot==1)){
-	   outseis_PSVres(&seisPSV,&seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,(*acq).srcpos,ishot,ns,nstage,FP);       
+	   outseis_PSVres(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,(*acq).srcpos,ishot,ns,nstage,FP);       
 	}
 		          	    		    
 	/*================================================================================
@@ -184,10 +187,10 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	    }
 		                            
 	   /* solve adjoint problem */
-	   psv(&wavePSV,&wavePSV_PML,&matPSV,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,ishot,nshots,ntr,ns,ntr,Ws,Wr,hin,DTINV_help,1,req_send,req_rec);               
+	   psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,ishot,nshots,ntr,ns,ntr,Ws,Wr,hin,DTINV_help,1,req_send,req_rec);               
 
 	   /* assemble PSV gradients for each shot */
-	   ass_gradPSV(&fwiPSV,&matPSV,iter);
+	   ass_gradPSV(fwiPSV,matPSV,iter);
 
 	if((EPRECOND==1)||(EPRECOND==3)){
 	  /* calculate energy weights */

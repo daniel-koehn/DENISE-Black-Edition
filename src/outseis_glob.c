@@ -11,7 +11,7 @@ int nsrc, int ns, int seis_form, int ishot, int sws){
 
 	/* declaration of extern variables */
 	extern int NDT;
-	extern float  TIME, DH, DT, REFREC[4];
+	extern float TIME, DH, DT, REFREC[4];
 
 	const float xshift=800.0, yshift=800.0;
 

@@ -12,7 +12,7 @@
 void write_par(FILE *fp){
 
 	/* declaration of extern variables */
-	extern int   NX, NY, NT, QUELLART, QUELLTYP, FDORDER, MAXRELERROR;
+	extern int   NX, NY, NT, QUELLART, FDORDER, MAXRELERROR;
 	extern int  SNAP, SNAP_FORMAT, L, SRCREC, TAPER;
 	extern float DH, TIME, DT, TS, *FL, TAU, DAMPING, FPML, npower, k_max_PML;
 	extern int SEISMO, NDT, SEIS_FORMAT, FREE_SURF, FW;
@@ -123,7 +123,7 @@ void write_par(FILE *fp){
 
         fprintf(fp,"\n\n");
 
-	fprintf(fp," Type of source:");
+	/*fprintf(fp," Type of source:");
 	switch (QUELLTYP){
 	case 1 :
 		fprintf(fp," explosive source \n");
@@ -144,7 +144,7 @@ void write_par(FILE *fp){
 		err(" Sorry, wrong source type specification ! ");
 	}
 	
-	fprintf(fp,"\n");
+	fprintf(fp,"\n");*/
 
 	if (SEISMO){
 		fprintf(fp," ------------------------- RECEIVER  --------------------------\n");

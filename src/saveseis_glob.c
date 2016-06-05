@@ -17,11 +17,11 @@ int ntr, float ** srcpos, int ishot, int ns, int iter){
         int nsrc=1;		
 	
 	 /*if (RUN_MULTIPLE_SHOTS){*/
-                sprintf(vxf,"%s.shot%d.%d",SEIS_FILE_VX,ishot,MYID);
+         /*       sprintf(vxf,"%s.shot%d.%d",SEIS_FILE_VX,ishot,MYID);
                 sprintf(vyf,"%s.shot%d.%d",SEIS_FILE_VY,ishot,MYID);
                 sprintf(curlf,"%s.shot%d.%d",SEIS_FILE_CURL,ishot,MYID);
                 sprintf(divf,"%s.shot%d.%d",SEIS_FILE_DIV,ishot,MYID);
-                sprintf(pf,"%s.shot%d.%d",SEIS_FILE_P,ishot,MYID);
+                sprintf(pf,"%s.shot%d.%d",SEIS_FILE_P,ishot,MYID);*/
         /*}
         else{
                 sprintf(vxf,"%s.%d",SEIS_FILE_VX,MYID);

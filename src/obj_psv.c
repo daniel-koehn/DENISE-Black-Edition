@@ -57,10 +57,10 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 		   }
 
 		   /* Memory for seismic data */
-		   alloc_seisPSV(ntr,ns,&seisPSV);
+		   alloc_seisPSV(ntr,ns,seisPSV);
 
 		   /* Memory for FWI seismic data */ 
-		   alloc_seisPSVfwi(ntr,ntr_glob,ns,&seisPSVfwi);
+		   alloc_seisPSVfwi(ntr,ntr_glob,ns,seisPSVfwi);
 
 		}
 
