@@ -44,7 +44,7 @@ void write_par(FILE *fp){
 	extern float EPS_SCALE, SCALEFAC;
 	extern char  TRKILL_FILE[STRING_SIZE];
 
-	extern int NORMALIZE, RTM, NLBFGS, N_STREAMER;
+	extern int NORMALIZE, NLBFGS, N_STREAMER;
         extern float REC_INCR_X, REC_INCR_Y;
 	
 	extern char MISFIT_LOG_FILE[STRING_SIZE];
@@ -419,15 +419,6 @@ void write_par(FILE *fp){
 	fprintf(fp," EPS_SCALE = %f\n",EPS_SCALE);
 	fprintf(fp," STEPMAX = %d\n",STEPMAX);
 	fprintf(fp," SCALEFAC = %f\n",SCALEFAC);
-	
-	fprintf(fp,"\n\n"); 
-	fprintf(fp," --------------- Reverse Time Migration -------------------\n");
-	if (RTM==0){
-	   fprintf(fp," RTM=%d: No Reverse Time Migration applied.\n",RTM);
-	} 
-	if (RTM==1){
-	   fprintf(fp," RTM=%d: Reverse Time Migration will be applied.\n",RTM);
-	}
 
         fprintf(fp,"\n\n");
         fprintf(fp," --------------- Reverse Time Modelling -------------------\n");

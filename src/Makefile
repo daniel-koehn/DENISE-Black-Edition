@@ -192,6 +192,8 @@ DENISE= \
 	readmod_elastic.c \
     	receiver.c \
 	rd_sour.c \
+        RTM_PSV.c \
+        RTM_PSV_out.c \
 	saveseis.c \
 	saveseis_glob.c \
 	sources.c \

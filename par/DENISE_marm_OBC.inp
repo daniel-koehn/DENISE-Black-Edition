@@ -6,13 +6,13 @@
 #
 # ------------------ DENISE Mode ---------------------------------
 # Operation mode:
-(forward_modelling_only=0;FWI=1)_(MODE) = 1
+(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 0
 #
 # ---------------- DENISE Physics -----------------------------
 (2D-PSV=1)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 2
+number_of_processors_in_x-direction_(NPROCX) = 5
 number_of_processors_in_y-direction_(NPROCY) = 3
 #
 #-------------------- FD order -----------------------------------
@@ -211,9 +211,6 @@ activate_time_lapse_mode_(yes=1)_(TIMELAPSE) = 0
 # if TIMELAPSE == 1, DATA_DIR should be the directory containing the data differences
 # between time t0 and t1 
 seismograms_of_synthetic_data_at_t0_(DATA_DIR_T0) = su/CAES_spike_time_0/DENISE_CAES
-#
-# ----- Elastic Reverse Time Migration ------------------------- #
-apply_reverse_time_migration_(yes=1)_(RTM) = 0
 #
 # ----- Reverse Time Modelling ------------------------- #
 apply_reverse_time_modelling_(yes=1)_(RTMOD) = 0

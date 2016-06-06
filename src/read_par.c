@@ -73,8 +73,6 @@ extern float WD_DAMP;
 extern float FC_SPIKE_1, FC_SPIKE_2;
 extern int ORDER_SPIKE;
 
-extern int RTM;
-
 extern int N_STREAMER;
 extern float REC_INCR_X, REC_INCR_Y;
 
@@ -391,27 +389,24 @@ int  c=0, lineno=0, l;
            fscanf(fp_in,"%s =%s",s,DATA_DIR_T0);
             break;       
          case 99 :
-           fscanf(fp_in,"%s =%i",s,&RTM);
-           break;
-         case 100 :
            fscanf(fp_in,"%s =%i",s,&RTMOD);
            break;
-	 case 101 :
+	 case 100 :
 	   fscanf(fp_in,"%s =%i",s,&GRAVITY);
 	    break;
-	 case 102 :
+	 case 101 :
 	   fscanf(fp_in,"%s =%i",s,&NGRAVB);
 	    break;
-	 case 103 :
+	 case 102 :
 	   fscanf(fp_in,"%s =%i",s,&NZGRAV);
 	    break;
-	 case 104 :
+	 case 103 :
 	   fscanf(fp_in,"%s =%i",s,&GRAV_TYPE);
 	    break;   
-	 case 105 :
+	 case 104 :
 	   fscanf(fp_in,"%s =%i",s,&BACK_DENSITY);
 	    break;
-	 case 106 :
+	 case 105 :
 	   fscanf(fp_in,"%s =%s",s,DFILE);
 	    break;   
 	 default:

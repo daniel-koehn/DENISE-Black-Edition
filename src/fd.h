@@ -365,6 +365,10 @@ void readmod_elastic_es(float  **  rho, float **  pi, float **  u, float ** matm
 
 int **receiver(FILE *fp, int *ntr, int ishot);
 
+void RTM_PSV();
+
+void RTM_PSV_out(struct fwiPSV *fwiPSV);
+
 void save_checkpoint(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float ** vy, float ** sxx, float ** syy, float ** sxy);
 
@@ -463,7 +467,7 @@ float **   sxy, float ** pi, float ** u, float ** uipjp, float **rho, float *hc,
 float ***r, float ***p, float ***q, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, 
 float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
 float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx);
+float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode);
 
 void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty,float ** sxx, float ** syy,

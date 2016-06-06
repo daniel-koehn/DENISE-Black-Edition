@@ -23,9 +23,9 @@ void physics_PSV(){
 	}
 
         /* 2D PSV Reverse Time Migration */
-	/* if(MODE==2){
+	if(MODE==2){
 	   RTM_PSV();
-	}*/
+	}
 
 }
 

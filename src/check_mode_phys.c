@@ -25,6 +25,10 @@ void check_mode_phys(){
 		case 1 :
 			printf(" MODE=%d: Time-domain FWI is applied.\n",MODE);
 			break;
+		case 2 :
+			printf(" MODE=%d: Elastic Reverse Time Migration RTM is applied.\n",MODE);
+			break;
+
 		default:
 			err(" Sorry, DENISE operation MODE unkown ! ");
 		}

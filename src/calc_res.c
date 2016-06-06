@@ -11,7 +11,7 @@ extern float DT, DH, OFFSETC, FC, FC_START;
 extern int REC1, REC2, MYID, ORDER;
 extern int TRKILL, TIME_FILT, GRAD_FORM,ENV;
 extern char TRKILL_FILE[STRING_SIZE];
-extern int NORMALIZE, TIMEWIN, RTM, OFFSET_MUTE;
+extern int NORMALIZE, TIMEWIN, MODE, OFFSET_MUTE;
 float RMS, RMS_obs, signL1, intseis;
 int Lcount,i,j,invtime,k,h,umax=0;
 float l2;
@@ -354,13 +354,13 @@ for(i=1;i<=ntr;i++){
 			if(LNORM==2){
 
                           if(GRAD_FORM==1){
-			     if(RTM==0){intseis += DT*(section[i][j]-sectiondata[i][j]);}
-			     if(RTM==1){intseis += DT*(sectiondata[i][j]);}
+			     if(MODE==1){intseis += DT*(section[i][j]-sectiondata[i][j]);}
+			     if(MODE==2){intseis += DT*(sectiondata[i][j]);}
                           }
 
                           if(GRAD_FORM==2){
-                             if(RTM==0){intseis = (section[i][j]-sectiondata[i][j]);}
-                             if(RTM==1){intseis = sectiondata[i][j];}
+                             if(MODE==1){intseis = (section[i][j]-sectiondata[i][j]);}
+                             if(MODE==2){intseis = sectiondata[i][j];}
                           }
 
 			  sectiondiff[i][invtime]=intseis;

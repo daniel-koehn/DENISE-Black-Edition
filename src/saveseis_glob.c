@@ -33,7 +33,7 @@ int ntr, float ** srcpos, int ishot, int ns, int iter){
         }*/
 
 	
-	if(MODE==1){
+	if(MODE>0){
 	  sprintf(vxf,"%s.shot%d.it%d",SEIS_FILE_VX,ishot,iter);
 	  sprintf(vyf,"%s.shot%d.it%d",SEIS_FILE_VY,ishot,iter);
 	  sprintf(pf,"%s.shot%d.it%d",SEIS_FILE_P,ishot,iter);

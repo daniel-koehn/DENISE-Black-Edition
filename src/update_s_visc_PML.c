@@ -15,7 +15,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 	float ***r, float ***p, float ***q, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, 
       float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
       float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-      float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx){
+      float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode){
 
 
 
@@ -24,7 +24,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 	float  dhi, dthalbe;	
 	extern float DT, DH;
 	extern int MYID, FDORDER, FW, L, GRAD_FORM;
-        extern int FREE_SURF, BOUNDARY, MODE;
+        extern int FREE_SURF, BOUNDARY;
 	extern int NPROCX, NPROCY, POS[3];
 	extern FILE *FP;
 	double time1, time2;
@@ -149,7 +149,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((MODE==1)&&(GRAD_FORM==2)){
+			if((mode==0)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -262,7 +262,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((MODE==1)&&(GRAD_FORM==2)){
+			if((mode==0)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -379,7 +379,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((MODE==1)&&(GRAD_FORM==2)){
+			if((mode==0)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -502,7 +502,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 			
 			/* save forward wavefield for gradient calculation */
-			if((MODE==1)&&(GRAD_FORM==2)){
+			if((mode==0)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -627,7 +627,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 			
 			/* save forward wavefield for gradient calculation */
-			if((MODE==1)&&(GRAD_FORM==2)){
+			if((mode==0)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;
@@ -758,7 +758,7 @@ void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
 			syy[j][i]+=(dthalbe*sumq);
 			
 			/* save forward wavefield for gradient calculation */
-			if((MODE==1)&&(GRAD_FORM==2)){
+			if((mode==0)&&(GRAD_FORM==2)){
 			  ux[j][i] = sump;
 		          uy[j][i] = sumq;
 			  uxy[j][i] = sumr;

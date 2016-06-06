@@ -82,9 +82,6 @@ char MISFIT_LOG_FILE[STRING_SIZE];
 
 int GRAD_FILTER, FILT_SIZE_GRAD;
 
-/* parameter for RTM */
-int RTM;
-
 /* parameter for double difference time-lapse mode */
 int TIMELAPSE;
 char DATA_DIR_T0[STRING_SIZE];
