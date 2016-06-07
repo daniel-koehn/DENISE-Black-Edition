@@ -9,7 +9,7 @@ void saveseis_glob(FILE *fp, float **sectionvx, float **sectionvy,float **sectio
 float **sectioncurl, float **sectiondiv, int  **recpos, int  **recpos_loc, 
 int ntr, float ** srcpos, int ishot, int ns, int iter){ 
 		
-	extern int SEISMO, SEIS_FORMAT, MYID, RUN_MULTIPLE_SHOTS;	
+	extern int SEISMO, SEIS_FORMAT, MYID, RUN_MULTIPLE_SHOTS, MODE;	
 	extern char  SEIS_FILE_VX[STRING_SIZE], SEIS_FILE_VY[STRING_SIZE];
 	extern char  SEIS_FILE_CURL[STRING_SIZE], SEIS_FILE_DIV[STRING_SIZE], SEIS_FILE_P[STRING_SIZE];
 
@@ -17,11 +17,11 @@ int ntr, float ** srcpos, int ishot, int ns, int iter){
         int nsrc=1;		
 	
 	 /*if (RUN_MULTIPLE_SHOTS){*/
-                sprintf(vxf,"%s.shot%d.%d",SEIS_FILE_VX,ishot,MYID);
+         /*       sprintf(vxf,"%s.shot%d.%d",SEIS_FILE_VX,ishot,MYID);
                 sprintf(vyf,"%s.shot%d.%d",SEIS_FILE_VY,ishot,MYID);
                 sprintf(curlf,"%s.shot%d.%d",SEIS_FILE_CURL,ishot,MYID);
                 sprintf(divf,"%s.shot%d.%d",SEIS_FILE_DIV,ishot,MYID);
-                sprintf(pf,"%s.shot%d.%d",SEIS_FILE_P,ishot,MYID);
+                sprintf(pf,"%s.shot%d.%d",SEIS_FILE_P,ishot,MYID);*/
         /*}
         else{
                 sprintf(vxf,"%s.%d",SEIS_FILE_VX,MYID);
@@ -33,7 +33,7 @@ int ntr, float ** srcpos, int ishot, int ns, int iter){
         }*/
 
 	
-	if(iter>=0){
+	if(MODE>0){
 	  sprintf(vxf,"%s.shot%d.it%d",SEIS_FILE_VX,ishot,iter);
 	  sprintf(vyf,"%s.shot%d.it%d",SEIS_FILE_VY,ishot,iter);
 	  sprintf(pf,"%s.shot%d.it%d",SEIS_FILE_P,ishot,iter);
@@ -41,12 +41,12 @@ int ntr, float ** srcpos, int ishot, int ns, int iter){
           sprintf(divf,"%s.shot%d.it%d",SEIS_FILE_DIV,ishot,iter);
 	}
 		
-	if(iter==-1){
-	  sprintf(vxf,"%s.shot%d_it%d.%d",SEIS_FILE_VX,ishot,iter,MYID);
-	  sprintf(vyf,"%s.shot%d_it%d.%d",SEIS_FILE_VY,ishot,iter,MYID);
-	  sprintf(pf,"%s.shot%d_it%d.%d",SEIS_FILE_P,ishot,iter,MYID);
-          sprintf(curlf,"%s.shot%d_it%d.%d",SEIS_FILE_CURL,ishot,iter,MYID);
-          sprintf(divf,"%s.shot%d_it%d.%d",SEIS_FILE_DIV,ishot,iter,MYID);
+	if(MODE==0){
+	  sprintf(vxf,"%s.shot%d",SEIS_FILE_VX,ishot);
+	  sprintf(vyf,"%s.shot%d",SEIS_FILE_VY,ishot);
+	  sprintf(pf,"%s.shot%d",SEIS_FILE_P,ishot);
+          sprintf(curlf,"%s.shot%d",SEIS_FILE_CURL,ishot);
+          sprintf(divf,"%s.shot%d",SEIS_FILE_DIV,ishot);
 	}
 	
 	

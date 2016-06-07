@@ -25,7 +25,7 @@ void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
 	
 	extern float DT, DH, ANGLE;
 	double time1, time2;
-	extern int MYID, QUELLTYP, QUELLTYPB, CHECKPTREAD, FDORDER;
+	extern int MYID, QUELLTYP, QUELLTYPB, FDORDER;
         extern int FDORDER, INVMAT1, GRAD_FORM;
         extern int FREE_SURF, BOUNDARY, FW;
         extern int NPROCX, NPROCY, POS[3];

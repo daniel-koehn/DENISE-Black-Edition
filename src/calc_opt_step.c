@@ -10,7 +10,7 @@
  *  ---------------------------------------------------------------------*/
 
 #include "fd.h"
-float calc_opt_step(float *  L2t, float ** waveconv, float ** gradg, float * epst, int sws, float C_vp){
+float calc_opt_step(float *  L2t, float * epst, int sws){
 
 extern int NX, NY, IDX, IDY, MYID;
 extern float EPSILON, EPSILON_u, EPSILON_rho;
@@ -25,34 +25,8 @@ A =  matrix(1,n,1,n);
 x = vector(1,n);
 b = vector(1,n);
 
-/* calculate optimal step size after Tarantola (1986)*/
-/*H1=0.0;
-H2=0.0;
-for (i=1;i<=NX;i=i+IDX){
-     for (j=1;j<=NY;j=j+IDY){
-         H1 += waveconv[j][i]*(1.0/C_vp)*waveconv[j][i];
-	 H2 += waveconv[j][i]*gradg[j][i];
-     }
-  }
-    
-H1=exchange_L2(H1,1,1); 
-H2=exchange_L2(H2,1,1);*/
-
-/* calculate optimal step length for Vp update */
-/*if(sws==1){
-opteps = (H2/((L2t[sws]*L2t[sws]/(EPSILON*EPSILON))+H1));
-if(fabs(opteps) > (10.0 * fabs(EPSILON)) ){opteps=EPSILON;}
-/*opteps = EPSILON;*/
-/*}*/ 
-
-/* calculate optimal step length for Vs update */
-/*if(sws==2){
-opteps = EPSILON_u * ((L2t[sws]*L2t[4])/(L2t[sws]*L2t[sws]));
-if(fabs(opteps) > (10.0 * fabs(EPSILON_u)) ){opteps=EPSILON_u;}
-} */
-
 /* calculate optimal step size by line search */
-
+/* ------------------------------------------ */
 /* fit parabola function to L2 norm */
 
 /* define coefficient matrix A */

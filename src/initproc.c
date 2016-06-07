@@ -29,7 +29,6 @@ void initproc(void)	{
 	if ((NY%NPROCY)>0)
 		err(" NY%NPROY must be zero  !");
 
-
 	if (MYID==0){
 		fprintf(FP,"\n **Message from initprocs (printed by PE %d):\n",MYID);
 		fprintf(FP," Size of subarrays in gridpoints:\n");

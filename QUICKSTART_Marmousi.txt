@@ -11,7 +11,7 @@ C-Compiler: gcc, icc (recommended)
 MPI-library: OpenMPI, Intel-MPI (recommended)
 other libraries: Fastest Fourier Transform in the West (FFTW) - https://github.com/FFTW/fftw3
 
-Seismic Unix or Matlab for seismic data and model visualization 
+Seismic Unix, Matlab or Numpy/Scipy/Matplotlib for seismic data and model visualization 
 
 1. Clone DENISE-Black-Edition on your local machine
 
@@ -37,8 +37,8 @@ cp DENISE-Benchmark/Marmousi-II/source/source_OBC_VSP.dat DENISE-Black-Edition/p
 
 6. In DENISE-Black-Edition/par/DENISE_marm_OBC.inp check if the following parameters are set correctly
 
+MODE = 0
 MFILE = start/marmousi_II_marine
-INVMAT = 10
 
 7. Generate synthetic Marmousi-II data for an OBC acquisition geometry by running DENISE on e.g. 15 cores of 
 your CPU from the /par directory:
@@ -50,20 +50,20 @@ needs. The total number of cores = NPROCX * NPROCY.
 
 8. Check if the modelling results are plausible, e.g. with Seismic Unix
 
-sugain qbal=1 < su/DENISE_MARMOUSI_y.su.shot1.it1 | suximage &
+sugain qbal=1 < su/DENISE_MARMOUSI_y.su.shot1 | suximage &
 
 9. In DENISE-Black-Edition/par/su generate the directory MARMOUSI_spike
 
 mkdir MARMOUSI_spike
 
-10. Move the data from /su to /su/MARMOUSI_spike with the shell script move_x_y.sh
+10. Move the data from /su to /su/MARMOUSI_spike 
 
-./move_x_y.sh
+mv DENISE_MARMOUSI_* MARMOUSI_spike/ 
 
 11. In DENISE-Black-Edition/par/DENISE_marm_OBC.inp change the following parameters
 
-MFILE = start/marmousi_II_smooth2
-INVMAT = 0
+MODE = 1 
+MFILE = start/marmousi_II_start_1D
 
 12. Start the 2D elastic FWI with 
 

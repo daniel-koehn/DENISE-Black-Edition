@@ -13,9 +13,8 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	/* declaration of extern variables */
 	extern  char REC_FILE[STRING_SIZE];
 	extern float DH, REFREC[4], FW;
-	extern int READREC, NGEOPH, NX;
+	extern int READREC, NX;
 	extern int MYID, N_STREAMER;
-	extern float XREC1, YREC1, XREC2, YREC2;
 	extern float REC_INCR_X, REC_INCR_Y;
 
 	int **recpos1, **recpos, nxrec=0, nyrec=0, nzrec=0;
@@ -88,45 +87,6 @@ int **receiver(FILE *fp, int *ntr, int ishot){
   
      	}
      
-     	else{         /* straight horizontal or vertical
-     		                     line of receivers */
-			nxrec1=iround(XREC1/DH);   /* (nxrec1,nyrec1) and (nxrec2,nyrec2) are */
-			nyrec1=iround(YREC1/DH);   /* the positions of the first and last receiver*/
-			nxrec2=iround(XREC2/DH);	 /* in gridpoints */
-			nyrec2=iround(YREC2/DH);
-
-     		if ((abs(nyrec2-nyrec1)<=abs(nxrec2-nxrec1))||
-     		    (abs(nyrec2-nyrec1)<=abs(nzrec2-nzrec1))){
-     			if (abs(nzrec2-nzrec1)<=abs(nxrec2-nxrec1)){
-     				/* geophone-array horizontal x-dirextion */
-     				*ntr=iround((nxrec2-nxrec1)/NGEOPH)+1;
-     				recpos=imatrix(1,3,1,*ntr);
-     				for (nxrec=nxrec1;nxrec<=nxrec2;nxrec+=NGEOPH){
-     					nyrec=nyrec1+((nyrec2-nyrec1)/(nxrec2-nxrec1)*(nxrec-nxrec1));
-     					nzrec=nzrec1+((nzrec2-nzrec1)/(nxrec2-nxrec1)*(nxrec-nxrec1));
-     					itr=iround((nxrec-nxrec1)/NGEOPH)+1;
-     					recpos[1][itr]=nxrec;
-     					recpos[2][itr]=nyrec;
-     					recpos[3][itr]=nzrec;
-     				}
-     			}
-
-     		}
-     		else{         /* receiver-line vertical */
-     			*ntr=iround((nyrec2-nyrec1)/NGEOPH)+1;
-     			recpos=imatrix(1,3,1,*ntr);
-     			for (nyrec=nyrec1;nyrec<=nyrec2;nyrec+=NGEOPH){
-     				nxrec=nxrec1+((nxrec2-nxrec1)/(nyrec2-nyrec1)*(nyrec-nyrec1));
-     				/**wird nzrec noch gebraucht?**/
-     				nzrec=nzrec1+((nzrec2-nzrec1)/(nyrec2-nyrec1)*(nyrec-nyrec1));
-     				itr=iround((nyrec-nyrec1)/NGEOPH)+1;
-     				recpos[1][itr]=nxrec;
-     				recpos[2][itr]=nyrec;
-     				recpos[3][itr]=nzrec;
-     			}
-     		}
-     
-     	}
      	/*   fprintf(fp,"Gridpoints of receiver positions (x,y,z):\n");
      		for (itr=1;itr<=*ntr;itr++)
      				fprintf(fp,"%i\t%i\t%i\n",recpos[1][itr],recpos[2][itr],recpos[3][itr]);*/

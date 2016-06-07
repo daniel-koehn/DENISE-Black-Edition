@@ -12,12 +12,11 @@
 void write_par(FILE *fp){
 
 	/* declaration of extern variables */
-	extern int   NX, NY, NT, QUELLART, QUELLTYP, FDORDER, MAXRELERROR;
+	extern int   NX, NY, NT, QUELLART, FDORDER, MAXRELERROR;
 	extern int  SNAP, SNAP_FORMAT, L, SRCREC, TAPER;
-	extern float DH, TIME, DT, TS, *FL, TAU, DAMPING, PLANE_WAVE_DEPTH, PHI, FPML, npower, k_max_PML;
-	extern float XREC1, XREC2, YREC1, YREC2;
-	extern int SEISMO, NDT, NGEOPH, SEIS_FORMAT, FREE_SURF, FW;
-	extern int  READMOD, READREC, BOUNDARY, INVTYPE;
+	extern float DH, TIME, DT, TS, *FL, TAU, DAMPING, FPML, npower, k_max_PML;
+	extern int SEISMO, NDT, SEIS_FORMAT, FREE_SURF, FW;
+	extern int  READMOD, READREC, BOUNDARY;
 	extern float TSNAP1, TSNAP2, TSNAPINC, REFREC[4];
 	extern char SNAP_FILE[STRING_SIZE], SOURCE_FILE[STRING_SIZE], REC_FILE[STRING_SIZE];
 	extern char SEIS_FILE_VX[STRING_SIZE], SEIS_FILE_VY[STRING_SIZE];
@@ -26,7 +25,7 @@ void write_par(FILE *fp){
 	extern char  MFILE[STRING_SIZE], JACOBIAN[STRING_SIZE], DATA_DIR[STRING_SIZE];
 	extern int NP, NPROCX, NPROCY, MYID;
 	
-	extern int GRADT1, GRADT2, GRADT3, GRADT4, ITERMAX, INVMAT1, INVMAT, QUELLTYPB;
+	extern int GRADT1, GRADT2, GRADT3, GRADT4, ITERMAX, INVMAT1, MODE, PHYSICS, QUELLTYPB;
 	extern int GRAD_METHOD, ORDER_SPIKE;
 	extern float FC_SPIKE_1, FC_SPIKE_2;
 	extern int FILT_SIZE, MODEL_FILTER;
@@ -38,8 +37,6 @@ void write_par(FILE *fp){
 	extern float SRTRADIUS, EXP_TAPER_GRAD_HOR;
 	extern int MIN_ITER;
 	extern char INV_MODELFILE[STRING_SIZE];
-	extern int nfstart, nf;
-	extern int nfstart_jac, nf_jac;
 	extern float VPUPPERLIM, VPLOWERLIM, VSUPPERLIM, VSLOWERLIM, RHOUPPERLIM, RHOLOWERLIM;
 	
 	extern int DTINV, RTMOD;
@@ -47,7 +44,7 @@ void write_par(FILE *fp){
 	extern float EPS_SCALE, SCALEFAC;
 	extern char  TRKILL_FILE[STRING_SIZE];
 
-	extern int NORMALIZE, RTM, NLBFGS, N_STREAMER;
+	extern int NORMALIZE, NLBFGS, N_STREAMER;
         extern float REC_INCR_X, REC_INCR_Y;
 	
 	extern char MISFIT_LOG_FILE[STRING_SIZE];
@@ -85,14 +82,7 @@ void write_par(FILE *fp){
 	if (SRCREC){
 		fprintf(fp," reading source positions, time delay, centre frequency \n");
 		fprintf(fp," and initial amplitude from ASCII-file \n");
-		fprintf(fp,"\t%s\n\n",SOURCE_FILE);
-	} else {
-		fprintf(fp," plane wave excitation: depth= %5.2f meter \n",PLANE_WAVE_DEPTH);
-		fprintf(fp," incidence angle of plane P-wave (from vertical) PHI= %5.2f degrees \n",PHI);
- 		fprintf(fp," duration of source signal: %e seconds\n",TS);
- 		fprintf(fp," (centre frequency is approximately %e Hz)\n",1.0/TS);
-	}
-
+		fprintf(fp,"\t%s\n\n",SOURCE_FILE);}
 
 	fprintf(fp," wavelet of source:");
 
@@ -133,7 +123,7 @@ void write_par(FILE *fp){
 
         fprintf(fp,"\n\n");
 
-	fprintf(fp," Type of source:");
+	/*fprintf(fp," Type of source:");
 	switch (QUELLTYP){
 	case 1 :
 		fprintf(fp," explosive source \n");
@@ -154,7 +144,7 @@ void write_par(FILE *fp){
 		err(" Sorry, wrong source type specification ! ");
 	}
 	
-	fprintf(fp,"\n");
+	fprintf(fp,"\n");*/
 
 	if (SEISMO){
 		fprintf(fp," ------------------------- RECEIVER  --------------------------\n");
@@ -163,13 +153,6 @@ void write_par(FILE *fp){
 			fprintf(fp,"\t%s\n\n",REC_FILE);
 			fprintf(fp," reference_point_for_receiver_coordinate_system:\n");
 			fprintf(fp," x=%f \ty=%f\t z=%f\n",REFREC[1], REFREC[2], REFREC[3]);
-		}else{
-
-			fprintf(fp," first receiver position (XREC1,YREC1) = (%e, %e) m\n",
-			    XREC1,YREC1);
-			fprintf(fp," last receiver position (XREC1,YREC1) = (%e, %e) m\n",
-			    XREC2,YREC2);
-			fprintf(fp,"\n");
 		}
 
                 if (N_STREAMER){
@@ -313,7 +296,6 @@ void write_par(FILE *fp){
 			err(" Sorry. I don't know the format for the seismic data ! \n");
 		}
 		fprintf(fp," samplingrate of seismic data: %f s\n",NDT*DT);
-		if (!READREC) fprintf(fp," Trace-spacing: %5.2f m\n", NGEOPH*DH);
 		fprintf(fp," Number of samples per trace: %i \n", iround(NT/NDT));
 		fprintf(fp," ----------------------------------------------------------\n");
 		fprintf(fp,"\n");
@@ -321,17 +303,6 @@ void write_par(FILE *fp){
 	}
 	fprintf(fp,"\n");
         fprintf(fp," -----------------------  DENISE elastic specific parameters  ----------------------\n");
-	if (INVMAT==10){
-		fprintf(fp," INVMAT=%d: Only forward modeling is applied.\n",INVMAT);}
-	else {
-		if(INVMAT==0){
-			fprintf(fp," INVMAT=%d: Time-domain FWI is applied.\n",INVMAT);}
-		if(INVMAT==1){
-			fprintf(fp," INVMAT=%d: Time-Laplace-Frequency-domain FWI is applied.\n",INVMAT);}
-                if(INVMAT>1){
-                        fprintf(fp," INVMAT=%d\n",INVMAT);}
-	}
-	
 	fprintf(fp,"\n Maximum number of iterations: %d\n",ITERMAX);
 	fprintf(fp," location of the measured seismograms : \n ");
 	fprintf(fp,"\t%s\n\n",DATA_DIR);
@@ -341,7 +312,6 @@ void write_par(FILE *fp){
 		fprintf(fp," INVMAT1=%d: Inversion parameters are Zp, Zs and rho.\n",INVMAT1);}
 	if (INVMAT1==3){
 		fprintf(fp," INVMAT1=%d: Inversion parameters are lambda, mu and rho.\n",INVMAT1);}
-	fprintf(fp,"\n INVTYPE = %d\n\n",INVTYPE);
 	if (QUELLTYPB==1){
 		fprintf(fp," QUELLTYPB=%d: Inversion of x and y component.\n\n",QUELLTYPB);}
 	if (QUELLTYPB==2){
@@ -360,11 +330,8 @@ void write_par(FILE *fp){
 	fprintf(fp," Log file for misfit in each iteration step: \n ");
 	fprintf(fp,"\t%s \n\n",MISFIT_LOG_FILE); 
 	
-	fprintf(fp," Output of inverted models: \n ");
-	fprintf(fp,"\t%s (nfstart=%d, nf=%d)\n\n",INV_MODELFILE,nfstart,nf);
-	
-	fprintf(fp," Output of jacobian: \n ");
-	fprintf(fp,"\t%s (nfstart_jac=%d, nf_jac=%d)\n\n\n",JACOBIAN,nfstart_jac,nf_jac);
+	fprintf(fp," Output of inverted models to: \n ");
+	fprintf(fp,"\t%s \n\n",INV_MODELFILE);
 		
 	fprintf(fp," --------------- Gradient tapering -------------------\n");
 	if (SWS_TAPER_GRAD_VERT==1){
@@ -452,15 +419,6 @@ void write_par(FILE *fp){
 	fprintf(fp," EPS_SCALE = %f\n",EPS_SCALE);
 	fprintf(fp," STEPMAX = %d\n",STEPMAX);
 	fprintf(fp," SCALEFAC = %f\n",SCALEFAC);
-	
-	fprintf(fp,"\n\n"); 
-	fprintf(fp," --------------- Reverse Time Migration -------------------\n");
-	if (RTM==0){
-	   fprintf(fp," RTM=%d: No Reverse Time Migration applied.\n",RTM);
-	} 
-	if (RTM==1){
-	   fprintf(fp," RTM=%d: Reverse Time Migration will be applied.\n",RTM);
-	}
 
         fprintf(fp,"\n\n");
         fprintf(fp," --------------- Reverse Time Modelling -------------------\n");
