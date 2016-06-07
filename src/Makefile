@@ -21,20 +21,20 @@ EXEC= ../bin
 # CC=cc
 
 # On Linux NEC-cluster with Intel-MPI
-# CC=mpiicc
+CC=mpiicc
 # LFLAGS=-lm -lcseife -lfftw3 -lstdc++
 # CFLAGS=-O3 
-# LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
-# CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict
-# SFLAGS=-L./../libcseife -L$//sfs/fs4/work-sh2/sungw331/fftw-3.3.4/lib
-# IFLAGS=-I./../libcseife -I$//sfs/fs4/work-sh2/sungw331/fftw-3.3.4/include
+LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
+CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict
+SFLAGS=-L./../libcseife -L$//sfs/fs4/work-sh2/sungw331/fftw-3.3.4/lib
+IFLAGS=-I./../libcseife -I$//sfs/fs4/work-sh2/sungw331/fftw-3.3.4/include
 
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
-CC=mpicc
-LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-CFLAGS=-O3 -w -fno-stack-protector
-SFLAGS=-L./../libcseife
-IFLAGS=-I./../libcseife
+#CC=mpicc
+#LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+#CFLAGS=-O3 -w -fno-stack-protector
+#SFLAGS=-L./../libcseife
+#IFLAGS=-I./../libcseife
 
 # On HLRN system
 #CC=mpcc
