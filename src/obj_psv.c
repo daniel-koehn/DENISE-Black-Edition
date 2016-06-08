@@ -14,7 +14,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
          int ntr_glob, int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
-	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, ORDER_SPIKE;
+	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, QUELLTYP, ORDER_SPIKE;
         extern int TIME_FILT, INV_STF, ORDER, L, MYID;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
 
@@ -65,6 +65,9 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 		}
 
 		for (nt=1;nt<=8;nt++) (*acq).srcpos1[nt][1]=(*acq).srcpos[nt][ishot]; 
+
+		/* set QUELLTYP for each shot */
+        	QUELLTYP = (*acq).srcpos[8][ishot];
 
 			if (RUN_MULTIPLE_SHOTS){
 

@@ -10,7 +10,7 @@
 void FD_PSV(){
 
 /* global variables */
-extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, ORDER_SPIKE, RUN_MULTIPLE_SHOTS, TIME_FILT, ORDER;
+extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, QUELLTYP, ORDER_SPIKE, RUN_MULTIPLE_SHOTS, TIME_FILT, ORDER;
 extern int LOG, SEISMO, N_STREAMER, FW, NXG, NYG, IENDX, IENDY, NTDTINV, IDXI, IDYI, NXNYI, INV_STF, DTINV;
 extern float FC_SPIKE_1, FC_SPIKE_2, FC, FC_START, TIME, DT;
 extern char LOG_FILE[STRING_SIZE], MFILE[STRING_SIZE];
@@ -238,6 +238,9 @@ if(N_STREAMER>0){
 }
 
 for (nt=1;nt<=8;nt++) acq.srcpos1[nt][1]=acq.srcpos[nt][ishot]; 
+
+	/* set QUELLTYP for each shot */
+        QUELLTYP = acq.srcpos[8][ishot];
 
 	if (RUN_MULTIPLE_SHOTS){
 
