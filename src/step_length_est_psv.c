@@ -23,7 +23,7 @@ float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_P
 	float opteps_vp, ** rho_grav, ** rho_grav_ext;
 	int h, i, j, n, nshots, ishot, nt, lsnap, lsamp, nsnap, infoout;
         int step2, itest, itests, iteste, stepmax, countstep;
-        float scalefac, eps_scale, L2_grav, L2sum1, L2, tmp, tmp1;
+        float scalefac, eps_scale, L2_grav, L2sum1, tmp, tmp1;
 	float * gz_res;
 	char jac_grav[STRING_SIZE];
 
@@ -42,20 +42,20 @@ float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_P
 	itests=2;
 	iteste=2;
 
-	while((step2!=1)||(*step1!=1)){
-
-	for (itest=itests;itest<=iteste;itest++){ /* calculate 3 L2 values */
-
         /* store current PSV models */
         copy_mat((*matPSV).prho,(*fwiPSV).prho_old);
         copy_mat((*matPSV).ppi,(*fwiPSV).ppi_old);
         copy_mat((*matPSV).pu,(*fwiPSV).pu_old);
 
+	while((step2!=1)||(*step1!=1)){
+
+	for (itest=itests;itest<=iteste;itest++){ /* calculate 3 L2 values */
+
         /* update material parameters for test step eps_scale */
 	tmp=calc_mat_change_test((*fwiPSV).waveconv,(*fwiPSV).waveconv_rho,(*fwiPSV).waveconv_u,(*fwiPSV).prho_old,(*matPSV).prho,(*fwiPSV).ppi_old,(*matPSV).ppi,(*fwiPSV).pu_old,(*matPSV).pu,iter,1,eps_scale,1);
 
-        L2 = obj_psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,itest,iter,Ws,Wr,hin,DTINV_help,eps_scale,req_send,req_rec);
-        L2t[itest] = L2;
+        (*seisPSVfwi).L2 = obj_psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,itest,iter,Ws,Wr,hin,DTINV_help,eps_scale,req_send,req_rec);
+        L2t[itest] = (*seisPSVfwi).L2;
 
         epst1[itest]=eps_scale;
 	epst1[1] = 0.0;

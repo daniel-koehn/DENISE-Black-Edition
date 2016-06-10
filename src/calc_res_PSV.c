@@ -7,8 +7,7 @@
 
 #include "fd.h"
 
-float calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter,
-                  int swstestshot){ 
+float calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, int swstestshot){ 
 		
 /* global variables */
 extern int QUELLTYPB, TIMELAPSE, TIME_FILT, ORDER, LNORM, MYID;
@@ -64,10 +63,10 @@ for(i=1;i<=ntr;i++){
                       
 } /* end of TIMELAPSE */
 
-  l2=calc_res((*seisPSVfwi).sectionvxdata,(*seisPSV).sectionvx,(*seisPSVfwi).sectionvxdiff,(*seisPSVfwi).sectionvxdiffold,ntr,ns,LNORM,l2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);     
+  (*seisPSVfwi).L2=calc_res((*seisPSVfwi).sectionvxdata,(*seisPSV).sectionvx,(*seisPSVfwi).sectionvxdiff,(*seisPSVfwi).sectionvxdiffold,ntr,ns,LNORM,(*seisPSVfwi).L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);     
 
-  /*if(swstestshot==1){energy=calc_energy((*seisPSVfwi).sectionvxdata,ntr,ns,energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
-  L2_all_shots=calc_misfit((*seisPSVfwi).sectionvxdiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
+  if(swstestshot==1){(*seisPSVfwi).energy=calc_energy((*seisPSVfwi).sectionvxdata,ntr,ns,(*seisPSVfwi).energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
+  /*L2_all_shots=calc_misfit((*seisPSVfwi).sectionvxdiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
   energy_all_shots=calc_energy((*seisPSVfwi).sectionvxdata,ntr,ns,energy_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);*/
 
 } /* end QUELLTYPB */
@@ -112,10 +111,10 @@ if(TIMELAPSE==1){
                                
 } /* end of TIMELAPSE */
                                
-l2=calc_res((*seisPSVfwi).sectionvydata,(*seisPSV).sectionvy,(*seisPSVfwi).sectionvydiff,(*seisPSVfwi).sectionvydiffold,ntr,ns,LNORM,l2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
+(*seisPSVfwi).L2=calc_res((*seisPSVfwi).sectionvydata,(*seisPSV).sectionvy,(*seisPSVfwi).sectionvydiff,(*seisPSVfwi).sectionvydiffold,ntr,ns,LNORM,(*seisPSVfwi).L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
 
-/*if(swstestshot==1){energy=calc_energy((*seisPSVfwi).sectionvydata,ntr,ns,energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
-L2_all_shots=calc_misfit((*seisPSVfwi).sectionvydiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
+if(swstestshot==1){(*seisPSVfwi).energy=calc_energy((*seisPSVfwi).sectionvydata,ntr,ns,(*seisPSVfwi).energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
+/*L2_all_shots=calc_misfit((*seisPSVfwi).sectionvydiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
 energy_all_shots=calc_energy((*seisPSVfwi).sectionvydata,ntr,ns,energy_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);	*/   	    
 
 
@@ -161,14 +160,17 @@ if(TIMELAPSE==1){
 
 } /* end of TIMELAPSE */
 
-l2=calc_res((*seisPSVfwi).sectionpdata,(*seisPSV).sectionp,(*seisPSVfwi).sectionpdiff,(*seisPSVfwi).sectionpdiffold,ntr,ns,LNORM,l2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
+(*seisPSVfwi).L2=calc_res((*seisPSVfwi).sectionpdata,(*seisPSV).sectionp,(*seisPSVfwi).sectionpdiff,(*seisPSVfwi).sectionpdiffold,ntr,ns,LNORM,(*seisPSVfwi).L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
 
-/*if(swstestshot==1){energy=calc_energy((*seisPSVfwi).sectionpdata,ntr,ns,energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
-L2_all_shots=calc_misfit((*seisPSVfwi).sectionpdiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
+if(swstestshot==1){(*seisPSVfwi).energy=calc_energy((*seisPSVfwi).sectionpdata,ntr,ns,(*seisPSVfwi).energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
+
+/*L2_all_shots=calc_misfit((*seisPSVfwi).sectionpdiff,ntr,ns,LNORM,L2_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);
 energy_all_shots=calc_energy((*seisPSVfwi).sectionpdata,ntr,ns,energy_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);*/
 
 
 } /* end QUELLTYPB == 4*/
+
+l2 = (*seisPSVfwi).L2;
 
 return l2;
 			

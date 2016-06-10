@@ -526,28 +526,8 @@ if(MYID==0){
 L2sum = grad_obj_psv(&wavePSV, &wavePSV_PML, &matPSV, &fwiPSV, &mpiPSV, &seisPSV, &seisPSVfwi, &acq, hc, iter, nsrc, ns, ntr, ntr_glob, 
 nsrc_glob, nsrc_loc, ntr_loc, nstage, We, Ws, Wr, taper_coeff, hin, DTINV_help, req_send, req_rec);
 
-/*energy_sum = 0.0;
-MPI_Allreduce(&energy,&energy_sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-L2sum_all_shots = 0.0;
-MPI_Allreduce(&L2_all_shots,&L2sum_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-energy_sum_all_shots = 0.0;
-MPI_Allreduce(&energy_all_shots,&energy_sum_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);*/
-
 L2t[1]=L2sum;
 L2t[4]=L2sum;
-
-/*if(LNORM==2){
-     L2t[1]=L2sum/energy_sum;
-     L2t[4]=L2sum/energy_sum;
-}
-else{L2t[1]=L2sum;
-     L2t[4]=L2sum;}*/
-
-/*if(MYID==0){
-	printf("L2sum: %e\n", L2sum);
-	printf("energy_sum: %e\n\n", energy_sum);
-	printf("L2sum_all_shots: %e\n", L2sum_all_shots);
-	printf("energy_sum_all_shots: %e\n\n", energy_sum_all_shots);}*/
 
 if(GRAVITY==2){
 

@@ -16,7 +16,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
         /* global variables */
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
-        extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND;
+        extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM;
         extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG;
         extern int ORDER_SPIKE, ORDER, SHOTINC;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
@@ -25,7 +25,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
         /* local variables */
 	int i, j, nshots, ishot, nt, lsnap, itestshot, swstestshot;
-        float L2sum, L2, L2_all_shots, energy_all_shots, energy;
+        float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
         char source_signal_file[STRING_SIZE];
 
 	FILE *FP;
@@ -33,8 +33,8 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	if ((MYID==0) && (LOG==1)) FP=stdout;
 
 	/* initialization of L2 calculation */
-	L2=0.0;
-	energy=0.0;
+	(*seisPSVfwi).L2=0.0;
+	(*seisPSVfwi).energy=0.0;
 	L2_all_shots=0.0;
 	energy_all_shots=0.0;
 
@@ -164,7 +164,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){swstestshot=1;}
 
 	if (ntr > 0){
-	   L2 += calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
+	   (*seisPSVfwi).L2 += calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
 	}
 
 	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
@@ -294,7 +294,24 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
-	MPI_Allreduce(&L2,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
+        L2_tmp = (*seisPSVfwi).L2;
+	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
+
+	/* calculate L2 norm of all CPUs*/
+	energy_all_shots = 0.0;
+        energy_tmp = (*seisPSVfwi).energy;
+	MPI_Allreduce(&energy_tmp,&energy_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
+
+	/*if(MYID==0){
+		printf("L2sum: %e\n", L2sum);
+		printf("energy_sum: %e\n\n", energy_all_shots);
+
+	}*/
+
+	if(LNORM==2){
+	     L2sum = L2sum/energy_all_shots;
+	}
+	else{L2sum=L2sum;}
 
 return L2sum;
 

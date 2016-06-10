@@ -73,6 +73,8 @@ struct seisPSVfwi{
    float ** sectionvxdata, ** sectionvxdiff, ** sectionvxdiffold, ** sectionvydiffold;
    float ** sectionvydiff, ** sectionvydata, ** sectionread;
    float ** sectionpdata, ** sectionpdiff, ** sectionpdiffold;
+   float energy;
+   float L2;
 } seisPSVfwi;
 
 /* Acquisition geometry */
