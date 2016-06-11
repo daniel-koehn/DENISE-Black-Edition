@@ -7,7 +7,7 @@
 
 #include "fd.h"
 
-float calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, int swstestshot){ 
+void calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, int swstestshot){ 
 		
 /* global variables */
 extern int QUELLTYPB, TIMELAPSE, TIME_FILT, ORDER, LNORM, MYID;
@@ -15,7 +15,6 @@ extern float FC, FC_START;
 	
 /* local variables */
 int i, j, h;
-float l2;
 
 if (MYID==0){
    printf("-------------------  \n");
@@ -169,9 +168,5 @@ energy_all_shots=calc_energy((*seisPSVfwi).sectionpdata,ntr,ns,energy_all_shots,
 
 
 } /* end QUELLTYPB == 4*/
-
-l2 = (*seisPSVfwi).L2;
-
-return l2;
 			
 }

@@ -164,7 +164,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){swstestshot=1;}
 
 	if (ntr > 0){
-	   (*seisPSVfwi).L2 += calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
+	   calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
 	}
 
 	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
