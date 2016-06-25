@@ -11,7 +11,7 @@ void FD_PSV(){
 
 /* global variables */
 extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, QUELLTYP, ORDER_SPIKE, RUN_MULTIPLE_SHOTS, TIME_FILT, ORDER;
-extern int LOG, SEISMO, N_STREAMER, FW, NXG, NYG, IENDX, IENDY, NTDTINV, IDXI, IDYI, NXNYI, INV_STF, DTINV;
+extern int LOG, SEISMO, N_STREAMER, FW, NXG, NYG, IENDX, IENDY, NTDTINV, IDXI, IDYI, NXNYI, INV_STF, DTINV, SNAP, SNAP_SHOT;
 extern float FC_SPIKE_1, FC_SPIKE_2, FC, FC_START, TIME, DT;
 extern char LOG_FILE[STRING_SIZE], MFILE[STRING_SIZE];
 extern FILE *FP;
@@ -19,6 +19,7 @@ extern FILE *FP;
 /* local variables */
 int ns, nseismograms=0, nt, nd, fdo3, j, i, iter, h, hin, iter_true, SHOTINC, s=0;
 int buffsize, swstestshot, ntr=0, ntr_loc=0, ntr_glob=0, nsrc=0, nsrc_loc=0, nsrc_glob=0, ishot, nshots=0, itestshot;
+int ishot1, ishot2;
 
 char *buff_addr, ext[10], *fileinp;
 
@@ -219,7 +220,15 @@ if (L) prepare_update_s(matPSV.etajm,matPSV.etaip,matPSV.peta,matPSV.fipjp,matPS
  
 if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
-for (ishot=1;ishot<=nshots;ishot+=SHOTINC){
+ishot1 = 1;
+ishot2 = nshots;
+
+/*if(SNAP){
+  ishot1 = SNAP_SHOT;
+  ishot2 = SNAP_SHOT;
+}*/
+
+for (ishot=ishot1;ishot<=ishot2;ishot+=SHOTINC){
 /*for (ishot=1;ishot<=1;ishot+=1){*/
 
 if(N_STREAMER>0){

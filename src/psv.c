@@ -209,7 +209,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		}
 
 	   /* WRITE SNAPSHOTS TO DISK */
-	   if ((SNAP) && (nt==lsnap) && (nt<=TSNAP2/DT)){
+	   if ((SNAP) && (nt==lsnap) && (nt<=iround(TSNAP2/DT))){
 
 	      snap(FP,nt,++nsnap,(*wavePSV).pvx,(*wavePSV).pvy,(*wavePSV).psxx,(*wavePSV).psyy,(*matPSV).pu,(*matPSV).ppi,hc);
 

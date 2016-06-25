@@ -13,7 +13,7 @@ void write_par(FILE *fp){
 
 	/* declaration of extern variables */
 	extern int   NX, NY, NT, QUELLART, FDORDER, MAXRELERROR;
-	extern int  SNAP, SNAP_FORMAT, L, SRCREC, TAPER;
+	extern int  SNAP, SNAP_FORMAT, SNAP_SHOT, L, SRCREC, TAPER;
 	extern float DH, TIME, DT, TS, *FL, TAU, DAMPING, FPML, npower, k_max_PML;
 	extern int SEISMO, NDT, SEIS_FORMAT, FREE_SURF, FW;
 	extern int  READMOD, READREC, BOUNDARY;
@@ -238,6 +238,7 @@ void write_par(FILE *fp){
 			err(" sorry, incorrect value for SNAP ! \n");
 		}
 
+		fprintf(fp," \t write snapshots for shot SNAP_SHOT= %d \n", SNAP_SHOT);
 		fprintf(fp," \t first (TSNAP1)= %8.5f s\n", TSNAP1);
 		fprintf(fp," \t last (TSNAP2)=%8.5f s\n",TSNAP2);
 		fprintf(fp," \t increment (TSNAPINC) =%8.5f s\n\n",TSNAPINC);
