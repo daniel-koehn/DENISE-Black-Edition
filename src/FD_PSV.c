@@ -223,10 +223,10 @@ if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 ishot1 = 1;
 ishot2 = nshots;
 
-/*if(SNAP){
+if(SNAP){
   ishot1 = SNAP_SHOT;
   ishot2 = SNAP_SHOT;
-}*/
+}
 
 for (ishot=ishot1;ishot<=ishot2;ishot+=SHOTINC){
 /*for (ishot=1;ishot<=1;ishot+=1){*/
