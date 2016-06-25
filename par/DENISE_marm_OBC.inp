@@ -12,7 +12,7 @@
 (2D-PSV=1)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 2
+number_of_processors_in_x-direction_(NPROCX) = 5
 number_of_processors_in_y-direction_(NPROCY) = 3
 #
 #-------------------- FD order -----------------------------------
@@ -73,12 +73,12 @@ k_max_PML = 1.0;
 (no=0)_(left_and_right=1) = 0
 #
 #----------------------Snapshots----------------------------------
-output_of_snapshots_(SNAP)(yes>0) = 2
+output_of_snapshots_(SNAP)(yes>0) = 0
 # output of particle velocities: SNAP=1
 # output of pressure field: SNAP=2
 # output of curl and divergence energy: SNAP=3
 # output of both particle velocities and energy : SNAP=4
-write_snapshots_for_shot_no_(SNAP_SHOT) = 1
+write_snapshots_for_shot_no_(SNAP_SHOT) = 50
 first_snapshot_(in_sec)_(TSNAP1) = 0.002
 last_snapshot_(in_sec)_(TSNAP2) = 3.0
 increment_(in_sec)_(TSNAPINC) = 0.06
