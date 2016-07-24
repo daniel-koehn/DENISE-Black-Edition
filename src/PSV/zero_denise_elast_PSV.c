@@ -1,22 +1,23 @@
 /*------------------------------------------------------------------------
- *   zero wavefield
+ *   Initialize wavefield and PML variables for the elastic PSV problem
  *  
  *  
- *   last update 06/10/11, L. Groos
+ *   D. Koehn
+ *   Kiel, 24.07.2016
  *
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void zero_fdveps_visc(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx, 
+void zero_denise_elast_PSV(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx, 
                  float ** syy, float ** sxy, float ** vxm1, float ** vym1, float ** vxym1, float ** vxp1, float ** vyp1,
                  float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_vyy, float ** psi_vxy,
-                 float ** psi_vxxs, float ***pr, float ***pp, float ***pq){
+                 float ** psi_vxxs){
 
 
 
-	register int i, j, k, l;
-	extern int FW, NX, NY, L;
+	register int i, j, k;
+	extern int FW, NX, NY;
 
 	
 		for (j=ny1;j<=ny2;j++){
@@ -58,16 +59,6 @@ void zero_fdveps_visc(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** 
 		                psi_vxy[j][i] = 0.0;
 		                
 		         }
-		}
-		
-		for (j=ny1;j<=ny2;j++){
-			for (i=nx1;i<=nx2;i++){
-				for (l=1;l<=L;l++){
-					pr[j][i][l] = 0.0;
-					pp[j][i][l] = 0.0;
-					pq[j][i][l] = 0.0;
-				}
-			}
-		}
-					            
+		}            
+	
 }

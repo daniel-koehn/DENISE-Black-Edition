@@ -648,12 +648,24 @@ precond_PSV(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
 		
    }
 
+/* Use preconditioned conjugate gradient optimization method */
 if(GRAD_METHOD==1){
   PCG(fwiPSV.waveconv, taper_coeff, nsrc, acq.srcpos, acq.recpos, ntr_glob, iter, fwiPSV.gradp, fwiPSV.waveconv_u, fwiPSV.gradp_u, fwiPSV.waveconv_rho, fwiPSV.gradp_rho);
 }
 
-if(GRAD_METHOD==2){
-  LBFGS1(taper_coeff, nsrc, acq.srcpos, acq.recpos, ntr_glob, iter, fwiPSV.waveconv, fwiPSV.gradp, fwiPSV.waveconv_u, fwiPSV.gradp_u, fwiPSV.waveconv_rho, fwiPSV.gradp_rho, y_LBFGS, s_LBFGS, rho_LBFGS, alpha_LBFGS, matPSV.ppi, matPSV.pu, matPSV.prho, NXNYI, q_LBFGS, r_LBFGS, beta_LBFGS, LBFGS_pointer, NLBFGS, NLBFGS_vec);
+/* Use l-BFGS optimization */
+if(GRAD_METHOD==2){ 
+
+    /* store models and gradients in l-BFGS vectors */
+    store_LBFGS_PSV(taper_coeff, nsrc, acq.srcpos, acq.recpos, ntr_glob, iter, fwiPSV.waveconv, fwiPSV.gradp, fwiPSV.waveconv_u, fwiPSV.gradp_u, fwiPSV.waveconv_rho, 
+		    fwiPSV.gradp_rho, y_LBFGS, s_LBFGS, q_LBFGS, matPSV.ppi, matPSV.pu, matPSV.prho, NXNYI, LBFGS_pointer, NLBFGS, NLBFGS_vec);
+
+    /* apply l-BFGS optimization */
+    LBFGS(iter, y_LBFGS, s_LBFGS, rho_LBFGS, alpha_LBFGS, q_LBFGS, r_LBFGS, beta_LBFGS, LBFGS_pointer, NLBFGS, NLBFGS_vec);
+
+    /* extract gradients and save old models/gradients for next l-BFGS iteration */
+    extract_LBFGS_PSV(iter, fwiPSV.waveconv, fwiPSV.gradp, fwiPSV.waveconv_u, fwiPSV.gradp_u, fwiPSV.waveconv_rho, fwiPSV.gradp_rho, matPSV.ppi, matPSV.pu, matPSV.prho, r_LBFGS);
+
 }
 
 opteps_vp=0.0;

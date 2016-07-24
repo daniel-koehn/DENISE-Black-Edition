@@ -128,6 +128,8 @@ float ** bufferlef_to_rig, float ** bufferrig_to_lef,
 float ** buffertop_to_bot, float ** bufferbot_to_top,
 MPI_Request * req_send, MPI_Request * req_rec);
 
+void extract_LBFGS_PSV( int iter, float ** waveconv, float ** gradp, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float **ppi, float ** pu, float ** prho, float * r_LBFGS);
+
 void FD_PSV();
 
 void FWI_PSV();
@@ -192,6 +194,10 @@ void surface_elastic_PML_PSV(int ndepth, float ** vx, float ** vy, float ** sxx,
 void surface_visc_PML_PSV(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy, float ** sxy, float ***p, float ***q, float  **  ppi, float  **  pu, 
 			  float **prho, float **ptaup, float **ptaus, float *etajm, float *peta, float * hc, float * K_x, float * a_x, float * b_x, float ** psi_vxx);
 
+void store_LBFGS_PSV(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float ** gradp, float ** waveconv_u, 
+float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, 
+int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
+
 void update_s_elastic_PML_PSV(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
 float **   sxy, float ** pi, float ** u, float ** uipjp, float ** absorb_coeff, float **rho, float *hc, int infoout,
@@ -213,6 +219,14 @@ float ** sxy, float  **rip, float **rjp, float **  srcpos_loc, float ** signals,
 float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
 float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
 float ** psi_sxx_x, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_syx_x);
+
+void zero_denise_elast_PSV(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx, float ** syy, float ** sxy, float ** vxm1, float ** vym1, 
+float ** vxym1, float ** vxp1, float ** vyp1, float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, 
+float ** psi_vyy, float ** psi_vxy, float ** psi_vxxs);
+
+void zero_denise_visc_PSV(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx, float ** syy, float ** sxy, float ** vxm1, float ** vym1, 
+float ** vxym1, float ** vxp1, float ** vyp1, float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, 
+float ** psi_vyy, float ** psi_vxy, float ** psi_vxxs, float ***pr, float ***pp, float ***pq);
 
 /* ----------------- */
 /* General functions */
@@ -303,7 +317,7 @@ void initproc(void);
 
 void interpol(int ni1, int ni2, float **  intvar, int cfgt_check);
 
-void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float ** gradp, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, float * alpha_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, float * q_LBFGS, float * r_LBFGS, float * beta_LBFGS, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
+void LBFGS(int iter, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, float * alpha_LBFGS, float * q_LBFGS, float * r_LBFGS, float * beta_LBFGS, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
            
 double LU_decomp(double  **A, double *x, double *b,int n);
 
@@ -430,16 +444,6 @@ void write_par(FILE *fp);
 void writedsk(FILE *fp_out, float amp, int format);
 
 void writemod(char modfile[STRING_SIZE], float ** array, int format);
-
-void zero_fdveps(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx,
-                 float ** syy, float ** sxy, float ** vxm1, float ** vym1, float ** vxym1, float ** vxp1, float ** vyp1,
-                 float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_vyy, float ** psi_vxy,
-                 float ** psi_vxxs);
-
-void zero_fdveps_visc(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx,
-                 float ** syy, float ** sxy, float ** vxm1, float ** vym1,  float ** vxym1, float ** vxp1, float ** vyp1,
-                 float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_vyy, float ** psi_vxy,
-                 float ** psi_vxxs, float ***pr, float ***pp, float ***pq);
 
 void zero_LBFGS(int NLBFGS, int NLBFGS_vec, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float * r_LBFGS, 
                  float * alpha_LBFGS, float * beta_LBFGS, float * rho_LBFGS);
