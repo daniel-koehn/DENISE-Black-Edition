@@ -1,37 +1,41 @@
-/* $Id: update_s_elastic_ssg.c,v 1.1.1.1 2007/11/21 22:44:52 koehn Exp $*/
-/*------------------------------------------------------------------------
- *   updating stress components at gridpoints [nx1...nx2][ny1...ny2]
- *   by a staggered grid finite difference scheme of arbitrary (FDORDER) order accuracy in space
- *   and second order accuracy in time
- *   T. Bohlen
+/*  Update_s_visc_PML_PSV
  *
+ *  updating stress components at gridpoints [nx1...nx2][ny1...ny2]
+ *  by a staggered grid finite difference scheme of arbitrary (FDORDER) order accuracy in space
+ *  and second order accuracy in time for the visco-elastic PSV problem
+ *   
+ *  Daniel Koehn
+ *  Kiel, 24.07.2016
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
+void update_s_visc_PML_PSV(int nx1, int nx2, int ny1, int ny2,
 	float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
-	float **   sxy, float ** pi, float ** u, float ** uipjp, float ** absorb_coeff, float **rho, float *hc, int infoout,
-        float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
-        float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-        float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode){
+	float **   sxy, float ** pi, float ** u, float ** uipjp, float **rho, float *hc, int infoout,
+	float ***r, float ***p, float ***q, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, 
+      float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
+      float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
+      float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode){
 
-
-	int i,j, m, fdoh, h, h1;
-	float fipjp, f, g;
+	int i,j, m, fdoh, h, h1, l;
 	float  vxx, vyy, vxy, vyx;
-	float  dhi;	
+	float  dhi, dthalbe;	
 	extern float DT, DH;
-	extern int MYID, FDORDER, INVMAT1, FW;
-        extern int FREE_SURF, BOUNDARY, GRAD_FORM;
+	extern int MYID, FDORDER, FW, L, GRAD_FORM;
+        extern int FREE_SURF, BOUNDARY;
 	extern int NPROCX, NPROCY, POS[3];
 	extern FILE *FP;
 	double time1, time2;
 	
+	float sumr=0.0, sump=0.0, sumq=0.0;
+	
 	
 
-	dhi = DT/DH;
+	/*dhi = DT/DH;*/
+	dhi=1.0/DH;
 	fdoh = FDORDER/2;
+	dthalbe = DT/2.0;
 
 	
 	if (infoout && (MYID==0)){
@@ -109,30 +113,48 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 			vxy = vxy / K_y_half[h1] + psi_vxy[h1][i];
         
         }
-
-                              fipjp=uipjp[j][i];
-			      
-			      /* lambda - mu relationship*/
-		              if (INVMAT1==3){
-		                  f = u[j][i];
-                                  g = pi[j][i];}  
-				
-			      if (INVMAT1==1){
-	                          f = rho[j][i] * u[j][i] * u[j][i];
-                                  g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
-				
-			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((mode==0)&&(GRAD_FORM==2)){
-	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
-				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
-				uxy[j][i] = fipjp*(vyx+vxy)/DT;
-			      } 			      			      
-			      
-			      			      				
-			      sxy[j][i] += fipjp*(vyx+vxy);
-			      sxx[j][i] += g*(vxx+vyy)+(2.0*f*vxx);
-			      syy[j][i] += g*(vxx+vyy)+(2.0*f*vyy);
+	
+	/* computing sums of the old memory variables */
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				sumr+=r[j][i][l];
+				sump+=p[j][i][l];
+				sumq+=q[j][i][l];
 			}
+			
+			
+                        /* updating components of the stress tensor, partially */
+			sxy[j][i] += (fipjp[j][i]*(vxy+vyx))+(dthalbe*sumr);
+			sxx[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vyy)+(dthalbe*sump);
+			syy[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vxx)+(dthalbe*sumq);
+				
+			
+			/* now updating the memory-variables and sum them up*/
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*(vxy+vyx)));
+				p[j][i][l] = bjm[l]*(p[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vyy));
+				q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vxx));
+				sumr += r[j][i][l];
+				sump += p[j][i][l];
+				sumq += q[j][i][l];
+			}
+			
+			
+			/* and now the components of the stress tensor are
+			   completely updated */
+			sxy[j][i]+=(dthalbe*sumr);
+			sxx[j][i]+=(dthalbe*sump);
+			syy[j][i]+=(dthalbe*sumq);
+
+			/* save forward wavefield for gradient calculation */
+			if((mode==0)&&(GRAD_FORM==2)){
+			  ux[j][i] = sump;
+		          uy[j][i] = sumq;
+			  uxy[j][i] = sumr;
+			}			
+
+		}
 		}
 		break;
 
@@ -206,28 +228,45 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
         
         }
 
-                              fipjp=uipjp[j][i];
-				
-			      /* lambda - mu relationship*/
-		              if (INVMAT1==3){
-		                  f = u[j][i];
-                                  g = pi[j][i];}  
-				
-			      if (INVMAT1==1){
-	                          f = rho[j][i] * u[j][i] * u[j][i];
-                                  g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
-				
-			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((mode==0)&&(GRAD_FORM==2)){
-	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
-				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
-				uxy[j][i] = fipjp*(vyx+vxy)/DT;
-			      } 
-                              			      			      
-				
-				sxy[j][i] += fipjp*(vyx+vxy);
-				sxx[j][i] += g*(vxx+vyy)+(2.0*f*vxx);
-				syy[j][i] += g*(vxx+vyy)+(2.0*f*vyy);
+	/* computing sums of the old memory variables */
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				sumr+=r[j][i][l];
+				sump+=p[j][i][l];
+				sumq+=q[j][i][l];
+			}
+
+
+                        /* updating components of the stress tensor, partially */
+			sxy[j][i] += (fipjp[j][i]*(vxy+vyx))+(dthalbe*sumr);
+			sxx[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vyy)+(dthalbe*sump);
+			syy[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vxx)+(dthalbe*sumq);
+			
+			
+			/* now updating the memory-variables and sum them up*/
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*(vxy+vyx)));
+				p[j][i][l] = bjm[l]*(p[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vyy));
+				q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vxx));
+				sumr += r[j][i][l];
+				sump += p[j][i][l];
+				sumq += q[j][i][l];
+			}
+
+			/* and now the components of the stress tensor are
+			   completely updated */
+			sxy[j][i]+=(dthalbe*sumr);
+			sxx[j][i]+=(dthalbe*sump);
+			syy[j][i]+=(dthalbe*sumq);
+
+			/* save forward wavefield for gradient calculation */
+			if((mode==0)&&(GRAD_FORM==2)){
+			  ux[j][i] = sump;
+		          uy[j][i] = sumq;
+			  uxy[j][i] = sumr;
+			}			
+			
 			}
 		}
 		break;
@@ -306,27 +345,45 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
         
         }
 
-                              fipjp=uipjp[j][i];
-				
-			      /* lambda - mu relationship*/
-		              if (INVMAT1==3){
-		                  f = u[j][i];
-                                  g = pi[j][i];}  
-				
-			      if (INVMAT1==1){
-	                          f = rho[j][i] * u[j][i] * u[j][i];
-                                  g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
+	/* computing sums of the old memory variables */
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				sumr+=r[j][i][l];
+				sump+=p[j][i][l];
+				sumq+=q[j][i][l];
+			}
+
+
+                        /* updating components of the stress tensor, partially */
+			sxy[j][i] += (fipjp[j][i]*(vxy+vyx))+(dthalbe*sumr);
+			sxx[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vyy)+(dthalbe*sump);
+			syy[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vxx)+(dthalbe*sumq);
 			
-			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((mode==0)&&(GRAD_FORM==2)){
-	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
-				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
-				uxy[j][i] = fipjp*(vyx+vxy)/DT;
-			      } 
-			      			      				
-				sxy[j][i] += fipjp*(vyx+vxy);
-				sxx[j][i] += g*(vxx+vyy)+(2.0*f*vxx);
-				syy[j][i] += g*(vxx+vyy)+(2.0*f*vyy);
+			
+			/* now updating the memory-variables and sum them up*/
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*(vxy+vyx)));
+				p[j][i][l] = bjm[l]*(p[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vyy));
+				q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vxx));
+				sumr += r[j][i][l];
+				sump += p[j][i][l];
+				sumq += q[j][i][l];
+			}
+
+			/* and now the components of the stress tensor are
+			   completely updated */
+			sxy[j][i]+=(dthalbe*sumr);
+			sxx[j][i]+=(dthalbe*sump);
+			syy[j][i]+=(dthalbe*sumq);
+
+			/* save forward wavefield for gradient calculation */
+			if((mode==0)&&(GRAD_FORM==2)){
+			  ux[j][i] = sump;
+		          uy[j][i] = sumq;
+			  uxy[j][i] = sumr;
+			}			
+
 			}
 		}
 		break;
@@ -411,28 +468,44 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
         
         }
 
-                              fipjp=uipjp[j][i];			      
-			      
-			      /* lambda - mu relationship*/
-		              if (INVMAT1==3){
-		                  f = u[j][i];
-                                  g = pi[j][i];}  
-				
-			      if (INVMAT1==1){
-	                          f = rho[j][i] * u[j][i] * u[j][i];
-                                  g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
-				
-			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((mode==0)&&(GRAD_FORM==2)){
-	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
-				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
-				uxy[j][i] = fipjp*(vyx+vxy)/DT;
-			      } 
-			      
-			      				
-				sxy[j][i] += fipjp*(vyx+vxy);
-				sxx[j][i] += g*(vxx+vyy)+(2.0*f*vxx);
-				syy[j][i] += g*(vxx+vyy)+(2.0*f*vyy);
+	/* computing sums of the old memory variables */
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				sumr+=r[j][i][l];
+				sump+=p[j][i][l];
+				sumq+=q[j][i][l];
+			}
+
+
+                        /* updating components of the stress tensor, partially */
+			sxy[j][i] += (fipjp[j][i]*(vxy+vyx))+(dthalbe*sumr);
+			sxx[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vyy)+(dthalbe*sump);
+			syy[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vxx)+(dthalbe*sumq);
+			
+			
+			/* now updating the memory-variables and sum them up*/
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*(vxy+vyx)));
+				p[j][i][l] = bjm[l]*(p[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vyy));
+				q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vxx));
+				sumr += r[j][i][l];
+				sump += p[j][i][l];
+				sumq += q[j][i][l];
+			}
+
+			/* and now the components of the stress tensor are
+			   completely updated */
+			sxy[j][i]+=(dthalbe*sumr);
+			sxx[j][i]+=(dthalbe*sump);
+			syy[j][i]+=(dthalbe*sumq);
+			
+			/* save forward wavefield for gradient calculation */
+			if((mode==0)&&(GRAD_FORM==2)){
+			  ux[j][i] = sump;
+		          uy[j][i] = sumq;
+			  uxy[j][i] = sumr;
+			}			
 
    }}
 		break;
@@ -441,35 +514,31 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 		for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
 			
-				vxx = (  hc[1]*(vx[j][i]  -vx[j][i-1])
+			vxx = (  hc[1]*(vx[j][i]  -vx[j][i-1])
 				       + hc[2]*(vx[j][i+1]-vx[j][i-2])
 				       + hc[3]*(vx[j][i+2]-vx[j][i-3])
 				       + hc[4]*(vx[j][i+3]-vx[j][i-4])
-				       + hc[5]*(vx[j][i+4]-vx[j][i-5])
-				      )*dhi;
-				      
-				vyy = (  hc[1]*(vy[j][i]  -vy[j-1][i])
-				       + hc[2]*(vy[j+1][i]-vy[j-2][i])
-				       + hc[3]*(vy[j+2][i]-vy[j-3][i])
-				       + hc[4]*(vy[j+3][i]-vy[j-4][i])
-				       + hc[5]*(vy[j+4][i]-vy[j-5][i])
-				      )*dhi;
-				      
-				vyx = (  hc[1]*(vy[j][i+1]-vy[j][i])
+				       + hc[5]*(vx[j][i+4]-vx[j][i-5]))*dhi;
+			
+			vyx = (  hc[1]*(vy[j][i+1]-vy[j][i])
 				       + hc[2]*(vy[j][i+2]-vy[j][i-1])
 				       + hc[3]*(vy[j][i+3]-vy[j][i-2])
 				       + hc[4]*(vy[j][i+4]-vy[j][i-3])
-				       + hc[5]*(vy[j][i+5]-vy[j][i-4])
-				      )*dhi;
-				      
-				vxy = (  hc[1]*(vx[j+1][i]-vx[j][i])
+				       + hc[5]*(vy[j][i+5]-vy[j][i-4]))*dhi;
+
+                        vxy = (  hc[1]*(vx[j+1][i]-vx[j][i])
 				       + hc[2]*(vx[j+2][i]-vx[j-1][i])
 				       + hc[3]*(vx[j+3][i]-vx[j-2][i])
 				       + hc[4]*(vx[j+4][i]-vx[j-3][i])
-				       + hc[5]*(vx[j+5][i]-vx[j-4][i])
-				      )*dhi;
-				      
-	/* left boundary */                                         
+				       + hc[5]*(vx[j+5][i]-vx[j-4][i]))*dhi;
+
+                        vyy = (  hc[1]*(vy[j][i]  -vy[j-1][i])
+				       + hc[2]*(vy[j+1][i]-vy[j-2][i])
+				       + hc[3]*(vy[j+2][i]-vy[j-3][i])
+				       + hc[4]*(vy[j+3][i]-vy[j-4][i])
+				       + hc[5]*(vy[j+4][i]-vy[j-5][i]))*dhi; 
+
+        /* left boundary */                                         
         if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
                         
                         psi_vxx[j][i] = b_x[i] * psi_vxx[j][i] + a_x[i] * vxx;
@@ -524,30 +593,46 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
         
         }
 
-                              fipjp=uipjp[j][i];			      
-			      
-			      /* lambda - mu relationship*/
-		              if (INVMAT1==3){
-		                  f = u[j][i];
-                                  g = pi[j][i];}  
-				
-			      if (INVMAT1==1){
-	                          f = rho[j][i] * u[j][i] * u[j][i];
-                                  g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
-				
-			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((mode==0)&&(GRAD_FORM==2)){
-	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
-				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
-				uxy[j][i] = fipjp*(vyx+vxy)/DT;
-			      } 
-			      			      				
-				sxy[j][i] += fipjp*(vyx+vxy);
-				sxx[j][i] += g*(vxx+vyy)+(2.0*f*vxx);
-				syy[j][i] += g*(vxx+vyy)+(2.0*f*vyy);
+	/* computing sums of the old memory variables */
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				sumr+=r[j][i][l];
+				sump+=p[j][i][l];
+				sumq+=q[j][i][l];
+			}
+
+
+                        /* updating components of the stress tensor, partially */
+			sxy[j][i] += (fipjp[j][i]*(vxy+vyx))+(dthalbe*sumr);
+			sxx[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vyy)+(dthalbe*sump);
+			syy[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vxx)+(dthalbe*sumq);
 			
-				      
 			
+			/* now updating the memory-variables and sum them up*/
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*(vxy+vyx)));
+				p[j][i][l] = bjm[l]*(p[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vyy));
+				q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vxx));
+				sumr += r[j][i][l];
+				sump += p[j][i][l];
+				sumq += q[j][i][l];
+			}
+
+			/* and now the components of the stress tensor are
+			   completely updated */
+			sxy[j][i]+=(dthalbe*sumr);
+			sxx[j][i]+=(dthalbe*sump);
+			syy[j][i]+=(dthalbe*sumq);
+			
+			/* save forward wavefield for gradient calculation */
+			if((mode==0)&&(GRAD_FORM==2)){
+			  ux[j][i] = sump;
+		          uy[j][i] = sumq;
+			  uxy[j][i] = sumr;
+			}			
+			
+
 			}
 		}
 		break;
@@ -556,39 +641,35 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 		for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
 			
-				vxx = (  hc[1]*(vx[j][i]  -vx[j][i-1])
+			vxx = (  hc[1]*(vx[j][i]  -vx[j][i-1])
 				       + hc[2]*(vx[j][i+1]-vx[j][i-2])
 				       + hc[3]*(vx[j][i+2]-vx[j][i-3])
 				       + hc[4]*(vx[j][i+3]-vx[j][i-4])
 				       + hc[5]*(vx[j][i+4]-vx[j][i-5])
-				       + hc[6]*(vx[j][i+5]-vx[j][i-6])
-				      )*dhi;
-				      
-				vyy = (  hc[1]*(vy[j][i]  -vy[j-1][i])
-				       + hc[2]*(vy[j+1][i]-vy[j-2][i])
-				       + hc[3]*(vy[j+2][i]-vy[j-3][i])
-				       + hc[4]*(vy[j+3][i]-vy[j-4][i])
-				       + hc[5]*(vy[j+4][i]-vy[j-5][i])
-				       + hc[6]*(vy[j+5][i]-vy[j-6][i])
-				      )*dhi;
-				      
-				vyx = (  hc[1]*(vy[j][i+1]-vy[j][i])
+				       + hc[6]*(vx[j][i+5]-vx[j][i-6]))*dhi;
+			
+			vyx = (  hc[1]*(vy[j][i+1]-vy[j][i])
 				       + hc[2]*(vy[j][i+2]-vy[j][i-1])
 				       + hc[3]*(vy[j][i+3]-vy[j][i-2])
 				       + hc[4]*(vy[j][i+4]-vy[j][i-3])
 				       + hc[5]*(vy[j][i+5]-vy[j][i-4])
-				       + hc[6]*(vy[j][i+6]-vy[j][i-5])
-				      )*dhi;
-				      
-				vxy = (  hc[1]*(vx[j+1][i]-vx[j][i])
+				       + hc[6]*(vy[j][i+6]-vy[j][i-5]))*dhi;
+
+                        vxy = (  hc[1]*(vx[j+1][i]-vx[j][i])
 				       + hc[2]*(vx[j+2][i]-vx[j-1][i])
 				       + hc[3]*(vx[j+3][i]-vx[j-2][i])
 				       + hc[4]*(vx[j+4][i]-vx[j-3][i])
 				       + hc[5]*(vx[j+5][i]-vx[j-4][i])
-				       + hc[6]*(vx[j+6][i]-vx[j-5][i])
-				      )*dhi;
-				
-	 /* left boundary */                                         
+				       + hc[6]*(vx[j+6][i]-vx[j-5][i]))*dhi;
+
+                        vyy = (  hc[1]*(vy[j][i]  -vy[j-1][i])
+				       + hc[2]*(vy[j+1][i]-vy[j-2][i])
+				       + hc[3]*(vy[j+2][i]-vy[j-3][i])
+				       + hc[4]*(vy[j+3][i]-vy[j-4][i])
+				       + hc[5]*(vy[j+4][i]-vy[j-5][i])
+				       + hc[6]*(vy[j+5][i]-vy[j-6][i]))*dhi; 
+
+        /* left boundary */                                         
         if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
                         
                         psi_vxx[j][i] = b_x[i] * psi_vxx[j][i] + a_x[i] * vxx;
@@ -643,31 +724,50 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
         
         }
 
-                              fipjp=uipjp[j][i];			      
-			      
-			      /* lambda - mu relationship*/
-		              if (INVMAT1==3){
-		                  f = u[j][i];
-                                  g = pi[j][i];}  
-				
-			      if (INVMAT1==1){
-	                          f = rho[j][i] * u[j][i] * u[j][i];
-                                  g = rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
-				
-			      /* save time derivative of forward wavefield for gradient calculation */
-			      if((mode==0)&&(GRAD_FORM==2)){
-	                        ux[j][i] = (g*(vxx+vyy)+(2.0*f*vxx))/DT;
-				uy[j][i] = (g*(vxx+vyy)+(2.0*f*vyy))/DT;
-				uxy[j][i] = fipjp*(vyx+vxy)/DT;
-			      } 			      			      			      
-				
-				sxy[j][i] += fipjp*(vyx+vxy);
-				sxx[j][i] += g*(vxx+vyy)+(2.0*f*vxx);
-				syy[j][i] += g*(vxx+vyy)+(2.0*f*vyy);      
-				
+	                /* computing sums of the old memory variables */
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				sumr+=r[j][i][l];
+				sump+=p[j][i][l];
+				sumq+=q[j][i][l];
+			}
+
+
+                        /* updating components of the stress tensor, partially */
+			sxy[j][i] += (fipjp[j][i]*(vxy+vyx))+(dthalbe*sumr);
+			sxx[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vyy)+(dthalbe*sump);
+			syy[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vxx)+(dthalbe*sumq);
+			
+			
+			/* now updating the memory-variables and sum them up*/
+			sumr=sump=sumq=0.0;
+			for (l=1;l<=L;l++){
+				r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*(vxy+vyx)));
+				p[j][i][l] = bjm[l]*(p[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vyy));
+				q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vxx));
+				sumr += r[j][i][l];
+				sump += p[j][i][l];
+				sumq += q[j][i][l];
+			}
+
+			/* and now the components of the stress tensor are
+			   completely updated */
+			sxy[j][i]+=(dthalbe*sumr);
+			sxx[j][i]+=(dthalbe*sump);
+			syy[j][i]+=(dthalbe*sumq);
+			
+			/* save forward wavefield for gradient calculation */
+			if((mode==0)&&(GRAD_FORM==2)){
+			  ux[j][i] = sump;
+		          uy[j][i] = sumq;
+			  uxy[j][i] = sumr;
+			}			
+
+		
 			}
 		}
 		break;
+
 		
 	default:
 		for (j=ny1;j<=ny2;j++){
@@ -681,15 +781,36 @@ void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
 					vyy += hc[m]*(vy[j+m-1][i] -vy[j-m][i]  );
 					vyx += hc[m]*(vy[j][i+m]   -vy[j][i-m+1]);
 					vxy += hc[m]*(vx[j+m][i]   -vx[j-m+1][i]);
-				}	
-	
-				fipjp=uipjp[j][i]*DT;
-				f=u[j][i]*DT;
-				g=pi[j][i]*DT;	
+				}
+				vxx *= dhi;
+				vyy *= dhi;
+				vyx *= dhi;
+				vxy *= dhi;
 
-				sxy[j][i]+=(fipjp*(vxy+vyx))*dhi;
-				sxx[j][i]+=((g*(vxx+vyy))-(2.0*f*vyy))*dhi;
-				syy[j][i]+=((g*(vxx+vyy))-(2.0*f*vxx))*dhi;
+				sumr=sump=sumq=0.0;
+				for (l=1;l<=L;l++){
+					sumr+=r[j][i][l];
+					sump+=p[j][i][l];
+					sumq+=q[j][i][l];
+				}
+
+				sxy[j][i] += (fipjp[j][i]*(vxy+vyx))+(dthalbe*sumr);
+				sxx[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vyy)+(dthalbe*sump);
+				syy[j][i] += (g[j][i]*(vxx+vyy))-(2.0*f[j][i]*vxx)+(dthalbe*sumq);
+
+				sumr=sump=sumq=0.0;
+				for (l=1;l<=L;l++){
+					r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*(vxy+vyx)));
+					p[j][i][l] = bjm[l]*(p[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vyy));
+					q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(e[j][i][l]*(vxx+vyy))+(2.0*d[j][i][l]*vxx));
+					sumr += r[j][i][l];
+					sump += p[j][i][l];
+					sumq += q[j][i][l];
+				}
+
+				sxy[j][i]+=(dthalbe*sumr);
+				sxx[j][i]+=(dthalbe*sump);
+				syy[j][i]+=(dthalbe*sumq);
 			}
 		}
 		break;

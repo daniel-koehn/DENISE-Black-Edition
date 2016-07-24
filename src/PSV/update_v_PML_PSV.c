@@ -1,17 +1,17 @@
-/* $Id: update_v_ssg.c,v 1.1.1.1 2007/11/21 22:44:52 koehn Exp $*/
-/*------------------------------------------------------------------------
- *   updating particle velocities at gridpoints [nx1...nx2][ny1...ny2]
- *   by a staggered grid finite difference scheme of FDORDER accuracy in space
- *   and second order accuracy in time
- *   T. Bohlen 
+/*  Update_v_PML_PSV
  *
+ *  updating stress components at gridpoints [nx1...nx2][ny1...ny2]
+ *  by a staggered grid finite difference scheme of arbitrary (FDORDER) order accuracy in space
+ *  and second order accuracy in time for the (visco)-elastic PSV problem
+ *   
+ *  Daniel Koehn
+ *  Kiel, 24.07.2016
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
 
-
-void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
+void update_v_PML_PSV(int nx1, int nx2, int ny1, int ny2, int nt,
 	float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty,float ** sxx, float ** syy,
 	float ** sxy, float  **rip, float **rjp, float **  srcpos_loc, float ** signals, float ** signals1, int nsrc, float ** absorb_coeff,
 	float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,

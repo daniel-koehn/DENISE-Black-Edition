@@ -184,10 +184,10 @@ nsrc_glob=nsrc;
 
 /* create model grids */
 if(L){
-	if (READMOD) readmod(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup,matPSV.peta);
+	if (READMOD) readmod_visc_PSV(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup,matPSV.peta);
 		else model(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup,matPSV.peta);
 } else{
-	if (READMOD) readmod_elastic(matPSV.prho,matPSV.ppi,matPSV.pu);
+	if (READMOD) readmod_elastic_PSV(matPSV.prho,matPSV.ppi,matPSV.pu);
     		else model_elastic(matPSV.prho,matPSV.ppi,matPSV.pu);
 }
 
@@ -203,9 +203,9 @@ if(L){
    for example, are required on the local grid. These are now copied from the
    neighbouring grids */		
 if (L){
-	matcopy(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup);
+	matcopy_PSV(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup);
 } else{
-	matcopy_elastic(matPSV.prho,matPSV.ppi,matPSV.pu);
+	matcopy_elastic_PSV(matPSV.prho,matPSV.ppi,matPSV.pu);
 }
 
 MPI_Barrier(MPI_COMM_WORLD);
@@ -215,7 +215,7 @@ av_rho(matPSV.prho,matPSV.prip,matPSV.prjp);
 if (L) av_tau(matPSV.ptaus,matPSV.ptausipjp);
 
 /* Preparing memory variables for update_s (viscoelastic) */
-if (L) prepare_update_s(matPSV.etajm,matPSV.etaip,matPSV.peta,matPSV.fipjp,matPSV.pu,matPSV.puipjp,matPSV.ppi,matPSV.prho,matPSV.ptaus,matPSV.ptaup,matPSV.ptausipjp,matPSV.f,matPSV.g,
+if (L) prepare_update_s_visc_PSV(matPSV.etajm,matPSV.etaip,matPSV.peta,matPSV.fipjp,matPSV.pu,matPSV.puipjp,matPSV.ppi,matPSV.prho,matPSV.ptaus,matPSV.ptaup,matPSV.ptausipjp,matPSV.f,matPSV.g,
 		matPSV.bip,matPSV.bjm,matPSV.cip,matPSV.cjm,matPSV.dip,matPSV.d,matPSV.e);
  
 if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;

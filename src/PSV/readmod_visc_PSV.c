@@ -1,16 +1,14 @@
 /*------------------------------------------------------------------------
- *   Read viscoelastic model properties (vp,vs,density,Qp,Qs) from files  
+ *  Read viscoelastic model properties (vp,vs,density,Qp,Qs) from files  
  *
- *  Copyright (c)  T. Bohlen
+ *  D. Koehn
+ *  Kiel, 24.07.2016
  *  ----------------------------------------------------------------------*/
 
 
-/* This file contains function readmod, which has the purpose
-   to read data from model-files for viscoelastic simulation */
-
 #include "fd.h"
 
-void readmod(float  **  rho, float **  pi, float **  u, float ** taus, float ** taup, float * eta){
+void readmod_visc_PSV(float  **  rho, float **  pi, float **  u, float ** taus, float ** taup, float * eta){
 
 	extern float DT, *FL;
 	extern int L;

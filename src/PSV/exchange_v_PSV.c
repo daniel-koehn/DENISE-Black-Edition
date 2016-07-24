@@ -2,13 +2,13 @@
  *   write values of dynamic field variables at the edges of the
  *   local grid into buffer arrays and  exchanged between
  *   processes.
- *   last update 21/09/02, T. Bohlen
+ *   last update 24.07.2016, D. Koehn
  *
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void exchange_v(float ** vx, float ** vy,
+void exchange_v_PSV(float ** vx, float ** vy,
 	float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
 	float ** buffertop_to_bot, float ** bufferbot_to_top,
 	MPI_Request * req_send, MPI_Request * req_rec){

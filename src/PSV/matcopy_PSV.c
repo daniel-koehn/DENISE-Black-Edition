@@ -3,13 +3,13 @@
  * at the indices 0 and NX+1 etc. These lie on the neighbouring processes.
  * Thus, they have to be copied which is done by this function.
  *
- *   last update 12/02/02, T. Bohlen
+ *   last update 24/07/2016, D. Koehn
  *
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void matcopy(float ** rho, float ** pi, float ** u, float ** taus,
+void matcopy_PSV(float ** rho, float ** pi, float ** u, float ** taus,
 float ** taup){
 
 	extern int MYID, NX, NY, INDEX[5];
@@ -29,7 +29,7 @@ float ** taup){
 	bufferbot_to_top = matrix(0,NX+1,1,5);
 	
 	
-	fprintf(FP,"\n\n **Message from matcopy (written by PE %d):",MYID);
+	fprintf(FP,"\n\n **Message from matcopy_PSV (written by PE %d):",MYID);
 	fprintf(FP,"\n Copy material properties at inner boundaries ... \n");
 	time1=MPI_Wtime();
 

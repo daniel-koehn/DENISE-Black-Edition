@@ -30,7 +30,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 	energy_all_shots=0.0;
 
 	/* no differentiation of elastic and viscoelastic modelling because the viscoelastic parameters did not change during the forward modelling */
-	matcopy_elastic((*matPSV).prho,(*matPSV).ppi,(*matPSV).pu);
+	matcopy_elastic_PSV((*matPSV).prho,(*matPSV).ppi,(*matPSV).pu);
 	
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -38,8 +38,8 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 	av_rho((*matPSV).prho,(*matPSV).prip,(*matPSV).prjp);
 
 	/* Preparing memory variables for update_s (viscoelastic) */
-	if (L) prepare_update_s((*matPSV).etajm,(*matPSV).etaip,(*matPSV).peta,(*matPSV).fipjp,(*matPSV).pu,(*matPSV).puipjp,(*matPSV).ppi,(*matPSV).prho,(*matPSV).ptaus,(*matPSV).ptaup,(*matPSV).ptausipjp,(*matPSV).f,(*matPSV).g,
-				(*matPSV).bip,(*matPSV).bjm,(*matPSV).cip,(*matPSV).cjm,(*matPSV).dip,(*matPSV).d,(*matPSV).e);
+	if (L) prepare_update_s_visc_PSV((*matPSV).etajm,(*matPSV).etaip,(*matPSV).peta,(*matPSV).fipjp,(*matPSV).pu,(*matPSV).puipjp,(*matPSV).ppi,(*matPSV).prho,(*matPSV).ptaus,(*matPSV).ptaup,
+					 (*matPSV).ptausipjp,(*matPSV).f,(*matPSV).g,(*matPSV).bip,(*matPSV).bjm,(*matPSV).cip,(*matPSV).cjm,(*matPSV).dip,(*matPSV).d,(*matPSV).e);
 
 		if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 

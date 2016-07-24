@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------
- *   calculate test step length for material parameter update
+ *   output of material parameters after each stage
  *   
  *   Daniel Koehn
  *   last update 9.11.2007
@@ -7,7 +7,7 @@
  *  ---------------------------------------------------------------------*/
 
 #include "fd.h"
-void model_freq_out(float ** ppi, float  **  rho, float **  pu, int iter, float freq){
+void model_freq_out_PSV(float ** ppi, float  **  rho, float **  pu, int iter, float freq){
 
 
 	/*--------------------------------------------------------------------------*/

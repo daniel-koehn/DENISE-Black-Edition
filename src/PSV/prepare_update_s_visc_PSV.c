@@ -1,8 +1,11 @@
-/* $Id: prepare_update_s.c,v 2.2 2007/08/21 13:16:19 tbohlen Exp $*/
+/* Prepare_update_s_visc_PSV 
+*
+*  Daniel Koehn
+*  Kiel, 24.07.2016 */
 
 #include "fd.h"
 
-void prepare_update_s(float *etajm, float *etaip, float *peta, float **fipjp, float **pu,
+void prepare_update_s_visc_PSV(float *etajm, float *etaip, float *peta, float **fipjp, float **pu,
 		float **puipjp, float **ppi, float **prho, float **ptaus, float **ptaup,
 		float **ptausipjp, float **f, float **g, float *bip, float *bjm,
 		float *cip, float *cjm, float ***dip, float ***d, float ***e) {

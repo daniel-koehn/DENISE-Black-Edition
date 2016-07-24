@@ -249,12 +249,6 @@ if(LNORM==7){
 	}			
 
 } /* end of if LNORM==7 */
-
-/* Laplace-Fourier-domain residuals */
-/* -------------------------------- */
-/*if(INVMAT==1){
-   laplace_fourier_res(sectiondata,section,sectiondiff,ntr,ntr_glob,ns,ishot,nsrc_glob,iter,recpos,recpos_loc,srcpos);
-}*/
                   
 /* calculate weighted data residuals and reverse time direction */
 for(i=1;i<=ntr;i++){	

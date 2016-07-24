@@ -1,20 +1,16 @@
 /*------------------------------------------------------------------------
- *   Read elastic model properties (vp,vs,density) from files  
+ *  Read elastic model properties (vp,vs,density) from files  
  *
- *  Copyright (c)  T. Bohlen
- *  last update 29.06.2003
+ *  D. Koehn
+ *  Kiel, 24.07.2016
  *  ----------------------------------------------------------------------*/
 
 
-/* This file contains function readmod, which has the purpose
-   to read data from model-files for viscoelastic simulation */
-
 #include "fd.h"
 
-void readmod_elastic_es(float  **  rho, float **  pi, float **  u, float ** matmod, int is){
+void readmod_elastic_PSV(float  **  rho, float **  pi, float **  u){
 
 	extern int NX, NY, NXG, NYG,  POS[3], MYID, INVMAT1;
-	extern float DH;
 	extern char  MFILE[STRING_SIZE];	
 	extern FILE *FP;
 
@@ -26,11 +22,9 @@ void readmod_elastic_es(float  **  rho, float **  pi, float **  u, float ** matm
 	char filename[STRING_SIZE];
 
 
-        int h=47; /* depth of the seafloor (gridpoints) */
 
 
-
-	   fprintf(FP,"\n...reading model information from model-files...\n");
+	   fprintf(FP,"\n...reading model information from modell-files...\n");
            
 	   /* read density and seismic velocities */
 	   /* ----------------------------------- */
@@ -71,7 +65,7 @@ void readmod_elastic_es(float  **  rho, float **  pi, float **  u, float ** matm
 	   fp_rho=fopen(filename,"r");
 	   if (fp_rho==NULL) err(" Could not open model file for densities ! ");
            }
-
+	   
 
 	/* loop over global grid */
 		for (i=1;i<=NXG;i++){
@@ -79,12 +73,6 @@ void readmod_elastic_es(float  **  rho, float **  pi, float **  u, float ** matm
 			fread(&vp, sizeof(float), 1, fp_vp);
 			fread(&vs, sizeof(float), 1, fp_vs);
 			fread(&rhov, sizeof(float), 1, fp_rho);
-			
-			if(j>=h){
-			   vp = (matmod[is][1] - matmod[is][4] * (h*DH)) + matmod[is][4] * (j*DH);
-			   vs = (matmod[is][2] - matmod[is][5] * (h*DH)) + matmod[is][5] * (j*DH);
-			   rhov = (matmod[is][3] - matmod[is][6] * (h*DH)) + matmod[is][6] * (j*DH);
-			}
 				
 			/* only the PE which belongs to the current global gridpoint 
 			is saving model parameters in his local arrays */
@@ -111,32 +99,24 @@ void readmod_elastic_es(float  **  rho, float **  pi, float **  u, float ** matm
 	
 	
 	/* each PE writes his model to disk */
-	   
-	   
-	sprintf(filename,"%s.fdveps.vp",MFILE);
-
+	sprintf(filename,"%s.fdveps.pi",MFILE);
 	writemod(filename,pi,3);
-
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	if (MYID==0) mergemod(filename,3);
 	
-	
-	sprintf(filename,"%s.fdveps.vs",MFILE);
-
-	writemod(filename,u,3);
-
+	sprintf(filename,"%s.fdveps.mu",MFILE);
+        writemod(filename,u,3);
 	MPI_Barrier(MPI_COMM_WORLD);
-
+	                           
 	if (MYID==0) mergemod(filename,3);
-
-        sprintf(filename,"%s.fdveps.rho",MFILE);
-
+	
+	sprintf(filename,"%s.fdveps.rho",MFILE);
 	writemod(filename,rho,3);
-
 	MPI_Barrier(MPI_COMM_WORLD);
-
+	                        
 	if (MYID==0) mergemod(filename,3);
+
 }
 
 

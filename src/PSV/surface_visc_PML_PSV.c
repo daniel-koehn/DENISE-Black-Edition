@@ -1,39 +1,80 @@
 /*------------------------------------------------------------------------
  *   stress free surface condition
- *   last update 03/01/04, T. Bohlen
+ *   T. Bohlen
+ *   last update 2011/10/06, L. Groos
  *
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void surface_elastic_PML(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy,
-float ** sxy, float  **  pi, float  **  u, float ** rho, float * hc, float * K_x, float * a_x, float * b_x, float ** psi_vxx){
+void surface_visc_PML_PSV(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy,
+float ** sxy, float ***p, float ***q, float  **  ppi, float  **  pu, float **prho, float **ptaup, float **ptaus, float *etajm, float *peta, float * hc, float * K_x, float * a_x, float * b_x, float ** psi_vxx){
 
 
-	int i,j,m,h,h1;
+	int i,j,m,h,h1,l;
 	int fdoh;
-	float fjm, g;
-	float  vxx, vyy;
+	float bjm, djm, e, fjm, g;
+	float  vxx, vyy, sump=0.0;
 	float  dh24, dthalbe;	
-	extern float DT, DH;
-	extern int NX, INVMAT1;
+	float *pts, ws, sumu, sumpi, mu, pi;
+	extern float DT, DH, *FL;
+	extern int NX, INVMAT1, L;
         extern int FW, BOUNDARY;
         extern int NPROCX, NPROCY, POS[3], MYID; 
 	extern int FDORDER;
+	extern float TS;
+	
 	
 	fdoh = FDORDER/2;
 	dthalbe=DT/2.0;
 	dh24=1.0/DH;
+	
+	
+	
+	/* vector for maxwellbodies */
+		pts=vector(1,L);
+		for (l=1;l<=L;l++) {
+			pts[l]=1.0/(2.0*PI*FL[l]);
+		}
+	
+	
+		/*ws=2.0*PI*FL[1];*/
+		ws=2.0*PI*(1.0/TS);
+	
+		sumu=0.0;
+		sumpi=0.0;
+		for (l=1;l<=L;l++){
+			sumu=sumu+((ws*ws*pts[l]*pts[l])/(1.0+ws*ws*pts[l]*pts[l]));
+			sumpi=sumpi+((ws*ws*pts[l]*pts[l])/(1.0+ws*ws*pts[l]*pts[l]));
+		}		
+		
+	
 
 	j=ndepth;     /* The free surface is located exactly in y=1/2*dh !! */
 	for (i=1;i<=NX;i++){
-
+		
+		
+		for (l=1;l<=L;l++){
+			etajm[l]=peta[l];
+		}
+		
+		
+		
 		/*Mirroring the components of the stress tensor to make
 			a stress free surface (method of imaging)*/
 		syy[j][i]=0.0;
 		
-		/*syy[j-1][i]=-syy[j+1][i];
-		sxy[j-1][i]=-sxy[j][i];*/
+		/* since syy is zero on the free surface also the
+		corresponding memory-variables must set to zero */
+		for (l=1;l<=L;l++) q[j][i][l]=0.0;
+		
+		
+		
+		/* now updating the stress component sxx and the memory-
+		variables p[j][i][l] at the free surface */
+
+		/* first calculate spatial derivatives of components
+			of particle velocities */
 		
 		vxx = 0.0;
 		vyy = 0.0;
@@ -84,21 +125,49 @@ float ** sxy, float  **  pi, float  **  u, float ** rho, float * hc, float * K_x
                         
                         psi_vxx[j][h1] = b_x[h1] * psi_vxx[j][h1] + a_x[h1] * vxx;
                         vxx = vxx / K_x[h1] + psi_vxx[j][h1];                                            
-             }    
-
-      
-                if(INVMAT1==3){
-		fjm=u[j][i]*2.0;
-		g=pi[j][i];}
+             } 
+	     
+	     
+	     
 		
-		if(INVMAT1==1){
-		fjm=rho[j][i] * u[j][i] * u[j][i] * 2.0;
-		g=rho[j][i] * ((pi[j][i] * pi[j][i]) - 2 * u[j][i] * u[j][i]);}
-
 		
-		/*sxx[j][i]+= DT*((4.0*((g*fjm)+(fjm*fjm))/(g+2*fjm))*vxx);*/
-		sxx[j][i]+= -DT*((g*g)/(g+fjm)*vxx+g*vyy);
 		
+			
+		if (INVMAT1==1){
+			mu=(pu[j][i]*pu[j][i]*prho[j][i])/(1.0+sumu*ptaus[j][i]);
+			pi=(ppi[j][i]*ppi[j][i]*prho[j][i])/(1.0+sumpi*ptaup[j][i]);
+		}
+		if (INVMAT1==3){
+			mu=pu[j][i]/(1.0+sumu*ptaus[j][i]);
+			pi=(ppi[j][i]+2*pu[j][i])/(1.0+sumpi*ptaup[j][i]);
+		}
+			     
+	     
+	     
+	     
+	     /* sums used in updating sxx */
+		sump=0.0;
+		for (l=1;l<=L;l++) sump+=p[j][i][l];
 
+
+		fjm=mu*2.0*(1.0+L*ptaus[j][i]);
+		g=pi*(1.0+L*ptaup[j][i]);
+
+		/* partially updating sxx */
+		sxx[j][i]+= -(DT*(g-fjm)*(g-fjm)*vxx/g)-(DT*(g-fjm)*vyy)-(dthalbe*sump);
+
+		/* updating the memory-variable p[j][i][l] at the free surface */
+		sump=0.0;
+		for (l=1;l<=L;l++){
+			bjm=etajm[l]/(1.0+(etajm[l]*0.5));
+			djm=2.0*mu*ptaus[j][i];
+			e=pi*ptaup[j][i];
+			p[j][i][l]+=bjm*(((djm-e)*((fjm/g)-1.0)*vxx)-((djm-e)*vyy));
+			sump+=p[j][i][l];
+		}
+		/*completely updating the stress sxx */
+		sxx[j][i]+=(dthalbe*sump);   
+		
 	}
+	free_vector(pts,1,L);
 }

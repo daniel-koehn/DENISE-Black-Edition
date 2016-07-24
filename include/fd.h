@@ -1,9 +1,8 @@
 /*------------------------------------------------------------------------
- *  fd.h - include file for viscoelastic FD programs          
- *  last update  03/12/2000 
+ *  fd.h - header file for DENISE
  *
- *  Copyright (c) 1998 T. Bohlen 
- *  See COPYING file for copying and redistribution conditions.
+ *  Daniel Koehn
+ *  Kiel, 24.07.2016
  *  ---------------------------------------------------------------------*/
 
 /* files to include */
@@ -26,7 +25,9 @@
 #define STRING_SIZE2 256
 #define REQUEST_COUNT 4
 
-/* declaration of data-structures */
+/* ---------------------------------- */
+/* declaration of PSV data-structures */
+/* ---------------------------------- */
 
 /* PSV (visco)-elastic wavefield variables */
 struct wavePSV{
@@ -89,7 +90,133 @@ struct mpiPSV{
    float ** bufferlef_to_rig,  ** bufferrig_to_lef, ** buffertop_to_bot, ** bufferbot_to_top;
 } mpiPSV;
 
-/* declaration of functions */
+/* ------------- */
+/* PSV functions */
+/* ------------- */
+
+void alloc_fwiPSV(struct fwiPSV *fwiPSV);
+
+void alloc_matPSV(struct matPSV *matPSV);
+
+void alloc_mpiPSV(struct mpiPSV *mpiPSV);
+
+void alloc_seisPSV(int ntr, int ns, struct seisPSV *seisPSV);
+
+void alloc_seisPSVfull(struct seisPSV *seisPSV, int ntr_glob);
+
+void alloc_seisPSVfwi(int ntr, int ntr_glob, int ns, struct seisPSVfwi *seisPSVfwi);
+
+void alloc_PSV(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML);
+
+void ass_gradPSV(struct fwiPSV *fwiPSV, struct matPSV *matPSV, int iter);
+
+float calc_mat_change_test_PSV(float  **  waveconv, float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  pi, float **  pinp1, float **  u, float **  unp1, 
+int iter, int epstest, float eps_scale, int itest);
+
+void calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter,
+                  int swstestshot);
+
+void dealloc_PSV(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML);
+
+void exchange_s_PSV(float ** sxx, float ** syy, 
+float ** sxy, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
+float ** buffertop_to_bot, float ** bufferbot_to_top,
+MPI_Request * req_send, MPI_Request * req_rec);
+
+void exchange_v_PSV(float ** vx, float ** vy,  
+float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
+float ** buffertop_to_bot, float ** bufferbot_to_top,
+MPI_Request * req_send, MPI_Request * req_rec);
+
+void FD_PSV();
+
+void FWI_PSV();
+
+float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
+         int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
+         MPI_Request * req_send, MPI_Request * req_rec);
+
+void matcopy_PSV(float ** prho, float ** ppi, float ** pu, float ** ptaup,
+float ** ptaus);
+
+void matcopy_elastic_PSV(float ** prho, float ** ppi, float ** pu);
+
+void mem_fwiPSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize, int ntr_glob);
+
+void mem_PSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize);
+
+void model_freq_out_PSV(float ** ppi, float  **  rho, float **  pu, int iter, float freq);
+
+float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, int ntr_glob, 
+int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec);
+
+void outseis_PSVfor(struct seisPSV *seisPSV, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int iter, FILE *FP);
+
+void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int nstage, FILE *FP);
+
+void physics_PSV();
+
+void precond_PSV(struct fwiPSV *fwiPSV, struct acq *acq, int nsrc, int ntr_glob, float ** taper_coeff, FILE *FP_GRAV);
+
+void prepare_update_s_visc_PSV(float *etajm, float *etaip, float *peta, float **fipjp, float **pu,
+float **puipjp, float **ppi, float **prho, float **ptaus, float **ptaup,
+float **ptausipjp, float **f, float **g, float *bip, float *bjm,
+float *cip, float *cjm, float ***dip, float ***d, float ***e);
+
+void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
+
+void readmod_visc_PSV(float  **  rho, float **  pi, float **  u, float **  taus, float **  taup, float *  eta);
+
+void readmod_elastic_PSV(float  **  rho, float **  pi, float **  u);
+
+void RTM_PSV();
+
+void RTM_PSV_out(struct fwiPSV *fwiPSV);
+
+float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
+         float * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
+         float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
+
+void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, 
+             struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, int ns, int ntr, int ntr_glob, int iter, float **Ws, 
+             float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
+
+void surface_elastic_PML_PSV(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy, float ** sxy, float  **  pi, float  **  u, float ** rho, 
+			     float * hc, float * K_x, float * a_x, float * b_x, float ** psi_vxx);
+
+void surface_visc_PML_PSV(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy, float ** sxy, float ***p, float ***q, float  **  ppi, float  **  pu, 
+			  float **prho, float **ptaup, float **ptaus, float *etajm, float *peta, float * hc, float * K_x, float * a_x, float * b_x, float ** psi_vxx);
+
+void update_s_elastic_PML_PSV(int nx1, int nx2, int ny1, int ny2,
+float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
+float **   sxy, float ** pi, float ** u, float ** uipjp, float ** absorb_coeff, float **rho, float *hc, int infoout,
+float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
+float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
+float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int sws);
+
+void update_s_visc_PML_PSV(int nx1, int nx2, int ny1, int ny2,
+float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
+float **   sxy, float ** pi, float ** u, float ** uipjp, float **rho, float *hc, int infoout,
+float ***r, float ***p, float ***q, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, 
+float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
+float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
+float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode);
+
+void update_v_PML_PSV(int nx1, int nx2, int ny1, int ny2, int nt,
+float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty,float ** sxx, float ** syy,
+float ** sxy, float  **rip, float **rjp, float **  srcpos_loc, float ** signals, float ** signals1, int nsrc, float ** absorb_coeff,
+float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
+float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
+float ** psi_sxx_x, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_syx_x);
+
+/* ----------------- */
+/* General functions */
+/* ----------------- */
 
 void window_cos(float **win, int npad, int nsrc, float it1, float it2, float it3, float it4);
 
@@ -107,23 +234,7 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 
 void spat_filt(float ** waveconv, int iter, int sws);
 
-void alloc_fwiPSV(struct fwiPSV *fwiPSV);
-
-void alloc_matPSV(struct matPSV *matPSV);
-
-void alloc_mpiPSV(struct mpiPSV *mpiPSV);
-
-void alloc_seisPSV(int ntr, int ns, struct seisPSV *seisPSV);
-
-void alloc_seisPSVfull(struct seisPSV *seisPSV, int ntr_glob);
-
-void alloc_seisPSVfwi(int ntr, int ntr_glob, int ns, struct seisPSVfwi *seisPSVfwi);
-
-void alloc_PSV(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML);
-
 void apply_tdfilt(float **section, int ntr, int ns, int order, float fc2, float fc1);
-
-void ass_gradPSV(struct fwiPSV *fwiPSV, struct matPSV *matPSV, int iter);
 
 void av_mat(float **  pi, float **  u, 
 float **  ppijm, float **  puip, float ** pujm);
@@ -140,15 +251,9 @@ void calc_envelope(float ** datatrace, float ** envelope, int ns, int ntr);
 
 void calc_hilbert(float ** datatrace, float ** envelope, int ns, int ntr);
 
-float calc_mat_change_test(float  **  waveconv, float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  pi, float **  pinp1, float **  u, float **  unp1, 
-int iter, int epstest, float eps_scale, int itest);
-
 double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, float L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter);
 
 double calc_res_grav(int ngrav, float *gz_mod, float *gz_res);
-
-void calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter,
-                  int swstestshot);
 
 double calc_misfit(float **sectiondiff, int ntr, int ns, int LNORM, float L2, int ntr_glob, int **recpos_loc, int nsrc_glob, int ishot);
 
@@ -156,17 +261,9 @@ float calc_opt_step(float *  L2t, float * epst, int sws);
 
 double calc_energy(float **sectiondata, int ntr, int ns, float energy, int ntr_glob, int **recpos_loc, int nsrc_glob, int ishot);
 
-void checkfd(FILE *fp, float ** prho, float ** ppi, float ** pu,
-float ** ptaus, float ** ptaup, float *peta);
-
-void checkfd_hc(FILE *fp, float ** prho, float ** ppi, float ** pu,
-float ** ptaus, float ** ptaup, float *peta, float *hc);
-
 void checkfd_ssg_elastic(FILE *fp, float ** prho, float ** ppi, float ** pu, float *hc);
-void checkfd_ssg_visc(FILE *fp, float ** prho, float ** ppi, float ** pu, float ** ptaus, float ** ptaup, float * peta, float *hc);
 
-void checkfd_rsg(FILE *fp, float ** prho, float ** ppi, float ** pu,
-float ** ptaus, float ** ptaup, float *peta);
+void checkfd_ssg_visc(FILE *fp, float ** prho, float ** ppi, float ** pu, float ** ptaus, float ** ptaup, float * peta, float *hc);
 
 void check_mode_phys();
 
@@ -178,11 +275,6 @@ void conv_FD(float * temp_TS, float * temp_TS1, float * temp_conv, int ns);
 
 void copy_mat(float ** A, float ** B);
 
-/*void DFT(int ishot, int nt, float ** vx, float ** vy, float ** sxx, float ** syy, float ** sxy, float *** green_vx,  
-float *** greeni_vx, float *** green_vy, float *** greeni_vy, float *** green_sxx, float *** greeni_sxx, float *** green_syy, float *** greeni_syy, float *** green_sxy, float *** greeni_sxy); */
-
-void dealloc_PSV(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML);
-
 float dotp(float * vec1, float *vec2, int n1, int n2, int sw);
 
 float exchange_L2(float L2, int sw, int bcast_l2);
@@ -191,39 +283,13 @@ void eprecond(float ** W, float ** vx, float ** vy);
 
 void eprecond1(float ** We, float ** Ws, float ** Wr);
 
-void exchange_v(float ** vx, float ** vy,  
-float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-float ** buffertop_to_bot, float ** bufferbot_to_top,
-MPI_Request * req_send, MPI_Request * req_rec);
-
-void exchange_s(float ** sxx, float ** syy, 
-float ** sxy, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-float ** buffertop_to_bot, float ** bufferbot_to_top,
-MPI_Request * req_send, MPI_Request * req_rec);
-
-void exchange_mod_es(float ** matmod, int ncptot, int nparameter);
-
 void extend_mod(float  **rho_grav, float  **rho_grav_ext, int nxgrav, int nygrav);
-
-void FD_PSV();
-
-void FWI_PSV();
-
-/*void hessian(int nshots, int SHOTINC, float *** green_vx, float *** greeni_vx, float *** green_vy, float *** greeni_vy, float *** green_sxx, float *** greeni_sxx, float *** green_syy, float *** greeni_syy,
-             float *** green_sxy, float *** greeni_sxy, float ** prho, float ** pu, float ** ppi, int iter);*/
-
-float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
-         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
-         int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
-         MPI_Request * req_send, MPI_Request * req_rec);
 
 void grav_grad(int ngrav, float **gravpos, float **grad_grav, float *gz_res);
 
 void grav_mod(float  **rho, int ngrav, float **gravpos, float *gz, int NXGRAV, int NYGRAV, int NZGRAV);
 
 void read_back_density(float ** rho_back);
-
-void hessian_out(float ** hessian_lam, float ** hessian_mu, float ** hessian_rho, float ** ppi, float ** pu, float ** prho);
 
 float *holbergcoeff(void);
 
@@ -237,8 +303,6 @@ void initproc(void);
 
 void interpol(int ni1, int ni2, float **  intvar, int cfgt_check);
 
-void laplace_fourier_res(float **sectionvy_obs, float **sectionvy, float **sectiondiff, int ntr, int ntr_glob, int ns, int ishot, int nshots, int iter, int **recpos, int **recpos_loc, float **srcpos);
-
 void LBFGS1(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float ** gradp, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, float * alpha_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, float * q_LBFGS, float * r_LBFGS, float * beta_LBFGS, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
            
 double LU_decomp(double  **A, double *x, double *b,int n);
@@ -247,37 +311,13 @@ float maximum_m(float **mat, int nx, int ny);
 
 void median_src(float ** waveconv,float ** taper_coeff, float **srcpos, int nshots, int **recpos, int ntr, int iter, int sws);
 
-void mem_fwiPSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize, int ntr_glob);
-
-void mem_PSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize);
-
-void mer(float **sectionp, int ntr, int nst, float *picked_times, int ishot);
-
 float minimum_m(float **mat, int nx, int ny);
 
-void model(float  **  rho, float **  pi, float **  u, 
-float **  taus, float **  taup, float *  eta);
+void model(float  **  rho, float **  pi, float **  u, float **  taus, float **  taup, float *  eta);
 
 void model_elastic(float  **  rho, float **  pi, float **  u);
-
-void model_ani(float  **  rho, float **  c11, float **  c15, float **  c13, 
-float **  c35, float **  c33, float **  c55, 
-float **  taus, float **  taup, float *  eta);
-
-void model_freq_out(float ** ppi, float  **  rho, float **  pu, int iter, float freq);
-
-void matcopy(float ** prho, float ** ppi, float ** pu, float ** ptaup,
-float ** ptaus);
-
-void matcopy_elastic(float ** prho, float ** ppi, float ** pu);
-
-void matcopy_ani(float ** rho, float **  c11, float **  c15, float **  c13, 
-float **  c35, float **  c33, float **  c55, float ** taus,
-float ** taup);
 			  
 void merge(int nsnap, int type);
-
-void merge2(int nsnap, int type);
 
 void mergemod(char modfile[STRING_SIZE], int format);
 
@@ -287,10 +327,6 @@ void norm(float **waveconv);
 
 void note(FILE *fp);
 
-float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
-struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, int ntr_glob, 
-int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec);
-
 void  outseis(FILE *fp, FILE *fpdata, int comp, float **section,
 int **recpos, int **recpos_loc, int ntr, float ** srcpos_loc,
 int nsrc, int ns, int seis_form, int ishot, int sws);
@@ -298,10 +334,6 @@ int nsrc, int ns, int seis_form, int ishot, int sws);
 void  outseis_glob(FILE *fp, FILE *fpdata, int comp, float **section,
 int **recpos, int **recpos_loc, int ntr, float ** srcpos_loc,
 int nsrc, int ns, int seis_form, int ishot, int sws);
-
-void outseis_PSVfor(struct seisPSV *seisPSV, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int iter, FILE *FP);
-
-void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int nstage, FILE *FP);
 
 void  outseis_vector(FILE *fp, FILE *fpdata, int comp, float *section,
 int **recpos, int **recpos_loc, int ntr, float ** srcpos_loc,
@@ -316,38 +348,19 @@ void  output_source_signal(FILE *fp, float **signals, int ns, int seis_form);
 void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** gradp, 
 float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho);
 
-void physics_PSV();
-
 void PML_pro(float * d_x, float * K_x, float * alpha_prime_x, float * a_x, float * b_x, 
 float * d_x_half, float * K_x_half, float * alpha_prime_x_half, float * a_x_half, float * b_x_half,
 float * d_y, float * K_y, float * alpha_prime_y, float * a_y, float * b_y, 
 float * d_y_half, float * K_y_half, float * alpha_prime_y_half, float * a_y_half, float * b_y_half);
 
-void precond_PSV(struct fwiPSV *fwiPSV, struct acq *acq, int nsrc, int ntr_glob, float ** taper_coeff, FILE *FP_GRAV);
-
 void psource(int nt, float ** sxx, float ** syy,
 float **  srcpos_loc, float ** signals, int nsrc, int sw);
-
-void psource_rsg(int nt, float ** sxx, float ** syy,
-float **  srcpos_loc, float ** signals, int nsrc);
-
-void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
-         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
-         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
 
 float *rd_sour(int *nts,FILE* fp_source);
 
 void read_density_glob(float ** rho_grav, int sws);
 
 float readdsk(FILE *fp_in, int format);
-
-void readbufs(float ** sxx, float ** syy, 
-float ** sxy, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-float ** buffertop_to_bot, float ** bufferbot_to_top);
-
-void readbufv(float ** vx, float ** vy,  
-float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-float ** buffertop_to_bot, float ** bufferbot_to_top);
 
 void read_checkpoint(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float ** vy, float ** sxx, float ** syy, float ** sxy);
@@ -358,18 +371,7 @@ void read_par(FILE *fp_in);
 
 void read_par_inv(FILE *fp,int nstage,int stagemax);
 
-void readmod(float  **  rho, float **  pi, float **  u, 
-float **  taus, float **  taup, float *  eta);
-
-void readmod_elastic(float  **  rho, float **  pi, float **  u);
-
-void readmod_elastic_es(float  **  rho, float **  pi, float **  u, float ** matmod, int is);
-
 int **receiver(FILE *fp, int *ntr, int ishot);
-
-void RTM_PSV();
-
-void RTM_PSV_out(struct fwiPSV *fwiPSV);
 
 void save_checkpoint(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float ** vy, float ** sxx, float ** syy, float ** sxy);
@@ -385,12 +387,7 @@ int ntr, float ** srcpos_loc, int nsrc,int ns, int iter);
 void snap(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx,
 	float **syy, float **u, float **pi, float *hc);
 
-
-void snap_rsg(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx, float **syy, float **u, float **pi);
-
 void snapmerge(int nsnap);
-
-void snapmerge2(int nsnap);
 
 float **sources(int *nsrc);
 
@@ -403,11 +400,7 @@ float **pvx, float **pvy, float **psxx, float **psyy, float **ppi, float **pu);
 void seismo_ssg(int lsamp, int ntr, int **recpos, float **sectionvx, 
 float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
 float **pvx, float **pvy, float **psxx, float **psyy, float **ppi, float **pu,
-float **prho, float *hc); 
-
-void seismo_rsg(int lsamp, int ntr, int **recpos, float **sectionvx, 
-float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
-float **pvx, float **pvy, float **psxx, float **psyy, float **ppi, float **pu); 
+float **prho, float *hc);
 
 float **splitsrc(float **srcpos,int *nsrc_loc, int nsrc);
 
@@ -415,32 +408,7 @@ float **splitsrc_back(int **recpos,int *nsrc_loc, int nsrc);
 
 void stalta(float **sectionp, int ntr, int nst, float *picked_times, int ishot);
 
-float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
-         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
-         float * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
-         float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
-
 void stf(float **sectionvy_obs, float **sectionvy, int ntr_glob, int ishot, int ns, int iter, int nshots, float **signals, int **recpos, float **srcpos);
-
-void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, 
-             struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, int ns, int ntr, int ntr_glob, int iter, float **Ws, 
-             float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
-
-void surface(int ndepth, float ** pvx, float ** pvy, 
-float ** psxx, float ** psyy,
-float ** psxy, float *** pp, float *** pq,
-float  **  ppi, float  **  pu, float ** ptaup,
-float ** ptaus, float * etajm, float * peta);
-
-void surface_elastic(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy,
-float ** sxy, float  **  pi, float  **  u, float ** rho, float * hc);
-
-void surface_elastic_PML(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy,
-float ** sxy, float  **  pi, float  **  u, float ** rho, float * hc, float * K_x, float * a_x, float * b_x, float ** psi_vxxs);
-
-void surface_PML(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy,
-float ** sxy, float ***p, float ***q, float  **  ppi, float  **  pu, float **prho, float **ptaup, float **ptaus, 
-float *etajm, float *peta, float * hc, float * K_x, float * a_x, float * b_x, float ** psi_vxx);
 
 void  timedomain_filt(float ** data, float fc, int order, int ntr, int ns, int method);
 void  timedomain_filt_vector(float * data, float fc, int order, int ntr, int ns, int method);
@@ -451,45 +419,11 @@ void time_window_stf(float **sectiondata, int iter, int ntr_glob, int ns, int is
 
 void tripd(float *d, float *e, float *b, int n);
 
-void prepare_update_s(float *etajm, float *etaip, float *peta, float **fipjp, float **pu,
-float **puipjp, float **ppi, float **prho, float **ptaus, float **ptaup,
-float **ptausipjp, float **f, float **g, float *bip, float *bjm,
-float *cip, float *cjm, float ***dip, float ***d, float ***e);
-
-void update_s_elastic_PML(int nx1, int nx2, int ny1, int ny2,
-float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
-float **   sxy, float ** pi, float ** u, float ** uipjp, float ** absorb_coeff, float **rho, float *hc, int infoout,
-float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
-float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int sws);
-
-void update_s_visc_PML(int nx1, int nx2, int ny1, int ny2,
-float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
-float **   sxy, float ** pi, float ** u, float ** uipjp, float **rho, float *hc, int infoout,
-float ***r, float ***p, float ***q, float **fipjp, float **f, float **g, float *bip, float *bjm, float *cip, float *cjm, float ***d, float ***e, float ***dip, 
-float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
-float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode);
-
-void update_v_PML(int nx1, int nx2, int ny1, int ny2, int nt,
-float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty,float ** sxx, float ** syy,
-float ** sxy, float  **rip, float **rjp, float **  srcpos_loc, float ** signals, float ** signals1, int nsrc, float ** absorb_coeff,
-float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
-float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-float ** psi_sxx_x, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_syx_x);
-
 float ** wavelet(float ** srcpos_loc, int nsrc, int ishot);
+
 float ** wavelet_stf(int nsrc, int ishot, float ** signals_stf);
 
 void  wavenumber(float ** grad);
-
-void writebufs(float ** sxx, float ** syy, 
-float ** sxy, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-float ** buffertop_to_bot, float ** bufferbot_to_top);
-
-void writebufv(float ** vx, float ** vy,
-float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-float ** buffertop_to_bot, float ** bufferbot_to_top);
 
 void write_par(FILE *fp);
 
@@ -506,9 +440,6 @@ void zero_fdveps_visc(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** 
                  float ** syy, float ** sxy, float ** vxm1, float ** vym1,  float ** vxym1, float ** vxp1, float ** vyp1,
                  float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, float ** psi_vyy, float ** psi_vxy,
                  float ** psi_vxxs, float ***pr, float ***pp, float ***pq);
-
-void zero_hessian(int ny1, int ny2, int nx1, int nx2, int nshots, float *** green_vx, float *** greeni_vx, float *** green_vy, float *** greeni_vy, float *** green_sxx, float *** greeni_sxx, float *** green_syy, 
-                 float *** greeni_syy, float *** green_sxy, float *** greeni_sxy);
 
 void zero_LBFGS(int NLBFGS, int NLBFGS_vec, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float * r_LBFGS, 
                  float * alpha_LBFGS, float * beta_LBFGS, float * rho_LBFGS);

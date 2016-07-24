@@ -3,13 +3,13 @@
  * at the indices 0 and NX+1 etc. These lie on the neighbouring processes.
  * Thus, they have to be copied which is done by this function.
  *
- *   last update 03/04/04, T. Bohlen
+ *   last update 24.07.2016, D. Koehn
  *
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void matcopy_elastic(float ** rho, float ** pi, float ** u){
+void matcopy_elastic_PSV(float ** rho, float ** pi, float ** u){
 
 	extern int MYID, NX, NY, INDEX[5];
 	extern const int TAG1,TAG2,TAG5,TAG6;

@@ -52,7 +52,7 @@ float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_P
 	for (itest=itests;itest<=iteste;itest++){ /* calculate 3 L2 values */
 
         /* update material parameters for test step eps_scale */
-	tmp=calc_mat_change_test((*fwiPSV).waveconv,(*fwiPSV).waveconv_rho,(*fwiPSV).waveconv_u,(*fwiPSV).prho_old,(*matPSV).prho,(*fwiPSV).ppi_old,(*matPSV).ppi,(*fwiPSV).pu_old,(*matPSV).pu,iter,1,eps_scale,1);
+	tmp=calc_mat_change_test_PSV((*fwiPSV).waveconv,(*fwiPSV).waveconv_rho,(*fwiPSV).waveconv_u,(*fwiPSV).prho_old,(*matPSV).prho,(*fwiPSV).ppi_old,(*matPSV).ppi,(*fwiPSV).pu_old,(*matPSV).pu,iter,1,eps_scale,1);
 
         (*seisPSVfwi).L2 = obj_psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,itest,iter,Ws,Wr,hin,DTINV_help,eps_scale,req_send,req_rec);
         L2t[itest] = (*seisPSVfwi).L2;

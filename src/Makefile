@@ -70,25 +70,39 @@ DENISE += alloc_fwiPSV.c \
 	  alloc_seisPSVfull.c \
 	  alloc_seisPSVfwi.c \
 	  ass_gradPSV.c \
+	  calc_mat_change_test_PSV.c \
 	  calc_res_PSV.c \
 	  dealloc_PSV.c \
+	  exchange_s_PSV.c \
+	  exchange_v_PSV.c \
 	  FD_PSV.c \
 	  FWI_PSV.c \
 	  grad_obj_psv.c \
+	  matcopy_PSV.c \
+	  matcopy_elastic_PSV.c \
 	  mem_fwiPSV.c \
 	  mem_PSV.c \
 	  $(MODEL) \
 	  $(MODEL_EL) \
+	  model_freq_out_PSV.c \
 	  obj_psv.c \
 	  outseis_PSVfor.c \
 	  outseis_PSVres.c \
 	  physics_PSV.c  \
 	  precond_PSV.c \
+	  prepare_update_s_visc_PSV.c \
 	  psv.c \
+	  readmod_elastic_PSV.c \
+	  readmod_visc_PSV.c \
 	  RTM_PSV.c \
 	  RTM_PSV_out.c \
 	  step_length_est_psv.c \
-	  stf_psv.c
+	  stf_psv.c \
+	  surface_visc_PML_PSV.c \
+	  surface_elastic_PML_PSV.c \
+	  update_s_elastic_PML_PSV.c \
+	  update_s_visc_PML_PSV.c \
+	  update_v_PML_PSV.c
 
 SNAPMERGE_OBJ = $(SNAPMERGE_SCR:.c=.o)
 DENISE_OBJ = $(DENISE:.c=.o)      
