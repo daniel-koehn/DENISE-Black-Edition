@@ -38,7 +38,7 @@ float **  srcpos_loc, float ** signals, int nsrc, int sw){
 
        if(sw==1)
        {
-         if(QUELLTYPB==4)
+         if(QUELLTYPB>=4)
          {
            for (l=1;l<=nsrc;l++) {
                 i=(int)srcpos_loc[1][l];

@@ -267,19 +267,19 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	   free_matrix((*seisPSVfwi).sectionread,1,ntr_glob,1,ns);
 	   free_ivector((*acq).recswitch,1,ntr);
 	   
-	   if((QUELLTYPB==1)||(QUELLTYPB==3)){
+	   if((QUELLTYPB==1)||(QUELLTYPB==3)||(QUELLTYPB==5)||(QUELLTYPB==7)){
 	      free_matrix((*seisPSVfwi).sectionvxdata,1,ntr,1,ns);
 	      free_matrix((*seisPSVfwi).sectionvxdiff,1,ntr,1,ns);
 	      free_matrix((*seisPSVfwi).sectionvxdiffold,1,ntr,1,ns);
 	   }
 	   
-	   if((QUELLTYPB==1)||(QUELLTYPB==2)){   
+	   if((QUELLTYPB==1)||(QUELLTYPB==2)||(QUELLTYPB==6)||(QUELLTYPB==7)){   
 	      free_matrix((*seisPSVfwi).sectionvydata,1,ntr,1,ns);
 	      free_matrix((*seisPSVfwi).sectionvydiff,1,ntr,1,ns);
 	      free_matrix((*seisPSVfwi).sectionvydiffold,1,ntr,1,ns);
 	   }
 	   
-	   if(QUELLTYPB==4){   
+	   if(QUELLTYPB>=4){   
 	      free_matrix((*seisPSVfwi).sectionpdata,1,ntr,1,ns);
 	      free_matrix((*seisPSVfwi).sectionpdiff,1,ntr,1,ns);
 	      free_matrix((*seisPSVfwi).sectionpdiffold,1,ntr,1,ns);

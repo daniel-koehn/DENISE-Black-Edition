@@ -164,7 +164,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
 	   
 	   /* adjoint explosive source */
-           if((QUELLTYPB==4)&&(mode==1)){ 	
+           if((QUELLTYPB>=4)&&(mode==1)){ 	
 	       psource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*acq).srcpos_loc_back,(*seisPSVfwi).sectionpdiff,nsrc_loc,1);
            }
  

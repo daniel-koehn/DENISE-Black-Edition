@@ -10,7 +10,7 @@
 void calc_res_PSV(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, int swstestshot){ 
 		
 /* global variables */
-extern int QUELLTYPB, TIMELAPSE, TIME_FILT, ORDER, LNORM, MYID;
+extern int QUELLTYPB, TIMELAPSE, TIME_FILT, ORDER, LNORM, MYID, COMP_WEIGHT;
 extern float FC, FC_START;	
 	
 /* local variables */
@@ -24,7 +24,7 @@ if (MYID==0){
 
 /* read seismic data from SU file vx */
 /* --------------------------------- */
-if((QUELLTYPB==1)||(QUELLTYPB==3)){ /* if QUELLTYPB */
+if((QUELLTYPB==1)||(QUELLTYPB==3)||(QUELLTYPB==5)||(QUELLTYPB==7)){ /* if QUELLTYPB */
 
 inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,1,iter);
 
@@ -62,6 +62,11 @@ for(i=1;i<=ntr;i++){
                       
 } /* end of TIMELAPSE */
 
+  COMP_WEIGHT = 0;
+  if((QUELLTYPB==5)||(QUELLTYPB==7)){
+      COMP_WEIGHT = 1;
+  }
+
   (*seisPSVfwi).L2=calc_res((*seisPSVfwi).sectionvxdata,(*seisPSV).sectionvx,(*seisPSVfwi).sectionvxdiff,(*seisPSVfwi).sectionvxdiffold,ntr,ns,LNORM,(*seisPSVfwi).L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);     
 
   if(swstestshot==1){(*seisPSVfwi).energy=calc_energy((*seisPSVfwi).sectionvxdata,ntr,ns,(*seisPSVfwi).energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
@@ -72,7 +77,7 @@ for(i=1;i<=ntr;i++){
 
 /* read seismic data from SU file vy */
 /* --------------------------------- */
-if((QUELLTYPB==1)||(QUELLTYPB==2)){ /* if QUELLTYPB */
+if((QUELLTYPB==1)||(QUELLTYPB==2)||(QUELLTYPB==6)||(QUELLTYPB==7)){ /* if QUELLTYPB */
 
 inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,2,iter);
 
@@ -109,6 +114,11 @@ if(TIMELAPSE==1){
     }
                                
 } /* end of TIMELAPSE */
+
+  COMP_WEIGHT = 0;
+  if((QUELLTYPB==6)||(QUELLTYPB==7)){
+      COMP_WEIGHT = 2;
+  }
                                
 (*seisPSVfwi).L2=calc_res((*seisPSVfwi).sectionvydata,(*seisPSV).sectionvy,(*seisPSVfwi).sectionvydiff,(*seisPSVfwi).sectionvydiffold,ntr,ns,LNORM,(*seisPSVfwi).L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
 
@@ -121,7 +131,7 @@ energy_all_shots=calc_energy((*seisPSVfwi).sectionvydata,ntr,ns,energy_all_shots
 
 /* read seismic data from SU file p */
 /* --------------------------------- */
-if(QUELLTYPB==4){ /* if QUELLTYPB */
+if(QUELLTYPB>=4){ /* if QUELLTYPB */
 
 inseis(ishot,(*seisPSVfwi).sectionread,ntr_glob,ns,11,iter);
 
@@ -159,6 +169,8 @@ if(TIMELAPSE==1){
 
 } /* end of TIMELAPSE */
 
+COMP_WEIGHT = 0;
+
 (*seisPSVfwi).L2=calc_res((*seisPSVfwi).sectionpdata,(*seisPSV).sectionp,(*seisPSVfwi).sectionpdiff,(*seisPSVfwi).sectionpdiffold,ntr,ns,LNORM,(*seisPSVfwi).L2,0,1,swstestshot,ntr_glob,recpos,recpos_loc,srcpos,nsrc_glob,ishot,iter);
 
 if(swstestshot==1){(*seisPSVfwi).energy=calc_energy((*seisPSVfwi).sectionpdata,ntr,ns,(*seisPSVfwi).energy, ntr_glob, recpos_loc, nsrc_glob, ishot);}
@@ -167,6 +179,6 @@ if(swstestshot==1){(*seisPSVfwi).energy=calc_energy((*seisPSVfwi).sectionpdata,n
 energy_all_shots=calc_energy((*seisPSVfwi).sectionpdata,ntr,ns,energy_all_shots, ntr_glob, recpos_loc, nsrc_glob, ishot);*/
 
 
-} /* end QUELLTYPB == 4*/
-			
+} /* end QUELLTYPB >= 4*/			
+
 }

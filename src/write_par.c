@@ -1,9 +1,8 @@
 /*------------------------------------------------------------------------
- *   Write FD-Parameters to stdout                           
- *   last update 20/02/2001
+ *  Write DENISE parameters                           
  *
- *  T. Bohlen
- *  See COPYING file for copying and redistribution conditions.
+ *  D. Koehn
+ *  Kiel, 02.08.2016
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
@@ -319,6 +318,14 @@ void write_par(FILE *fp){
 		fprintf(fp," QUELLTYPB=%d: Inversion of y component.\n\n",QUELLTYPB);}
 	if (QUELLTYPB==3){
 		fprintf(fp," QUELLTYPB=%d: Inversion of x component.\n\n",QUELLTYPB);}
+        if (QUELLTYPB==4){
+                fprintf(fp," QUELLTYPB=%d: Inversion of p component.\n\n",QUELLTYPB);}
+        if (QUELLTYPB==5){
+                fprintf(fp," QUELLTYPB=%d: Inversion of x and p component.\n\n",QUELLTYPB);}
+        if (QUELLTYPB==6){
+                fprintf(fp," QUELLTYPB=%d: Inversion of y and p component.\n\n",QUELLTYPB);}
+        if (QUELLTYPB==7){
+                fprintf(fp," QUELLTYPB=%d: Inversion of x, y and p component.\n\n",QUELLTYPB);}
 	
 	fprintf(fp," Shots used for step length estimation:\n");
 	fprintf(fp,"\t TESTSHOT_START = %d \n",TESTSHOT_START);

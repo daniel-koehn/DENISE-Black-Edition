@@ -759,8 +759,8 @@ for (j=ny1;j<=ny2;j++){
 		       if(QUELLTYPB==1){vx[j][i] += signals[l][nt];    /* single force in x */
 		                        vy[j][i] += signals1[l][nt];}  /* + single force in y */
 
-		       if(QUELLTYPB==2){vy[j][i] += signals1[l][nt];}  /* single force in y */
-		       if(QUELLTYPB==3){vx[j][i] += signals[l][nt];}   /* single force in x */
+		       if(QUELLTYPB==2||QUELLTYPB==6||QUELLTYPB==7){vy[j][i] += signals1[l][nt];}  /* single force in y */
+		       if(QUELLTYPB==3||QUELLTYPB==5||QUELLTYPB==7){vx[j][i] += signals[l][nt];}   /* single force in x */
                     }
 
 		}}                         

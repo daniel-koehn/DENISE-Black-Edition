@@ -77,10 +77,11 @@ int ntr, float ** srcpos, int ishot, int ns, int iter){
 		fprintf(fp," PE %d is writing %d seismograms of pressure to\n\t %s \n",MYID,ntr,pf);
 		outseis_glob(fp,fopen(pf,"w"), 0, sectionp,recpos,recpos_loc,ntr,srcpos,nsrc,ns,SEIS_FORMAT,ishot,1);
 
-		fprintf(fp," PE %d is writing %d seismograms of divergence to\n\t %s \n",MYID,ntr,divf);
+		/* Divergence and Curl output is not working */
+		/*fprintf(fp," PE %d is writing %d seismograms of divergence to\n\t %s \n",MYID,ntr,divf);
 		outseis_glob(fp,fopen(divf,"w"),0, sectiondiv,recpos,recpos_loc,ntr,srcpos,nsrc,ns,SEIS_FORMAT,ishot,1);
 		fprintf(fp," PE %d is writing %d seismograms of curl to\n\t %s \n",MYID,ntr,curlf);
-		outseis(fp,fopen(curlf,"w"),0, sectioncurl,recpos,recpos_loc,ntr,srcpos,nsrc,ns,SEIS_FORMAT,ishot,1);	
+		outseis(fp,fopen(curlf,"w"),0, sectioncurl,recpos,recpos_loc,ntr,srcpos,nsrc,ns,SEIS_FORMAT,ishot,1);*/
 		break;
 		
       }     

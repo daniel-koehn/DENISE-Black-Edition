@@ -7,8 +7,8 @@
 double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, float L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter){
 
 /* declaration of variables */
-extern float DT, DH, OFFSETC, FC, FC_START;
-extern int REC1, REC2, MYID, ORDER;
+extern float DT, DH, OFFSETC, FC, FC_START, C_vp, C_rho;
+extern int REC1, REC2, MYID, ORDER, COMP_WEIGHT;
 extern int TRKILL, GRAD_FORM, ENV;
 extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, MODE, OFFSET_MUTE;
@@ -71,6 +71,43 @@ if(TRKILL){
 	}
 } /* end if(TRKILL)*/
 
+/* If QUELLTYPB == 5, 6 or 7, weight vx an vy components by rho * vp
+   according to 
+   Vigh D, Jiao K, Watts D, Sun D (2014), Elastic full-waveform inversion 
+   application using multicomponent measurements of seismic data collection,
+   Geophysics, 79(2), R63-R77 */
+if(COMP_WEIGHT>0){
+
+ if (MYID==0){
+   printf("-------------------  \n");
+   printf("COMP_WEIGHT= %d  \n", COMP_WEIGHT);
+   printf(" ntr= %d  ns= %d \n", ntr, ns);
+   printf("-------------------  \n");
+ }
+
+  for(i=1;i<=ntr;i++){
+
+     /* compute material parameters at receiver positions */
+     /*ix = recpos_loc[1][i];
+     jy = recpos_loc[2][i];
+     aa = ppi[jy][ix]/prip[jy][ix];
+     if(iweight==2) {
+        aa = ppi[jy][ix]/prjp[jy][ix];
+     }*/
+
+     /* use average material parameters for weighting */
+     tmp = C_vp * C_rho;
+
+//     printf(" aa= %f  jy= %d   ix = %d \n", aa, jy, ix);
+//     bb = aa*aa;
+     for(j=1;j<=ns;j++){
+//        printf(" syn = %f   data= %f j= %d i= %d\n", section[i][j], sectiondata[i][j], j, i);
+        section[i][j] *= tmp;
+        sectiondata[i][j] *= tmp;
+     }
+  }
+
+}
 
 RMS=0.0;
 Lcount=1;  
