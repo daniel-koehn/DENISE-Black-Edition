@@ -163,9 +163,9 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
            }
 
 	   
-	   /* here (*seisPSVfwi).sectionvydiff has to be replaced by (*seisPSVfwi).sectionpdiff */
+	   /* adjoint explosive source */
            if((QUELLTYPB==4)&&(mode==1)){ 	
-	       psource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*acq).srcpos_loc_back,(*seisPSVfwi).sectionvydiff,nsrc_loc,1);
+	       psource(nt,(*wavePSV).psxx,(*wavePSV).psyy,(*acq).srcpos_loc_back,(*seisPSVfwi).sectionpdiff,nsrc_loc,1);
            }
  
 	   /* moment tensor source */

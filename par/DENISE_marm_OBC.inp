@@ -6,7 +6,7 @@
 #
 # ------------------ DENISE Mode ---------------------------------
 # Operation mode:
-(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 0
+(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 1
 #
 # ---------------- DENISE Physics -----------------------------
 (2D-PSV=1)_(PHYSICS) = 1
@@ -52,7 +52,7 @@ order_of_Butterworth_filter_(ORDER_SPIKE) = 5
 #
 #--------------------- Model -------------------------------------
 read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
-MFILE = start/marmousi_II_marine
+MFILE = start/marmousi_II_start_1D
 #
 #---------------------Q-approximation-----------------------------
 Number_of_relaxation_mechanisms_(L) = 0
@@ -88,7 +88,7 @@ data-format_(SNAP_FORMAT)(ASCII(2);BINARY(3)) = 3
 basic_filename_(SNAP_FILE) = ./snap/waveform_forward
 #
 #----------------------Receiver-----------------------------------
-output_of_seismograms_(SEISMO) = 1
+output_of_seismograms_(SEISMO) = 2
 # SEISMO=0: no seismograms
 # SEISMO=1: particle-velocities
 # SEISMO=2: pressure (hydrophones)
@@ -132,7 +132,7 @@ cosine_taper_(yes=1/no=0)_(TAPER) = 0
 taper_length_(in_rec_numbers)_(TAPERLENGTH) = 4
 gradient_taper_geometry_(GRADT1,GRADT2,GRADT3,GRADT4) = 21, 25, 490, 500
 type_of_material_parameters_to_invert_(Vp,Vs,rho=1/Zp,Zs,rho=2/lam,mu,rho=3)_(INVMAT1) = 1
-point_source_backpropagation_(x_and_y_components=1/y_comp=2/x_comp=3/p_comp=4)_(QUELLTYPB) = 1
+point_source_backpropagation_(x_and_y_components=1/y_comp=2/x_comp=3/p_comp=4)_(QUELLTYPB) = 4
 #
 #
 testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR) = 25, 75, 10
