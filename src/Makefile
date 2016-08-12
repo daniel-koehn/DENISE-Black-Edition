@@ -76,6 +76,7 @@ DENISE += alloc_fwiPSV.c \
 	  exchange_s_PSV.c \
 	  exchange_v_PSV.c \
 	  extract_LBFGS_PSV.c \
+	  extract_PCG_PSV.c \
 	  FD_PSV.c \
 	  FWI_PSV.c \
 	  grad_obj_psv.c \
@@ -100,6 +101,7 @@ DENISE += alloc_fwiPSV.c \
 	  step_length_est_psv.c \
 	  stf_psv.c \
 	  store_LBFGS_PSV.c \
+	  store_PCG_PSV.c \
 	  surface_visc_PML_PSV.c \
 	  surface_elastic_PML_PSV.c \
 	  update_s_elastic_PML_PSV.c \

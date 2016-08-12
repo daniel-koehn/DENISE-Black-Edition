@@ -25,7 +25,7 @@ extern char GRAV_DATA_OUT[STRING_SIZE], GRAV_DATA_IN[STRING_SIZE], GRAV_STAT_POS
 extern float LAM_GRAV, GAMMA_GRAV, LAM_GRAV_GRAD, L2_GRAV_IT1;
 
 /* full waveform inversion */
-extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, EPRECOND;
+extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, EPRECOND, PCG_BETA;
 extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER;
 extern float FC_END, PRO, C_vp, C_vs, C_rho;
 extern char MISFIT_LOG_FILE[STRING_SIZE], JACOBIAN[STRING_SIZE];
@@ -56,6 +56,10 @@ float eps_true, tmp;
 float * rho_LBFGS, * alpha_LBFGS, * beta_LBFGS; 
 float * y_LBFGS, * s_LBFGS, * q_LBFGS, * r_LBFGS;
 int NLBFGS_class, LBFGS_pointer, NLBFGS_vec;
+
+/* Variables for PCG */
+float * PCG_old, * PCG_new, * PCG_dir;
+int PCG_class, PCG_vec;
 
 /* Variables for energy weighted gradient */
 float ** Ws, **Wr, **We;
@@ -269,7 +273,7 @@ alloc_fwiPSV(&fwiPSV);
 /* allocate memory for PSV MPI variables */
 alloc_mpiPSV(&mpiPSV);
 
-/* Variables for the l-BFGS method */
+/* Variables for l-BFGS method */
 if(GRAD_METHOD==2){
 
   NLBFGS_class = 3;                 /* number of parameter classes */ 
@@ -287,6 +291,17 @@ if(GRAD_METHOD==2){
   beta_LBFGS = vector(1,NLBFGS);
   
 }
+
+/* Variables for PCG method */
+if(GRAD_METHOD==1){
+
+  PCG_class = 3;                 /* number of parameter classes */ 
+  PCG_vec = PCG_class*NX*NY;  	 /* length of one PCG-parameter class */
+  
+  PCG_old  =  vector(1,PCG_vec);
+ 
+}
+
 
 taper_coeff=  matrix(1,NY,1,NX);
 
@@ -650,7 +665,34 @@ precond_PSV(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
 
 /* Use preconditioned conjugate gradient optimization method */
 if(GRAD_METHOD==1){
-  PCG(fwiPSV.waveconv, taper_coeff, nsrc, acq.srcpos, acq.recpos, ntr_glob, iter, fwiPSV.gradp, fwiPSV.waveconv_u, fwiPSV.gradp_u, fwiPSV.waveconv_rho, fwiPSV.gradp_rho);
+
+    /* apply smoothness constraints to gradients */
+    smooth_grad(fwiPSV.waveconv);
+    smooth_grad(fwiPSV.waveconv_u);
+    smooth_grad(fwiPSV.waveconv_rho);
+
+    /* calculate steepest descent direction */
+    descent(fwiPSV.waveconv,fwiPSV.gradp);
+    descent(fwiPSV.waveconv_u,fwiPSV.gradp_u);
+    descent(fwiPSV.waveconv_rho,fwiPSV.gradp_rho);
+
+    /* store current gradients in PCG_new vector */
+    store_PCG_PSV(PCG_new,fwiPSV.gradp,fwiPSV.gradp_u,fwiPSV.gradp_rho);
+
+    /* apply PCG method */
+    PCG(PCG_new,PCG_old,PCG_dir,PCG_class);
+
+    /* extract CG-search directions */
+    extract_PCG_PSV(PCG_dir,fwiPSV.waveconv,fwiPSV.waveconv_u,fwiPSV.waveconv_rho);
+
+    /* store old gradients in PCG_old vector */
+    store_PCG_PSV(PCG_old,fwiPSV.gradp,fwiPSV.gradp_u,fwiPSV.gradp_rho);
+
+    /* steepest descent direction -> gradient direction */
+    descent(fwiPSV.waveconv,fwiPSV.waveconv);
+    descent(fwiPSV.waveconv_u,fwiPSV.waveconv_u);
+    descent(fwiPSV.waveconv_rho,fwiPSV.waveconv_rho);
+
 }
 
 /* Use l-BFGS optimization */
@@ -769,6 +811,10 @@ diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
 		min_iter_help=iter+MIN_ITER;
 		iter=0;
 
+        	if(GRAD_METHOD==1){
+	  		zero_PCG(PCG_old, PCG_new, PCG_dir, PCG_vec);
+		}
+
         	if(GRAD_METHOD==2){
 	  		zero_LBFGS(NLBFGS, NLBFGS_vec, y_LBFGS, s_LBFGS, q_LBFGS, r_LBFGS, alpha_LBFGS, beta_LBFGS, rho_LBFGS);
           		LBFGS_pointer = 1;  
@@ -795,6 +841,12 @@ iter_true++;
 /* ====================================== */
 
 } /* End of FWI-workflow loop */
+
+if(GRAD_METHOD==1){
+  free_vector(PCG_old,1,PCG_vec);
+  free_vector(PCG_new,1,PCG_vec);
+  free_vector(PCG_dir,1,PCG_vec);
+}
 
 /* deallocate memory for PSV forward problem */
 dealloc_PSV(&wavePSV,&wavePSV_PML);

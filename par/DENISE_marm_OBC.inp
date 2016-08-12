@@ -168,7 +168,8 @@ lower_limit_for_rho_(RHOLOWERLIM) = 1000.0
 #
 #
 # ----- Optimization-Method ------ #
-gradient_method_(PCG=1/LBFGS=2/GRADIENT=3)_(GRAD_METHOD) = 2
+gradient_method_(PCG=1/LBFGS=2)_(GRAD_METHOD) = 2
+PCG_BETA_(Fletcher_Reeves=1/Polak_Ribiere=2/Hestenes_Stiefel=3/Dai_Yuan=4) = 2
 save_(NLBFGS)_updates_during_LBFGS_optimization = 20
 #
 #

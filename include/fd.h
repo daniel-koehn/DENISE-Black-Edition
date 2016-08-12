@@ -130,6 +130,8 @@ MPI_Request * req_send, MPI_Request * req_rec);
 
 void extract_LBFGS_PSV( int iter, float ** waveconv, float ** gradp, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float **ppi, float ** pu, float ** prho, float * r_LBFGS);
 
+void extract_PCG_PSV(float * PCG_old, float ** waveconv, float ** waveconv_u, float ** waveconv_rho);
+
 void FD_PSV();
 
 void FWI_PSV();
@@ -197,6 +199,8 @@ void surface_visc_PML_PSV(int ndepth, float ** vx, float ** vy, float ** sxx, fl
 void store_LBFGS_PSV(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float ** gradp, float ** waveconv_u, 
 float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, 
 int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
+
+void store_PCG_PSV(float * PCG_old, float ** waveconv, float ** waveconv_u, float ** waveconv_rho);
 
 void update_s_elastic_PML_PSV(int nx1, int nx2, int ny1, int ny2,
 float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
@@ -289,6 +293,8 @@ void conv_FD(float * temp_TS, float * temp_TS1, float * temp_conv, int ns);
 
 void copy_mat(float ** A, float ** B);
 
+void descent(float ** grad, float ** gradm);
+
 float dotp(float * vec1, float *vec2, int n1, int n2, int sw);
 
 float exchange_L2(float L2, int sw, int bcast_l2);
@@ -359,8 +365,7 @@ void  taper(float **sectionpdiff, int ntr, int ns);
 
 void  output_source_signal(FILE *fp, float **signals, int ns, int seis_form);
 
-void PCG(float ** waveconv, float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** gradp, 
-float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho);
+void PCG(float * PCG_new, float * PCG_old, float * PCG_dir, int PCG_class);
 
 void PML_pro(float * d_x, float * K_x, float * alpha_prime_x, float * a_x, float * b_x, 
 float * d_x_half, float * K_x_half, float * alpha_prime_x_half, float * a_x_half, float * b_x_half,
@@ -447,10 +452,13 @@ void writemod(char modfile[STRING_SIZE], float ** array, int format);
 
 void zero_LBFGS(int NLBFGS, int NLBFGS_vec, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float * r_LBFGS, 
                  float * alpha_LBFGS, float * beta_LBFGS, float * rho_LBFGS);
+
+void zero_PCG(float * PCG_old, float * PCG_new, float * PCG_dir, int PCG_vec);
 		 
 void FLnode(float  **  rho, float **  pi, float **  u, float **  taus, float **  taup, float *  eta);
 
-void smooth_grad(float ** waveconv, int sws);
+void smooth_grad(float ** waveconv);
+
 void  smooth2(float ** grad);
 
 /* declaration of functions for parser*/
