@@ -299,6 +299,8 @@ if(GRAD_METHOD==1){
   PCG_vec = PCG_class*NX*NY;  	 /* length of one PCG-parameter class */
   
   PCG_old  =  vector(1,PCG_vec);
+  PCG_new  =  vector(1,PCG_vec);
+  PCG_dir  =  vector(1,PCG_vec);
  
 }
 

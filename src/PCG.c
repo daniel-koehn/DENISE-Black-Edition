@@ -75,7 +75,7 @@ void PCG(float * PCG_new, float * PCG_old, float * PCG_dir, int PCG_class){
 	    if((beta[k]<0.0)&&(PCG_BETA==2)){beta[k] = 0.0;}
 
             if(MYID==0){
-	        printf("\n\n parameter class = %d \t beta = %e\n",MYID,k,beta[k]);
+	        printf("\n\n parameter class = %d \t beta = %e\n",k,beta[k]);
 	    } 
 
         }
