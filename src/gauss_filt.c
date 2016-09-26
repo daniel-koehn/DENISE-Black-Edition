@@ -188,7 +188,7 @@ void gauss_filt(float ** waveconv)
 	if(MYID==0){printf("\n \t ---- Gradient is smoothed with Gaussian (filter length of %d gridpoints which is equivalent to %4.2f meter) \n",FILT_SIZE_GRAD,smooth_meter);}
 	
 	/* distribute smoothed jacobian on computational nodes */
-	sprintf(jac_tmp,"%s_smooth.old",JACOBIAN);
+	sprintf(jac_tmp,"%s_gauss.old",JACOBIAN);
 		
 	model=fopen(jac_tmp,"rb");
 	if (model==NULL) err(" Could not open gradient file ! (distribute smoothed gradient)");
@@ -210,5 +210,10 @@ void gauss_filt(float ** waveconv)
 	fclose(model);
 	
 	if(MYID==0){printf("\n \t ---- Smoothed gradient is distributed on computational nodes ... ---- \n");}
+
+        /* clean up temporary files*/
+        MPI_Barrier(MPI_COMM_WORLD);
+        sprintf(jac_tmp,"%s_gauss.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        remove(jac_tmp);
 
 }
