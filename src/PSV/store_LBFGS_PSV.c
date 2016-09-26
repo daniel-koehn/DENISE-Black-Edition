@@ -41,22 +41,6 @@ for (i=1;i<=NX;i=i+IDX){
       waveconv[j][i] = C_vp * waveconv[j][i];
    }
 }
-
-/* apply median filter at source positions */
-/*median_src(waveconv,taper_coeff,srcpos,nsrc,recpos,ntr_glob,iter,0);*/
-
-/* apply wavenumber damping */
-if(SPATFILTER==1){
-  wavenumber(waveconv);
-}
-
-if(SPATFILTER==2){
-  smooth2(waveconv);
-}
-  
-/* Normalize gradient to maximum value */
-/*norm_fac_u=norm(waveconv_u,iter,2);
-if(MYID==0){printf("norm_fac_u=%e \n",norm_fac_u);}*/
   
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
@@ -75,22 +59,6 @@ for (i=1;i<=NX;i=i+IDX){
       waveconv_u[j][i] = C_vs * waveconv_u[j][i];
    }
 }
-
-/* apply median filter at source positions */
-/*median_src(waveconv_u,taper_coeff,srcpos,nsrc,recpos,ntr_glob,iter,0);*/
-
-/* apply wavenumber damping */
-if(SPATFILTER==1){
-  wavenumber(waveconv_u);
-}
-
-if(SPATFILTER==2){
-  smooth2(waveconv_u);
-}
-  
-/* Normalize gradient to maximum value */
-/*norm_fac_u=norm(waveconv_u,iter,2);
-if(MYID==0){printf("norm_fac_u=%e \n",norm_fac_u);}*/
   
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
@@ -110,33 +78,11 @@ for (i=1;i<=NX;i=i+IDX){
    }
 }
 
-/* apply median filter at source positions */
-/*median_src(waveconv_rho,taper_coeff,srcpos,nsrc,recpos,ntr_glob,iter,0);*/
-
-/* apply wavenumber damping */
-if(SPATFILTER==1){
-  wavenumber(waveconv_rho);
-}
-
-if(SPATFILTER==2){
-  smooth2(waveconv_rho);
-}
-   
-/* Normalize gradient to maximum value */
-/*norm_fac_rho=norm(waveconv_rho,iter,3);
-if(MYID==0){printf("norm_fac_rho=%e \n",norm_fac_rho);}*/
-
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
 	  gradp_rho[j][i] = waveconv_rho[j][i];
    }
-} 
-
-/* apply spatial wavelength filter */
-/*if(SPATFILTER==1){
-	if (MYID==0){
-   	fprintf(FP,"\n Spatial filter is applied to gradient (written by PE %d)\n",MYID);}
-spat_filt(waveconv_rho,iter,3);}*/
+}
 
 /* -------------------- */
 /* store l-BFGS vectors */

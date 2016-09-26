@@ -43,7 +43,7 @@ void  smooth2(float ** grad){
         f = vector(0,nmax);
 
         /* define windows function */
-        win[0] = GRADT2;
+        win[0] = 0;
         win[1] = n1;
         win[2] = 0;
         win[3] = n2;

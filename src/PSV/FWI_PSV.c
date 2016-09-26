@@ -665,13 +665,13 @@ precond_PSV(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
 		
    }
 
+/* apply smoothness constraints to gradients */
+smooth_grad(fwiPSV.waveconv);
+smooth_grad(fwiPSV.waveconv_u);
+smooth_grad(fwiPSV.waveconv_rho);
+
 /* Use preconditioned conjugate gradient optimization method */
 if(GRAD_METHOD==1){
-
-    /* apply smoothness constraints to gradients */
-    smooth_grad(fwiPSV.waveconv);
-    smooth_grad(fwiPSV.waveconv_u);
-    smooth_grad(fwiPSV.waveconv_rho);
 
     /* calculate steepest descent direction */
     descent(fwiPSV.waveconv,fwiPSV.gradp);

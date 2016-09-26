@@ -23,4 +23,9 @@ void smooth_grad(float ** waveconv){
 	  smooth2(waveconv);
 	}
 
+	if(SPATFILTER==3){
+	  gauss_filt(waveconv);
+	}
+
+
 }
