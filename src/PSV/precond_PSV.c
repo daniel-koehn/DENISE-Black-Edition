@@ -19,53 +19,50 @@ void precond_PSV(struct fwiPSV *fwiPSV, struct acq *acq, int nsrc, int ntr_glob,
         char jac[STRING_SIZE];
         float tmp;
 
-	/* IMPLEMENTATION OF TAPER IN denise.c, taper of seismic gradients only */
-
 	/*==================== TAPER Vp/Zp/lambda =====================*/
-	if (SWS_TAPER_GRAD_VERT){   /*vertical gradient taper is applied*/
+	if (SWS_TAPER_GRAD_VERT){   /* vertical gradient taper is applied */
 	   taper_grad((*fwiPSV).waveconv,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,1);}
 
-	if (SWS_TAPER_GRAD_HOR){    /*horizontal gradient taper is applied*/
+	if (SWS_TAPER_GRAD_HOR){    /* horizontal gradient taper is applied */
 	   taper_grad((*fwiPSV).waveconv,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,2);}
 
-	if (SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
+	if (SWS_TAPER_GRAD_SOURCES){    /* cylindrical taper around sources is applied */
 	   taper_grad((*fwiPSV).waveconv,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,3);}
 
-	/* apply Hessian^-1 and save in gradp */
-	if (SWS_TAPER_FILE){
+	if (SWS_TAPER_FILE){ /* read taper from file */
 	   taper_grad((*fwiPSV).waveconv,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,4);}
 
+
 	/*================== TAPER Vs/Zs/mu ===========================*/
-	if (SWS_TAPER_GRAD_VERT){    /*vertical gradient taper is applied*/
+	if (SWS_TAPER_GRAD_VERT){    /* vertical gradient taper is applied */
 	   taper_grad((*fwiPSV).waveconv_u,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,1);}
 
-	if (SWS_TAPER_GRAD_HOR){    /*horizontal gradient taper is applied*/
+	if (SWS_TAPER_GRAD_HOR){    /* horizontal gradient taper is applied */
 	   taper_grad((*fwiPSV).waveconv_u,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,2);}
 
-	if(SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
+	if(SWS_TAPER_GRAD_SOURCES){    /* cylindrical taper around sources is applied */
 	   taper_grad((*fwiPSV).waveconv_u,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,3);}
 
-	/* apply Hessian^-1 and save in gradp */
-	if(SWS_TAPER_FILE){
+	if(SWS_TAPER_FILE){ /* read taper from file */
 	   taper_grad((*fwiPSV).waveconv_u,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,5);}
 
+
 	/*================== TAPER Rho ===========================*/
-	if (SWS_TAPER_GRAD_VERT){    /*vertical gradient taper is applied*/
+	if (SWS_TAPER_GRAD_VERT){    /* vertical gradient taper is applied */
 	   taper_grad((*fwiPSV).waveconv_rho,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,1);}
 
-	if (SWS_TAPER_GRAD_HOR){     /*horizontal gradient taper is applied*/
+	if (SWS_TAPER_GRAD_HOR){     /* horizontal gradient taper is applied */
 	   taper_grad((*fwiPSV).waveconv_rho,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,2);}
 
-	if (SWS_TAPER_GRAD_SOURCES){    /*cylindrical taper around sources is applied*/
+	if (SWS_TAPER_GRAD_SOURCES){    /* cylindrical taper around sources is applied */
 	   taper_grad((*fwiPSV).waveconv_rho,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,3);}
 
-	/* apply Hessian^-1 and save in gradp */
-	if (SWS_TAPER_FILE){
+	if (SWS_TAPER_FILE){ /* read taper from file */
 	   taper_grad((*fwiPSV).waveconv_rho,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,6);}
 
 
 	/* output of the seismic gradient for rho after taper  */
-	sprintf(jac,"%s_seis.%i%i",JACOBIAN,POS[1],POS[2]);
+	/*sprintf(jac,"%s_seis.%i%i",JACOBIAN,POS[1],POS[2]);
 	FP_GRAV=fopen(jac,"wb");       
 
 	for (i=1;i<=NX;i=i+IDX){
@@ -77,10 +74,10 @@ void precond_PSV(struct fwiPSV *fwiPSV, struct acq *acq, int nsrc, int ntr_glob,
 
 	fclose(FP_GRAV);
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Barrier(MPI_COMM_WORLD);*/
 
 	/* merge model file */
-        sprintf(jac,"%s_seis",JACOBIAN);          
-	if (MYID==0) mergemod(jac,3); 
+        /*sprintf(jac,"%s_seis",JACOBIAN);          
+	if (MYID==0) mergemod(jac,3); */
 		
 }

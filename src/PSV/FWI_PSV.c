@@ -625,9 +625,6 @@ if((IDXI>1)||(IDYI>1)){
 
 }
 
-/* Preconditioning of gradients after shot summation */
-precond_PSV(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
-
 /* Add gravity gradient to FWI density gradient */
 /* -------------------------------------------- */
 	
@@ -669,6 +666,9 @@ precond_PSV(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
 smooth_grad(fwiPSV.waveconv);
 smooth_grad(fwiPSV.waveconv_u);
 smooth_grad(fwiPSV.waveconv_rho);
+
+/* Preconditioning of gradients after shot summation and smoothing */
+precond_PSV(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
 
 /* Use preconditioned conjugate gradient optimization method */
 if(GRAD_METHOD==1){
