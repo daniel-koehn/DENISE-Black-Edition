@@ -16,7 +16,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
         /* global variables */
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
-        extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM;
+        extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
         extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG;
         extern int ORDER_SPIKE, ORDER, SHOTINC;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
@@ -65,7 +65,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	   init_grad(We);
 	}			
 	  
-	if(N_STREAMER>0){
+	if((N_STREAMER>0)||(READREC==2)){
 
 	   if (SEISMO){
 	      (*acq).recpos=receiver(FP, &ntr, ishot);
@@ -77,6 +77,9 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	   /* Memory for seismic data */
 	   alloc_seisPSV(ntr,ns,seisPSV);
+	   
+	   /* Memory for full data seismograms */
+           alloc_seisPSVfull(seisPSV,ntr_glob);
 
 	   /* Memory for FWI seismic data */ 
 	   alloc_seisPSVfwi(ntr,ntr_glob,ns,seisPSVfwi);
@@ -229,7 +232,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 		}
 	}
 
-	if(N_STREAMER>0){
+	if((N_STREAMER>0)||(READREC==2)){
 
 	   if (SEISMO) free_imatrix((*acq).recpos,1,3,1,ntr_glob);
 
@@ -285,6 +288,8 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	      free_matrix((*seisPSVfwi).sectionpdiffold,1,ntr,1,ns);
 	   }
 	   
+	   ntr=0;
+	   ntr_glob=0;
 	 
 	}
 

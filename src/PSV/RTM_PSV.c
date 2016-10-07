@@ -13,7 +13,7 @@ void RTM_PSV(){
 /* ---------------- */
 
 /* forward modelling */
-extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, RUN_MULTIPLE_SHOTS, TIME_FILT;
+extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, RUN_MULTIPLE_SHOTS, TIME_FILT, READREC;
 extern int LOG, SEISMO, N_STREAMER, FW, NXG, NYG, IENDX, IENDY, NTDTINV, IDXI, IDYI, NXNYI, INV_STF, DTINV;
 extern float FC_SPIKE_1, FC_SPIKE_2, FC, FC_START, TIME, DT;
 extern char LOG_FILE[STRING_SIZE], MFILE[STRING_SIZE];
@@ -161,7 +161,7 @@ ns=NT;	/* in a FWI one has to keep all samples of the forward modeled data
 	the backpropagation; look at function saveseis_glob.c to see that every
 	NDT sample for the forward modeled wavefield is written to su files*/
 
-if (SEISMO){
+if (SEISMO&&(READREC!=2)){
 
    acq.recpos=receiver(FP, &ntr, ishot);
    acq.recswitch = ivector(1,ntr);
@@ -177,18 +177,18 @@ if (SEISMO){
    
 }
 
-if(N_STREAMER==0){
+if((N_STREAMER==0)&&(READREC!=2)){
 
    /* Memory for seismic data */
    alloc_seisPSV(ntr,ns,&seisPSV);
 
    /* Memory for FWI seismic data */ 
    alloc_seisPSVfwi(ntr,ntr_glob,ns,&seisPSVfwi);
+   
+   /* Memory for full data seismograms */
+   alloc_seisPSVfull(&seisPSV,ntr_glob);
 
 }
-
-/* Memory for full data seismograms */
-alloc_seisPSVfull(&seisPSV,ntr_glob);
 
 /* estimate memory requirement of the variables in megabytes*/
 	
@@ -458,7 +458,7 @@ if (nsrc_loc>0){
  free_vector(L2t,1,4);
  free_vector(epst1,1,3);
 
- if(N_STREAMER==0){
+ if((N_STREAMER==0)||(READREC!=2)){
 
     if (SEISMO) free_imatrix(acq.recpos,1,3,1,ntr_glob);
 
@@ -512,9 +512,7 @@ if (nsrc_loc>0){
        free_matrix(seisPSVfwi.sectionpdata,1,ntr,1,ns);
        free_matrix(seisPSVfwi.sectionpdiff,1,ntr,1,ns);
        free_matrix(seisPSVfwi.sectionpdiffold,1,ntr,1,ns);
-    }
-    
- }
+    }    
 
  if(SEISMO){
   free_matrix(seisPSV.fulldata,1,ntr_glob,1,NT); 
@@ -540,6 +538,8 @@ if (nsrc_loc>0){
   free_matrix(seisPSV.fulldata_p,1,ntr_glob,1,NT); 
   free_matrix(seisPSV.fulldata_curl,1,ntr_glob,1,NT);
   free_matrix(seisPSV.fulldata_div,1,ntr_glob,1,NT);
+ }
+ 
  }
 
  free_ivector(DTINV_help,1,NT);

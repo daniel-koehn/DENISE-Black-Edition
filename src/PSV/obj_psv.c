@@ -15,7 +15,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 
         /* global variables */
 	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, QUELLTYP, ORDER_SPIKE;
-        extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM;
+        extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
 
         /* local variables */
@@ -51,7 +51,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 		   printf("\n=================================================================================================\n\n");
 		}
 		  
-		if(N_STREAMER>0){
+		if((N_STREAMER>0)||(READREC==2)){
 
 		   if (SEISMO){
 		      (*acq).recpos=receiver(FP, &ntr, ishot);
@@ -63,6 +63,9 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 
 		   /* Memory for seismic data */
 		   alloc_seisPSV(ntr,ns,seisPSV);
+		   
+		   /* Memory for full data seismograms */
+                   alloc_seisPSVfull(seisPSV,ntr_glob);
 
 		   /* Memory for FWI seismic data */ 
 		   alloc_seisPSVfwi(ntr,ntr_glob,ns,seisPSVfwi);
@@ -122,8 +125,71 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 		if (ntr > 0){
 		   calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,1);
 		}
+		
+	   if((N_STREAMER>0)||(READREC==2)){
 
+	     if (SEISMO) free_imatrix((*acq).recpos,1,3,1,ntr_glob);
+
+	     if ((ntr>0) && (SEISMO)){
+
+		   free_imatrix((*acq).recpos_loc,1,3,1,ntr);
+		   (*acq).recpos_loc = NULL;
+	 
+		   switch (SEISMO){
+		   case 1 : /* particle velocities only */
+		           free_matrix((*seisPSV).sectionvx,1,ntr,1,ns);
+		           free_matrix((*seisPSV).sectionvy,1,ntr,1,ns);
+		           (*seisPSV).sectionvx=NULL;
+		           (*seisPSV).sectionvy=NULL;
+		           break;
+		    case 2 : /* pressure only */
+		           free_matrix((*seisPSV).sectionp,1,ntr,1,ns);
+		           break;
+		    case 3 : /* curl and div only */
+		           free_matrix((*seisPSV).sectioncurl,1,ntr,1,ns);
+		           free_matrix((*seisPSV).sectiondiv,1,ntr,1,ns);
+		           break;
+		    case 4 : /* everything */
+		           free_matrix((*seisPSV).sectionvx,1,ntr,1,ns);
+		           free_matrix((*seisPSV).sectionvy,1,ntr,1,ns);
+		           free_matrix((*seisPSV).sectionp,1,ntr,1,ns);
+		           free_matrix((*seisPSV).sectioncurl,1,ntr,1,ns);
+		           free_matrix((*seisPSV).sectiondiv,1,ntr,1,ns);
+		           break;
+
+		    }
+
+	   }
+
+	   free_matrix((*seisPSVfwi).sectionread,1,ntr_glob,1,ns);
+	   free_ivector((*acq).recswitch,1,ntr);
+	   
+	   if((QUELLTYPB==1)||(QUELLTYPB==3)||(QUELLTYPB==5)||(QUELLTYPB==7)){
+	      free_matrix((*seisPSVfwi).sectionvxdata,1,ntr,1,ns);
+	      free_matrix((*seisPSVfwi).sectionvxdiff,1,ntr,1,ns);
+	      free_matrix((*seisPSVfwi).sectionvxdiffold,1,ntr,1,ns);
+	   }
+	   
+	   if((QUELLTYPB==1)||(QUELLTYPB==2)||(QUELLTYPB==6)||(QUELLTYPB==7)){   
+	      free_matrix((*seisPSVfwi).sectionvydata,1,ntr,1,ns);
+	      free_matrix((*seisPSVfwi).sectionvydiff,1,ntr,1,ns);
+	      free_matrix((*seisPSVfwi).sectionvydiffold,1,ntr,1,ns);
+	   }
+	   
+	   if(QUELLTYPB>=4){   
+	      free_matrix((*seisPSVfwi).sectionpdata,1,ntr,1,ns);
+	      free_matrix((*seisPSVfwi).sectionpdiff,1,ntr,1,ns);
+	      free_matrix((*seisPSVfwi).sectionpdiffold,1,ntr,1,ns);
+	   }
+	   
+	   ntr=0;
+	   ntr_glob=0;
+	 
 	}
+
+	nsrc_loc=0;
+
+	} /* end of loop over shots */
 
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;

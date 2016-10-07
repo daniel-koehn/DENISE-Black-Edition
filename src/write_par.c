@@ -148,8 +148,14 @@ void write_par(FILE *fp){
 	if (SEISMO){
 		fprintf(fp," ------------------------- RECEIVER  --------------------------\n");
 		if (READREC){
-			fprintf(fp," reading receiver positions from file \n");
-			fprintf(fp,"\t%s\n\n",REC_FILE);
+                        if(READREC==1){
+			    fprintf(fp," reading receiver positions from single file \n");
+			    fprintf(fp,"\t%s.dat\n\n",REC_FILE);
+			}
+                        if(READREC==2){
+			    fprintf(fp," reading receiver positions from multiple files \n");
+			    fprintf(fp,"\t%s_shot_X.dat\n\n",REC_FILE);
+			}
 			fprintf(fp," reference_point_for_receiver_coordinate_system:\n");
 			fprintf(fp," x=%f \ty=%f\t z=%f\n",REFREC[1], REFREC[2], REFREC[3]);
 		}

@@ -94,8 +94,8 @@ output_of_seismograms_(SEISMO) = 1
 # SEISMO=2: pressure (hydrophones)
 # SEISMO=3: curl and div
 # SEISMO=4: everything
-read_receiver_positions_from_file_(yes=1)_(READREC) = 1
-REC_FILE = ./receiver/receiver_OBC.dat
+read_receiver_positions_from_file_(single_file=1/multiple_files=2)_(READREC) = 1
+REC_FILE = ./receiver/receiver_OBC
 reference_point_for_receiver_coordinate_system_(REFREC) = 0.0 , 0.0
 #
 #

@@ -21,6 +21,7 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	int   itr=1, itr1=0, itr2=0, recflag=0, c, ifw, n, i, j;
 	int nxrec1, nxrec2, nyrec1, nyrec2, nzrec1=1, nzrec2=1;
 	float xrec, yrec, aa, bb;
+	char REC_FILE1[STRING_SIZE];
 	
 	FILE *fpr;
 
@@ -28,8 +29,18 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	{
 
      	     if (READREC){ /* read receiver positions from file */
-     		fprintf(fp,"\n Reading receiver positions from file: \n\t%s\n",REC_FILE);
-		fpr=fopen(REC_FILE,"r");
+
+		if(READREC==1){
+		    sprintf(REC_FILE1,"%s.dat",REC_FILE);
+     		    fprintf(fp,"\n Reading receiver positions from single file: \n\t%s\n",REC_FILE1);
+		}
+
+		if(READREC==2){
+		    sprintf(REC_FILE1,"%s_shot_%i.dat",REC_FILE,ishot);
+     		    fprintf(fp,"\n Reading receiver positions from multiple files: \n\t%s\n",REC_FILE1);
+		}
+
+		fpr=fopen(REC_FILE1,"r");
      		if (fpr==NULL) err(" Receiver file could not be opened !");
      		*ntr=0;
      		while ((c=fgetc(fpr)) != EOF)
