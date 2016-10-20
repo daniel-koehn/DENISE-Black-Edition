@@ -25,7 +25,7 @@ void write_par(FILE *fp){
 	extern int NP, NPROCX, NPROCY, MYID;
 	
 	extern int GRADT1, GRADT2, GRADT3, GRADT4, ITERMAX, INVMAT1, MODE, PHYSICS, QUELLTYPB;
-	extern int GRAD_METHOD, ORDER_SPIKE;
+	extern int GRAD_METHOD, ORDER_SPIKE, RTM_SHOT;
 	extern float FC_SPIKE_1, FC_SPIKE_2;
 	extern int FILT_SIZE, MODEL_FILTER;
 	extern int FILT_SIZE_GRAD, GRAD_FILTER;

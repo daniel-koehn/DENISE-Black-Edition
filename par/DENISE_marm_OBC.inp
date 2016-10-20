@@ -235,3 +235,6 @@ chosen_background_density_model_(BACK_DENSITY) = 2
 # if BACK_DENSITY = 2, define your model 
 filename_for_background_density_(DFILE) = gravity/background_density.rho
 #
+# ----- RTM parameters ---------------------------- #
+output_of_RTM_result_for_each_shot_(yes=1)_(RTM_SHOT) = 0
+#

@@ -127,3 +127,6 @@ float C_vp, C_vs, C_rho;
 
 /* Component weighting for QUELLTYPB = 5, 6, 7 */
 float COMP_WEIGHT;
+
+/* RTM parameter */
+int RTM_SHOT;

@@ -18,7 +18,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
         extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
         extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG;
-        extern int ORDER_SPIKE, ORDER, SHOTINC;
+        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
         extern float C_vp, C_vs, C_rho;
         extern char MFILE[STRING_SIZE];
@@ -231,6 +231,8 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 			(*fwiPSV).waveconv_u[j][i] += (*fwiPSV).waveconv_u_shot[j][i];
 		}
 	}
+
+	if(RTM_SHOT==1){RTM_PSV_out_shot(fwiPSV,ishot);}
 
 	if((N_STREAMER>0)||(READREC==2)){
 

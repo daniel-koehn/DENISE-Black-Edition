@@ -26,7 +26,7 @@ extern float LAM_GRAV, GAMMA_GRAV, LAM_GRAV_GRAD, L2_GRAV_IT1;
 
 /* full waveform inversion */
 extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, EPRECOND;
-extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER;
+extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER, RTM_SHOT;
 extern float FC_END, PRO, C_vp, C_vs, C_rho;
 extern char MISFIT_LOG_FILE[STRING_SIZE], JACOBIAN[STRING_SIZE];
 extern char *FILEINP1;
@@ -299,6 +299,9 @@ if (MYID==0)
    fprintf(FP,"\n\n\n ------------------------------------------------------------------\n");
    fprintf(FP,"\n\n\n                   Elastic Reverse Time Migration RTM \n");
    fprintf(FP,"\n\n\n ------------------------------------------------------------------\n");
+   fprintf(FP,"\n\n");
+   if(RTM_SHOT==0){fprintf(FP,"Output of RTM image after stacking of shots\n");}
+   if(RTM_SHOT==1){fprintf(FP,"Output of RTM images for each shot\n");}
    }
 
 /* For the calculation of the material parameters between gridpoints
@@ -389,7 +392,7 @@ if((IDXI>1)||(IDYI>1)){
 precond_PSV(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
 
 /* Output of RTM results */
-RTM_PSV_out(&fwiPSV);
+if(RTM_SHOT==0){RTM_PSV_out(&fwiPSV);}
 
 } /* End of RTM-workflow loop */
 

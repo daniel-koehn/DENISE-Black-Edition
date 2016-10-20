@@ -98,6 +98,7 @@ DENISE += alloc_fwiPSV.c \
 	  readmod_visc_PSV.c \
 	  RTM_PSV.c \
 	  RTM_PSV_out.c \
+	  RTM_PSV_out_shot.c \
 	  step_length_est_psv.c \
 	  stf_psv.c \
 	  store_LBFGS_PSV.c \

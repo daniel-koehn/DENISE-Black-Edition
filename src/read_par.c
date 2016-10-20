@@ -27,7 +27,7 @@ extern char SEIS_FILE_CURL[STRING_SIZE], SEIS_FILE_DIV[STRING_SIZE], SEIS_FILE_P
 extern char JACOBIAN[STRING_SIZE],DATA_DIR[STRING_SIZE];
 extern int  NPROC, NPROCX, NPROCY, MYID, IDX, IDY; 
 extern int GRADT1, GRADT2, GRADT3, GRADT4, ITERMAX, INVMAT1, QUELLTYPB;
-extern int HESSIAN, GRAD_METHOD, NFREQ, PCG_BETA;
+extern int HESSIAN, GRAD_METHOD, NFREQ, PCG_BETA, RTM_SHOT;
 extern float FC_HESS_START, FC_HESS_INC;
 extern int FILT_SIZE, MODEL_FILTER;
 extern int FILT_SIZE_GRAD, GRAD_FILTER;
@@ -414,6 +414,9 @@ int  c=0, lineno=0, l;
 	    break;
 	 case 107 :
 	   fscanf(fp_in,"%s =%s",s,DFILE);
+	    break;
+	 case 108 :
+	   fscanf(fp_in,"%s =%i",s,RTM_SHOT);
 	    break;   
 	 default:
 	    break;
