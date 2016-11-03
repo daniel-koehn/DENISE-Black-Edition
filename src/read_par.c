@@ -83,7 +83,7 @@ extern char DFILE[STRING_SIZE];
 extern int BACK_DENSITY;
 
 /* definition of local variables */
-char s[74];
+char s[120];
 int  c=0, lineno=0, l;
  
    while ((c=getc(fp_in)) != EOF){
@@ -416,7 +416,7 @@ int  c=0, lineno=0, l;
 	   fscanf(fp_in,"%s =%s",s,DFILE);
 	    break;
 	 case 108 :
-	   fscanf(fp_in,"%s =%i",s,RTM_SHOT);
+	   fscanf(fp_in,"%s =%i",s,&RTM_SHOT);
 	    break;   
 	 default:
 	    break;
