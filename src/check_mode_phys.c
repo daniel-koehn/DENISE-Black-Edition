@@ -2,7 +2,7 @@
  *  Check if parameters MODE and PHYSICS are reasonable
  *
  *  D. Koehn
- *  Kiel, 05.06.2016
+ *  Kiel, 02.02.2017
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
@@ -39,8 +39,12 @@ void check_mode_phys(){
 
 		switch (PHYSICS){
 		case 1 :
-			printf(" PHYSICS=%d: Solve 2D PSV problem.\n",PHYSICS);
+			printf(" PHYSICS=%d: Solve 2D elastic PSV problem.\n",PHYSICS);
 			break;
+		case 3 :
+			printf(" PHYSICS=%d: Solve 2D elastic VTI problem.\n",PHYSICS);
+			break;
+
 		default:
 			err(" Ups, you are obviously in a parallel universe: PHYSICS unkown - call 07700 900461 ! ");
 		}

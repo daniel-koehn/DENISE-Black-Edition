@@ -90,6 +90,15 @@ struct mpiPSV{
    float ** bufferlef_to_rig,  ** bufferrig_to_lef, ** buffertop_to_bot, ** bufferbot_to_top;
 } mpiPSV;
 
+/* ---------------------------------- */
+/* declaration of VTI data-structures */
+/* ---------------------------------- */
+
+/* VTI material parameters */
+struct matVTI{
+   float  **prho, **prip, **prjp, **c11, **c13, **c33, **c44, **c44h;
+} matVTI;
+
 /* ------------- */
 /* PSV functions */
 /* ------------- */
@@ -233,6 +242,43 @@ float ** psi_vyy, float ** psi_vxy, float ** psi_vxxs);
 void zero_denise_visc_PSV(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx, float ** syy, float ** sxy, float ** vxm1, float ** vym1, 
 float ** vxym1, float ** vxp1, float ** vyp1, float ** psi_sxx_x, float ** psi_sxy_x, float ** psi_vxx, float ** psi_vyx, float ** psi_syy_y, float ** psi_sxy_y, 
 float ** psi_vyy, float ** psi_vxy, float ** psi_vxxs, float ***pr, float ***pp, float ***pq);
+
+/* ------------- */
+/* VTI functions */
+/* ------------- */
+
+void alloc_matVTI(struct matVTI *matVTI);
+
+void av_c44(float ** c44, float ** c44h);
+
+void checkfd_ssg_VTI(FILE *fp, float ** prho, float ** c11, float ** c13, float ** c33, float ** c44, float *hc);
+
+void FD_VTI();
+
+void matcopy_elastic_VTI(float ** rho, float ** pi, float ** u);
+
+void model_elastic_VTI(float  **  rho, float **  c11, float **  c13, float **  c33, float **  c44);
+
+void physics_VTI();
+
+void readmod_elastic_VTI(float  **  rho, float **  c11, float **  c13, float **  c33, float **  c44);
+
+void seismo_ssg_vti(int lsamp, int ntr, int **recpos, float **sectionvx, 
+float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
+float **vx, float **vy, float **sxx, float **syy, float *hc);
+
+void snap_vti(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx, float **syy, float *hc);
+
+void update_s_elastic_PML_VTI(int nx1, int nx2, int ny1, int ny2,
+	float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
+	float **   sxy, float ** c11,  float ** c13, float ** c33, float ** c44h, float ** absorb_coeff, float *hc, int infoout,
+        float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
+        float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
+        float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode);
+
+void vti(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI *matVTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
 
 /* ----------------- */
 /* General functions */

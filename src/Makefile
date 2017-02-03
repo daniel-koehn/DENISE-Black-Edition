@@ -6,6 +6,7 @@
 # source code for model generation
 MODEL = model_ainos_visc.c
 MODEL_EL = model_ainos.c
+MODEL_VTI = zinc_vti.c
 EXEC= ../bin
 
 # Compiler (LAM: CC=hcc, CRAY T3E: CC=cc)
@@ -49,7 +50,7 @@ IFLAGS=-I./../libcseife -I./../include
 .c.o:
 	$(CC) $(CFLAGS) -c $< $(IFLAGS)
 
-VPATH = snapmerge:PSV:models
+VPATH = snapmerge:PSV:VTI:models
         
 SNAPMERGE_SCR = \
 	merge.c \
@@ -110,6 +111,20 @@ DENISE += alloc_fwiPSV.c \
 	  update_v_PML_PSV.c \
 	  zero_denise_elast_PSV.c \
 	  zero_denise_visc_PSV.c
+
+# add VTI source files
+DENISE += alloc_matVTI.c \
+	  av_c44.c \
+	  checkfd_ssg_VTI.c \
+	  FD_VTI.c \
+	  matcopy_elastic_VTI.c \
+	  $(MODEL_VTI) \
+	  physics_VTI.c \
+	  readmod_elastic_VTI.c \
+	  seismo_ssg_vti.c \
+	  snap_ssg_vti.c \
+	  update_s_elastic_PML_VTI.c \
+	  vti.c
 
 SNAPMERGE_OBJ = $(SNAPMERGE_SCR:.c=.o)
 DENISE_OBJ = $(DENISE:.c=.o)      
