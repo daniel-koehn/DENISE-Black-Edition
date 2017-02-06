@@ -1,13 +1,13 @@
 /*
- * Solve 2D VTI forward problem by finite-differences
+ * Solve 2D PSV TTI forward problem by finite-differences
  *
  * Daniel Koehn
- * Kiel, 01/02/2017
+ * Kiel, 04/02/2017
  */
 
 #include "fd.h"
 
-void FD_VTI(){
+void FD_TTI(){
 
 /* global variables */
 extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, QUELLTYP, ORDER_SPIKE, RUN_MULTIPLE_SHOTS, TIME_FILT, ORDER, READREC;
@@ -78,7 +78,7 @@ INV_STF=0;
 /* define data structures for PSV problem */
 struct wavePSV;
 struct wavePSV_PML;
-struct matVTI;
+struct matTTI;
 struct mpiPSV;
 struct fwiPSV;
 struct seisPSV;
@@ -161,8 +161,8 @@ if(FW>0){PML_pro(wavePSV_PML.d_x, wavePSV_PML.K_x, wavePSV_PML.alpha_prime_x, wa
                  wavePSV_PML.a_y_half, wavePSV_PML.b_y_half);
 }
 
-/* allocate memory for VTI material parameters */
-alloc_matVTI(&matVTI);
+/* allocate memory for TTI material parameters */
+alloc_matTTI(&matTTI);
 
 /* allocate memory for PSV MPI variables */
 alloc_mpiPSV(&mpiPSV);
@@ -183,23 +183,32 @@ acq.srcpos=sources(&nsrc);
 nsrc_glob=nsrc;
 
 /* create model grids */
-if (READMOD) readmod_elastic_VTI(matVTI.prho,matVTI.c11,matVTI.c13,matVTI.c33,matVTI.c44);
-else model_elastic_VTI(matVTI.prho,matVTI.c11,matVTI.c13,matVTI.c33,matVTI.c44);
+if (READMOD) readmod_elastic_TTI(matTTI.prho,matTTI.c11,matTTI.c13,matTTI.c33,matTTI.c44,matTTI.theta);
+else model_elastic_TTI(matTTI.prho,matTTI.c11,matTTI.c13,matTTI.c33,matTTI.c44,matTTI.theta);
+
+/* rotate elastic tensor components */
+rot_el_tensor_TTI(&matTTI);
 
 /* check if the FD run will be stable and free of numerical dispersion */
-checkfd_ssg_VTI(FP,matVTI.prho,matVTI.c11,matVTI.c13,matVTI.c33,matVTI.c44,hc);
+/* checkfd_ssg_VTI(FP,matVTI.prho,matVTI.c11,matVTI.c13,matVTI.c33,matVTI.c44,hc); */
 
 /* For the calculation of the material parameters between gridpoints
    they have to be averaged. For this, values lying at 0 and NX+1,
    for example, are required on the local grid. These are now copied from the
-   neighbouring grids */		
-   matcopy_elastic_VTI(matVTI.prho,matVTI.c11,matVTI.c44);
-
+   neighbouring grids. */		
+   matcopy_elastic_VTI(matTTI.prho,matTTI.c11,matTTI.d15);
+   matcopy_elastic_VTI(matTTI.prho,matTTI.c11,matTTI.d35);
+   matcopy_elastic_VTI(matTTI.prho,matTTI.c11,matTTI.d55);
 
 MPI_Barrier(MPI_COMM_WORLD);
 
-av_harm(matVTI.c44,matVTI.c44h);
-av_rho(matVTI.prho,matVTI.prip,matVTI.prjp);
+/* harmonic average of d15, d35, d55 */
+av_harm(matTTI.d15,matTTI.d15h);
+av_harm(matTTI.d35,matTTI.d35h);
+av_harm(matTTI.d55,matTTI.d55h);
+
+/* arithmetic average of density */
+av_rho(matTTI.prho,matTTI.prip,matTTI.prjp);
  
 if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
@@ -282,7 +291,7 @@ if(RUN_MULTIPLE_SHOTS){
 }
 		                                                              
 /* solve forward problem */
-VTI(&wavePSV,&wavePSV_PML,&matVTI,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+TTI(&wavePSV,&wavePSV_PML,&matTTI,&fwiPSV,&mpiPSV,&seisPSV,&seisPSVfwi,&acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
 	
 /* output of forward model seismograms */
 outseis_PSVfor(&seisPSV,acq.recswitch,acq.recpos,acq.recpos_loc,ntr_glob,acq.srcpos,ishot,ns,iter,FP);
@@ -334,15 +343,27 @@ nsrc_loc=0;
 /* deallocate memory for PSV forward problem */
 dealloc_PSV(&wavePSV,&wavePSV_PML);
 
-free_matrix(matVTI.prho,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matVTI.prip,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matVTI.prjp,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.prho,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.prip,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.prjp,-nd+1,NY+nd,-nd+1,NX+nd);
 
-free_matrix(matVTI.c11,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matVTI.c13,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matVTI.c33,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matVTI.c44,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matVTI.c44h,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.c11,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.c13,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.c33,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.c44,-nd+1,NY+nd,-nd+1,NX+nd);
+
+free_matrix(matTTI.d11,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.d13,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.d15,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.d33,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.d35,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.d55,-nd+1,NY+nd,-nd+1,NX+nd);
+
+free_matrix(matTTI.d15h,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.d35h,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matTTI.d55h,-nd+1,NY+nd,-nd+1,NX+nd);
+
+free_matrix(matTTI.theta,-nd+1,NY+nd,-nd+1,NX+nd);
 
 free_matrix(mpiPSV.bufferlef_to_rig,1,NY,1,fdo3);
 free_matrix(mpiPSV.bufferrig_to_lef,1,NY,1,fdo3);

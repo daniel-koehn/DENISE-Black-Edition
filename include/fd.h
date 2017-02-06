@@ -99,6 +99,15 @@ struct matVTI{
    float  **prho, **prip, **prjp, **c11, **c13, **c33, **c44, **c44h;
 } matVTI;
 
+/* ---------------------------------- */
+/* declaration of TTI data-structures */
+/* ---------------------------------- */
+
+/* TTI material parameters */
+struct matTTI{
+   float  **prho, **prip, **prjp, **c11, **c13, **c33, **c44, **d11, **d13, **d15, **d33, **d35, **d55, **d15h, **d35h, **d55h, **theta;
+} matTTI;
+
 /* ------------- */
 /* PSV functions */
 /* ------------- */
@@ -249,8 +258,6 @@ float ** psi_vyy, float ** psi_vxy, float ** psi_vxxs, float ***pr, float ***pp,
 
 void alloc_matVTI(struct matVTI *matVTI);
 
-void av_c44(float ** c44, float ** c44h);
-
 void checkfd_ssg_VTI(FILE *fp, float ** prho, float ** c11, float ** c13, float ** c33, float ** c44, float *hc);
 
 void FD_VTI();
@@ -263,11 +270,11 @@ void physics_VTI();
 
 void readmod_elastic_VTI(float  **  rho, float **  c11, float **  c13, float **  c33, float **  c44);
 
-void seismo_ssg_vti(int lsamp, int ntr, int **recpos, float **sectionvx, 
+void seismo_ssg_VTI(int lsamp, int ntr, int **recpos, float **sectionvx, 
 float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
 float **vx, float **vy, float **sxx, float **syy, float *hc);
 
-void snap_vti(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx, float **syy, float *hc);
+void snap_VTI(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx, float **syy, float *hc);
 
 void update_s_elastic_PML_VTI(int nx1, int nx2, int ny1, int ny2,
 	float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
@@ -276,7 +283,36 @@ void update_s_elastic_PML_VTI(int nx1, int nx2, int ny1, int ny2,
         float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
         float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode);
 
-void vti(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI *matVTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+void VTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI *matVTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
+
+/* ------------- */
+/* TTI functions */
+/* ------------- */
+
+void alloc_matTTI(struct matTTI *matTTI);
+
+void checkfd_ssg_TTI(FILE *fp, float ** prho, float ** c11, float ** c13, float ** c33, float ** c44, float *hc);
+
+void FD_TTI();
+
+void model_elastic_TTI(float  **  rho, float **  c11, float **  c13, float **  c33, float **  c44, float **  theta);
+
+void physics_TTI();
+
+void readmod_elastic_TTI(float  **  rho, float **  c11, float **  c13, float **  c33, float **  c44, float ** theta);
+
+void rot_el_tensor_TTI(struct matTTI *matTTI);
+
+void update_s_elastic_PML_TTI(int nx1, int nx2, int ny1, int ny2,
+	float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,
+	float **   sxy, float ** d11,  float ** d13, float ** d15, float ** d15h, float ** d33, float ** d35, float ** d35h, float ** d55h, 
+	float ** absorb_coeff, float *hc, int infoout, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
+        float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
+        float ** psi_vxx, float ** psi_vyy, float ** psi_vxy, float ** psi_vyx, int mode);
+
+void TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matTTI *matTTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
          int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
 
@@ -301,6 +337,8 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 void spat_filt(float ** waveconv, int iter, int sws);
 
 void apply_tdfilt(float **section, int ntr, int ns, int order, float fc2, float fc1);
+
+void av_harm(float ** m, float ** mh);
 
 void av_mat(float **  pi, float **  u, 
 float **  ppijm, float **  puip, float ** pujm);

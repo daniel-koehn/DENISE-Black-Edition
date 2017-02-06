@@ -7,6 +7,7 @@
 MODEL = model_ainos_visc.c
 MODEL_EL = model_ainos.c
 MODEL_VTI = zinc_vti.c
+MODEL_TTI = zinc_tti.c
 EXEC= ../bin
 
 # Compiler (LAM: CC=hcc, CRAY T3E: CC=cc)
@@ -50,7 +51,7 @@ IFLAGS=-I./../libcseife -I./../include
 .c.o:
 	$(CC) $(CFLAGS) -c $< $(IFLAGS)
 
-VPATH = snapmerge:PSV:VTI:models
+VPATH = snapmerge:PSV:VTI:TTI:models
         
 SNAPMERGE_SCR = \
 	merge.c \
@@ -114,17 +115,27 @@ DENISE += alloc_fwiPSV.c \
 
 # add VTI source files
 DENISE += alloc_matVTI.c \
-	  av_c44.c \
 	  checkfd_ssg_VTI.c \
 	  FD_VTI.c \
 	  matcopy_elastic_VTI.c \
 	  $(MODEL_VTI) \
 	  physics_VTI.c \
 	  readmod_elastic_VTI.c \
-	  seismo_ssg_vti.c \
-	  snap_ssg_vti.c \
+	  seismo_ssg_VTI.c \
+	  snap_ssg_VTI.c \
 	  update_s_elastic_PML_VTI.c \
-	  vti.c
+	  VTI.c
+
+# add TTI source files
+DENISE += alloc_matTTI.c \
+	  checkfd_ssg_TTI.c \
+	  FD_TTI.c \
+	  $(MODEL_TTI) \
+	  physics_TTI.c \
+	  readmod_elastic_TTI.c \
+	  rot_el_tensor_TTI.c \
+	  update_s_elastic_PML_TTI.c \
+	  TTI.c
 
 SNAPMERGE_OBJ = $(SNAPMERGE_SCR:.c=.o)
 DENISE_OBJ = $(DENISE:.c=.o)      

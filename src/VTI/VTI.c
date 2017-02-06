@@ -14,7 +14,7 @@
 
 #include "fd.h"
 
-void vti(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI *matVTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+void VTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI *matVTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
          int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec){
 
@@ -211,7 +211,7 @@ void vti(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI
 
 		/* store amplitudes at receivers in section-arrays */
 		if (SEISMO && (mode==0 || mode==2)){
-			seismo_ssg_vti(nt, ntr, (*acq).recpos_loc, (*seisPSV).sectionvx, (*seisPSV).sectionvy, 
+			seismo_ssg_VTI(nt, ntr, (*acq).recpos_loc, (*seisPSV).sectionvx, (*seisPSV).sectionvy, 
 				(*seisPSV).sectionp, (*seisPSV).sectioncurl, (*seisPSV).sectiondiv, 
 				(*wavePSV).pvx, (*wavePSV).pvy, (*wavePSV).psxx, (*wavePSV).psyy, hc);
 			/*lsamp+=NDT;*/
@@ -220,7 +220,7 @@ void vti(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI
 	   /* WRITE SNAPSHOTS TO DISK */
 	   if ((SNAP) && (nt==lsnap) && (nt<=iround(TSNAP2/DT))){
 
-	      snap_vti(FP,nt,++nsnap,(*wavePSV).pvx,(*wavePSV).pvy,(*wavePSV).psxx,(*wavePSV).psyy,hc);
+	      snap_VTI(FP,nt,++nsnap,(*wavePSV).pvx,(*wavePSV).pvy,(*wavePSV).psxx,(*wavePSV).psyy,hc);
 	      lsnap=lsnap+iround(TSNAPINC/DT);
 
 	   }

@@ -98,11 +98,19 @@ if(PHYSICS==1){
 }
 
 /* ---------------------------------------------------- */
-/* Forward, RTM modules (2D VTI-problem) */
+/* Forward, RTM modules (2D PSV VTI-problem) */
 /* ---------------------------------------------------- */
 if(PHYSICS==3){
   physics_VTI();
 }
+
+/* ---------------------------------------------------- */
+/* Forward, RTM modules (2D PSV TTI-problem) */
+/* ---------------------------------------------------- */
+if(PHYSICS==4){
+  physics_TTI();
+}
+
 
 MPI_Finalize();
 return 0;	

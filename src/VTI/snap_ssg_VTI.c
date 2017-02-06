@@ -8,7 +8,7 @@
 #include "fd.h"
 
 
-void snap_vti(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx,
+void snap_VTI(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx,
 	float **syy, float *hc){
 
 	/* 

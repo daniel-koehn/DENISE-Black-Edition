@@ -6,7 +6,7 @@
 
 #include "fd.h"
 
-void seismo_ssg_vti(int lsamp, int ntr, int **recpos, float **sectionvx, 
+void seismo_ssg_VTI(int lsamp, int ntr, int **recpos, float **sectionvx, 
 float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
 float **vx, float **vy, float **sxx, float **syy, float *hc){ 
 		

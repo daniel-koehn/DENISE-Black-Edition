@@ -42,7 +42,10 @@ void check_mode_phys(){
 			printf(" PHYSICS=%d: Solve 2D elastic PSV problem.\n",PHYSICS);
 			break;
 		case 3 :
-			printf(" PHYSICS=%d: Solve 2D elastic VTI problem.\n",PHYSICS);
+			printf(" PHYSICS=%d: Solve 2D elastic PSV VTI problem.\n",PHYSICS);
+			break;
+		case 4 :
+			printf(" PHYSICS=%d: Solve 2D elastic PSV TTI problem.\n",PHYSICS);
 			break;
 
 		default:
