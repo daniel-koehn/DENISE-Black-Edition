@@ -258,9 +258,16 @@ float ** psi_vyy, float ** psi_vxy, float ** psi_vxxs, float ***pr, float ***pp,
 
 void alloc_matVTI(struct matVTI *matVTI);
 
+void ass_gradVTI(struct fwiPSV *fwiPSV, struct matVTI *matVTI, int iter);
+
 void checkfd_ssg_VTI(FILE *fp, float ** prho, float ** c11, float ** c13, float ** c33, float ** c44, float *hc);
 
 void FD_VTI();
+
+float grad_obj_VTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI *matVTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
+         int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
+         MPI_Request * req_send, MPI_Request * req_rec);
 
 void matcopy_elastic_VTI(float ** rho, float ** pi, float ** u);
 
@@ -269,6 +276,8 @@ void model_elastic_VTI(float  **  rho, float **  c11, float **  c13, float **  c
 void physics_VTI();
 
 void readmod_elastic_VTI(float  **  rho, float **  c11, float **  c13, float **  c33, float **  c44);
+
+void RTM_VTI();
 
 void seismo_ssg_VTI(int lsamp, int ntr, int **recpos, float **sectionvx, 
 float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,

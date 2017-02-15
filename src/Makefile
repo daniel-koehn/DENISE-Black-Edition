@@ -115,12 +115,15 @@ DENISE += alloc_fwiPSV.c \
 
 # add VTI source files
 DENISE += alloc_matVTI.c \
+	  ass_gradVTI.c \
 	  checkfd_ssg_VTI.c \
 	  FD_VTI.c \
+	  grad_obj_VTI.c \
 	  matcopy_elastic_VTI.c \
 	  $(MODEL_VTI) \
 	  physics_VTI.c \
 	  readmod_elastic_VTI.c \
+	  RTM_VTI.c \
 	  seismo_ssg_VTI.c \
 	  snap_ssg_VTI.c \
 	  update_s_elastic_PML_VTI.c \

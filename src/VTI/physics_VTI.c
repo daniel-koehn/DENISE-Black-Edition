@@ -23,9 +23,9 @@ void physics_VTI(){
 	}*/
 
         /* 2D PSV Reverse Time Migration */
-	/*if(MODE==2){
-	   RTM_PSV();
-	}*/
+	if(MODE==2){
+	   RTM_VTI();
+	}
 
 }
 
