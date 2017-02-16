@@ -12,7 +12,7 @@ void physics_TTI(){
 	/* global variables */
 	extern int MODE;
 
-	/* 2D TTI Forward Problem */
+	/* 2D PSV TTI Forward Problem */
 	if(MODE==0){
 	   FD_TTI();
 	}
@@ -22,10 +22,10 @@ void physics_TTI(){
 	   FWI_PSV();
 	}*/
 
-        /* 2D PSV Reverse Time Migration */
-	/*if(MODE==2){
-	   RTM_PSV();
-	}*/
+        /* 2D PSV TTI Reverse Time Migration */
+	if(MODE==2){
+	   RTM_TTI();
+	}
 
 }
 

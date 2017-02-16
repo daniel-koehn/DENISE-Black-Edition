@@ -306,6 +306,11 @@ void checkfd_ssg_TTI(FILE *fp, float ** prho, float ** c11, float ** c13, float 
 
 void FD_TTI();
 
+float grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matTTI *matTTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
+         int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
+         MPI_Request * req_send, MPI_Request * req_rec);
+
 void model_elastic_TTI(float  **  rho, float **  c11, float **  c13, float **  c33, float **  c44, float **  theta);
 
 void physics_TTI();
@@ -313,6 +318,8 @@ void physics_TTI();
 void readmod_elastic_TTI(float  **  rho, float **  c11, float **  c13, float **  c33, float **  c44, float ** theta);
 
 void rot_el_tensor_TTI(struct matTTI *matTTI);
+
+void RTM_TTI();
 
 void update_s_elastic_PML_TTI(int nx1, int nx2, int ny1, int ny2,
 	float **  vx, float **   vy, float **  ux, float **   uy, float **  uxy, float **   uyx, float **   sxx, float **   syy,

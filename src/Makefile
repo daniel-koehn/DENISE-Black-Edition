@@ -133,10 +133,12 @@ DENISE += alloc_matVTI.c \
 DENISE += alloc_matTTI.c \
 	  checkfd_ssg_TTI.c \
 	  FD_TTI.c \
+          grad_obj_TTI.c \
 	  $(MODEL_TTI) \
 	  physics_TTI.c \
 	  readmod_elastic_TTI.c \
 	  rot_el_tensor_TTI.c \
+	  RTM_TTI.c \
 	  update_s_elastic_PML_TTI.c \
 	  TTI.c
 
