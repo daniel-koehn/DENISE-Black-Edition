@@ -89,6 +89,7 @@ DENISE += alloc_fwiPSV.c \
 	  $(MODEL) \
 	  $(MODEL_EL) \
 	  model_freq_out_PSV.c \
+	  model_it_out_PSV.c \
 	  obj_psv.c \
 	  outseis_PSVfor.c \
 	  outseis_PSVres.c \

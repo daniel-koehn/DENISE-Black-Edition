@@ -26,7 +26,7 @@ extern float LAM_GRAV, GAMMA_GRAV, LAM_GRAV_GRAD, L2_GRAV_IT1;
 
 /* full waveform inversion */
 extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, EPRECOND, PCG_BETA;
-extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER;
+extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER, INV_MOD_OUT;
 extern float FC_END, PRO, C_vp, C_vs, C_rho;
 extern char MISFIT_LOG_FILE[STRING_SIZE], JACOBIAN[STRING_SIZE];
 extern char *FILEINP1;
@@ -806,8 +806,10 @@ diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
 	
 	if((diff<=pro)||(step3==1)){
         
-        	/* output of the model at the end of given corner frequency */
-        	model_freq_out_PSV(matPSV.ppi,matPSV.prho,matPSV.pu,nstage,FC);
+        	/* output of the model at the end of given FWI stage */
+		if(INV_MOD_OUT==0){
+        	    model_freq_out_PSV(matPSV.ppi,matPSV.prho,matPSV.pu,nstage,FC);
+		}
 		s=1;
 		min_iter_help=0;
 		min_iter_help=iter+MIN_ITER;
@@ -833,6 +835,11 @@ diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
 		}
 		break;
 	}
+}
+
+/* output of the model after each FWI iteration */
+if(INV_MOD_OUT==1){
+    model_it_out_PSV(matPSV.ppi,matPSV.prho,matPSV.pu,nstage,iter,FC);
 }
 
 iter++;

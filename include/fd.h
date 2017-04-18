@@ -170,6 +170,8 @@ void mem_PSV(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize)
 
 void model_freq_out_PSV(float ** ppi, float  **  rho, float **  pu, int iter, float freq);
 
+void model_it_out_PSV(float ** ppi, float  **  rho, float **  pu, int nstage, int iter, float freq);
+
 float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
 struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, int ntr_glob, 
 int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec);

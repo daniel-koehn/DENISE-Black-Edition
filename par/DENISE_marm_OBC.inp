@@ -155,6 +155,7 @@ read_taper_from_file_(yes=1)_(SWS_TAPER_FILE) = 0
 #
 #
 # ----- Output of inverted models ----- #
+write_inverted_model_after_each_iteration_(yes=1)_(INV_MOD_OUT) = 0
 output_of_models_(INV_MODELFILE) = model/modelTest
 #
 #

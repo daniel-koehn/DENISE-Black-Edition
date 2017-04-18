@@ -38,7 +38,7 @@ extern int SWS_TAPER_FILE;
 extern float SRTRADIUS, EXP_TAPER_GRAD_HOR;
 extern int SPATFILTER, SPAT_FILT_SIZE, SPAT_FILT_1, SPAT_FILT_ITER;
 extern int INV_RHO_ITER, INV_VP_ITER, INV_VS_ITER;
-extern int MIN_ITER, RTMOD;
+extern int MIN_ITER, RTMOD, INV_MOD_OUT;
 extern char INV_MODELFILE[STRING_SIZE];
 extern float VPUPPERLIM, VPLOWERLIM, VSUPPERLIM, VSLOWERLIM, RHOUPPERLIM, RHOLOWERLIM;
 extern float npower, k_max_PML;
@@ -318,104 +318,107 @@ int  c=0, lineno=0, l;
             break;
          case 75 :
             fscanf(fp_in,"%s =%i",s,&SWS_TAPER_FILE);
-            break;                          
+            break;
 	 case 76 :
+            fscanf(fp_in,"%s =%i",s,&INV_MOD_OUT);
+            break;                          
+	 case 77 :
             fscanf(fp_in,"%s =%s",s,INV_MODELFILE);
             break;
-	 case 77 :
+	 case 78 :
             fscanf(fp_in,"%s =%f",s,&VPUPPERLIM);
             break;
-	 case 78 :
+	 case 79 :
             fscanf(fp_in,"%s =%f",s,&VPLOWERLIM);
             break; 
-	 case 79 :
+	 case 80 :
             fscanf(fp_in,"%s =%f",s,&VSUPPERLIM);
             break; 
-	 case 80 :
+	 case 81 :
             fscanf(fp_in,"%s =%f",s,&VSLOWERLIM);
             break;
-	 case 81 :
+	 case 82 :
             fscanf(fp_in,"%s =%f",s,&RHOUPPERLIM);
             break;
-	 case 82 :
+	 case 83 :
             fscanf(fp_in,"%s =%f",s,&RHOLOWERLIM);
             break;     
-	 case 83 :         
+	 case 84 :         
             fscanf(fp_in,"%s =%i",s,&GRAD_METHOD);                         
             break;
-	 case 84 :         
+	 case 85 :         
             fscanf(fp_in,"%s =%i",s,&PCG_BETA);                         
             break;
-	 case 85 :         
+	 case 86 :         
             fscanf(fp_in,"%s =%i",s,&NLBFGS);                         
             break;   
-	 case 86 :         
+	 case 87 :         
             fscanf(fp_in,"%s =%i",s,&MODEL_FILTER);                         
             break;  
-	 case 87 :         
+	 case 88 :         
             fscanf(fp_in,"%s =%i",s,&FILT_SIZE);                         
             break;  
-	 case 88 :
+	 case 89 :
 	   fscanf(fp_in,"%s =%i",s,&DTINV);                         
             break;
-	 case 89 :
+	 case 90 :
 	   fscanf(fp_in,"%s =%f",s,&EPS_SCALE);                         
             break;
-	 case 90 :
+	 case 91 :
 	   fscanf(fp_in,"%s =%i",s,&STEPMAX);                         
             break;
-	 case 91 :
+	 case 92 :
 	   fscanf(fp_in,"%s =%f",s,&SCALEFAC);                         
             break;
-	 case 92 :
+	 case 93 :
 	   fscanf(fp_in,"%s =%i",s,&TRKILL);                         
             break;
-	 case 93 :
+	 case 94 :
 	   fscanf(fp_in,"%s =%s",s,TRKILL_FILE);                         
             break;
-	 case 94 :
+	 case 95 :
 	   fscanf(fp_in,"%s =%s",s,PICKS_FILE);                         
             break;
-	 case 95 :
+	 case 96 :
 	   fscanf(fp_in,"%s =%s",s,&MISFIT_LOG_FILE);                         
             break; 
-	 case 96 :
+	 case 97 :
 	   fscanf(fp_in,"%s =%i",s,&MIN_ITER);                         
             break; 
-	 case 97 :
+	 case 98 :
 	   fscanf(fp_in,"%s =%i",s,&GRAD_FILTER);                         
             break; 
-	 case 98 :
+	 case 99 :
 	   fscanf(fp_in,"%s =%i",s,&FILT_SIZE_GRAD);                         
             break;
-         case 99 : 
+         case 100 : 
            fscanf(fp_in,"%s =%i",s,&TIMELAPSE);
             break;
-         case 100 :                      
+         case 101 :                      
            fscanf(fp_in,"%s =%s",s,DATA_DIR_T0);
             break;       
-         case 101 :
+         case 102 :
            fscanf(fp_in,"%s =%i",s,&RTMOD);
            break;
-	 case 102 :
+	 case 103 :
 	   fscanf(fp_in,"%s =%i",s,&GRAVITY);
 	    break;
-	 case 103 :
+	 case 104 :
 	   fscanf(fp_in,"%s =%i",s,&NGRAVB);
 	    break;
-	 case 104 :
+	 case 105 :
 	   fscanf(fp_in,"%s =%i",s,&NZGRAV);
 	    break;
-	 case 105 :
+	 case 106 :
 	   fscanf(fp_in,"%s =%i",s,&GRAV_TYPE);
 	    break;   
-	 case 106 :
+	 case 107 :
 	   fscanf(fp_in,"%s =%i",s,&BACK_DENSITY);
 	    break;
-	 case 107 :
+	 case 108 :
 	   fscanf(fp_in,"%s =%s",s,DFILE);
 	    break;
-	 case 108 :
+	 case 109 :
 	   fscanf(fp_in,"%s =%i",s,&RTM_SHOT);
 	    break;   
 	 default:
