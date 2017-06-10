@@ -51,7 +51,7 @@ IFLAGS=-I./../libcseife -I./../include
 .c.o:
 	$(CC) $(CFLAGS) -c $< $(IFLAGS)
 
-VPATH = snapmerge:PSV:VTI:TTI:models
+VPATH = snapmerge:PSV:VTI:TTI:AC:models
         
 SNAPMERGE_SCR = \
 	merge.c \
@@ -142,6 +142,22 @@ DENISE += alloc_matTTI.c \
 	  RTM_TTI.c \
 	  update_s_elastic_PML_TTI.c \
 	  TTI.c
+
+# add AC source files
+DENISE += ac.c \
+	  alloc_AC.c \
+	  alloc_matAC.c \
+	  checkfd_acoustic.c \
+	  dealloc_AC.c \
+	  exchange_s_AC.c \
+	  FD_AC.c \
+	  matcopy_acoustic_AC.c \
+	  physics_AC.c \
+	  readmod_AC.c \
+	  surface_acoustic_PML_AC.c \
+	  update_s_acoustic_PML_AC.c \
+	  update_v_PML_AC.c \
+	  zero_denise_acoustic_AC.c
 
 SNAPMERGE_OBJ = $(SNAPMERGE_SCR:.c=.o)
 DENISE_OBJ = $(DENISE:.c=.o)      

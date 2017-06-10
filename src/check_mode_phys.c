@@ -41,6 +41,9 @@ void check_mode_phys(){
 		case 1 :
 			printf(" PHYSICS=%d: Solve 2D elastic PSV problem.\n",PHYSICS);
 			break;
+		case 2 :
+			printf(" PHYSICS=%d: Solve 2D acoustic problem.\n",PHYSICS);
+			break;
 		case 3 :
 			printf(" PHYSICS=%d: Solve 2D elastic PSV VTI problem.\n",PHYSICS);
 			break;
