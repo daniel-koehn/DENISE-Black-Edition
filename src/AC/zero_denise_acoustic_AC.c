@@ -9,9 +9,9 @@
 
 #include "fd.h"
 
-void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx, 
-                 float ** syy, float ** vxm1, float ** vym1, float ** vxp1, float ** vyp1,
-                 float ** psi_sxx_x, float ** psi_vxx, float ** psi_syy_y, float ** psi_vyy, float ** psi_vxxs){
+void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** p, 
+                 float ** vxm1, float ** vxp1, float ** vyp1,
+                 float ** psi_p_x, float ** psi_vxx, float ** psi_p_y, float ** psi_vyy, float ** psi_vxxs){
 
 
 	register int i, j, k;
@@ -23,10 +23,8 @@ void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, fl
 			
 				vx[j][i]=0.0;
 				vy[j][i]=0.0;
-				sxx[j][i]=0.0;
-				syy[j][i]=0.0;
+				p[j][i]=0.0;
                                 vxm1[j][i]=0.0;
-				vym1[j][i]=0.0;
 				vxp1[j][i]=0.0;
 				vyp1[j][i]=0.0;
 				
@@ -36,7 +34,7 @@ void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, fl
 		for (j=1;j<=NY;j++){
 		         for (i=1;i<=2*FW;i++){
 		 
-		                psi_sxx_x[j][i] = 0.0;
+		                psi_p_x[j][i] = 0.0;
 		                psi_vxx[j][i] = 0.0;
 		                psi_vxxs[j][i] = 0.0;  
 		 
@@ -47,7 +45,7 @@ void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, fl
 		         for (i=1;i<=NX;i++){
 		                
 		                
-		                psi_syy_y[j][i] = 0.0;
+		                psi_p_y[j][i] = 0.0;
 		                psi_vyy[j][i] = 0.0;
 		                
 		         }

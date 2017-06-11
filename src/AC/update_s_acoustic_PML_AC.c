@@ -11,7 +11,7 @@
 #include "fd.h"
 
 void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
-	float **  vx, float **   vy, float **  ux, float **   uy, float **   sxx, float **   syy,
+	float **  vx, float **   vy, float **  ux, float ** p,
 	float ** pi, float ** absorb_coeff, float **rho, float *hc, int infoout,
         float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
         float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
@@ -105,11 +105,10 @@ void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
 			      /* save time derivative of forward wavefield for gradient calculation */
 			      if((mode==0)&&(GRAD_FORM==2)){
 	                        ux[j][i] = g*(vxx+vyy)/DT;
-				uy[j][i] = g*(vxx+vyy)/DT;
 			      } 			      			      
 			      	      			      				
-			      sxx[j][i] += g*(vxx+vyy);
-			      syy[j][i] += g*(vxx+vyy);
+			      p[j][i] += g*(vxx+vyy);
+
 			}
 		}
 		break;
@@ -172,11 +171,9 @@ void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
 			      /* save time derivative of forward wavefield for gradient calculation */
 			      if((mode==0)&&(GRAD_FORM==2)){
 	                        ux[j][i] = g*(vxx+vyy)/DT;
-				uy[j][i] = g*(vxx+vyy)/DT;
 			      } 
                               			      			      				
-				sxx[j][i] += g*(vxx+vyy);
-				syy[j][i] += g*(vxx+vyy);
+				p[j][i] += g*(vxx+vyy);
 
 			}
 		}
@@ -242,11 +239,9 @@ void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
 			      /* save time derivative of forward wavefield for gradient calculation */
 			      if((mode==0)&&(GRAD_FORM==2)){
 	                        ux[j][i] = g*(vxx+vyy)/DT;
-				uy[j][i] = g*(vxx+vyy)/DT;
 			      } 
 			      			      				
-				sxx[j][i] += g*(vxx+vyy);
-				syy[j][i] += g*(vxx+vyy);
+				p[j][i] += g*(vxx+vyy);
 			}
 		}
 		break;
@@ -314,11 +309,9 @@ void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
 			      /* save time derivative of forward wavefield for gradient calculation */
 			      if((mode==0)&&(GRAD_FORM==2)){
 	                        ux[j][i] = g*(vxx+vyy)/DT;
-				uy[j][i] = g*(vxx+vyy)/DT;
 			      } 
 			      			      				
-				sxx[j][i] += g*(vxx+vyy);
-				syy[j][i] += g*(vxx+vyy);
+				p[j][i] += g*(vxx+vyy);
 
    }}
 		break;
@@ -389,11 +382,9 @@ void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
 			      /* save time derivative of forward wavefield for gradient calculation */
 			      if((mode==0)&&(GRAD_FORM==2)){
 	                        ux[j][i] = g*(vxx+vyy)/DT;
-				uy[j][i] = g*(vxx+vyy)/DT;
 			      } 
 			      			      				
-				sxx[j][i] += g*(vxx+vyy);
-				syy[j][i] += g*(vxx+vyy);
+				p[j][i] += g*(vxx+vyy);
 			
 				      
 			
@@ -469,11 +460,9 @@ void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
 			      /* save time derivative of forward wavefield for gradient calculation */
 			      if((mode==0)&&(GRAD_FORM==2)){
 	                        ux[j][i] = g*(vxx+vyy)/DT;
-				uy[j][i] = g*(vxx+vyy)/DT;
 			      } 			      			      			      
 				
-				sxx[j][i] += g*(vxx+vyy);
-				syy[j][i] += g*(vxx+vyy);      
+				p[j][i] += g*(vxx+vyy);      
 				
 			}
 		}
@@ -492,8 +481,7 @@ void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
 	
 				g=pi[j][i]*DT;	
 
-				sxx[j][i] += g*(vxx+vyy)*dhi;
-				syy[j][i] += g*(vxx+vyy)*dhi;
+				p[j][i] += g*(vxx+vyy)*dhi;
 			}
 		}
 		break;

@@ -70,9 +70,9 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
                                  (*wavePSV_PML).psi_vxx,(*wavePSV_PML).psi_vyx,(*wavePSV_PML).psi_syy_y,(*wavePSV_PML).psi_sxy_y,(*wavePSV_PML).psi_vyy,(*wavePSV_PML).psi_vxy,
                                  (*wavePSV_PML).psi_vxxs,(*wavePSV).pr,(*wavePSV).pp,(*wavePSV).pq);
 	}else{*/	
-		zero_denise_acoustic_AC(-nd+1,NY+nd,-nd+1,NX+nd,(*waveAC).pvx,(*waveAC).pvy,(*waveAC).psxx,(*waveAC).psyy,
-                            (*waveAC).ux,(*waveAC).uy,(*waveAC).pvxp1, (*waveAC).pvyp1,(*waveAC_PML).psi_sxx_x,
-                            (*waveAC_PML).psi_vxx,(*waveAC_PML).psi_syy_y,(*waveAC_PML).psi_vyy,(*waveAC_PML).psi_vxxs);	
+		zero_denise_acoustic_AC(-nd+1,NY+nd,-nd+1,NX+nd,(*waveAC).pvx,(*waveAC).pvy,(*waveAC).p,
+                            (*waveAC).ux,(*waveAC).pvxp1, (*waveAC).pvyp1,(*waveAC_PML).psi_p_x,
+                            (*waveAC_PML).psi_vxx,(*waveAC_PML).psi_p_y,(*waveAC_PML).psi_vyy,(*waveAC_PML).psi_vxxs);	
 	/*} */                                                        
 	     
 	/*----------------------  loop over timesteps (forward model) ------------------*/
@@ -111,17 +111,17 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 
 	      /* update of particle velocities */
               if(mode==0 || mode==2){
-	         update_v_PML_AC(1, NX, 1, NY, nt, (*waveAC).pvx, (*waveAC).pvxp1, (*waveAC).pvxm1, (*waveAC).pvy, (*waveAC).pvyp1, (*waveAC).pvym1, (*waveAC).uttx, (*waveAC).utty, (*waveAC).psxx, (*waveAC).psyy,       
+	         update_v_PML_AC(1, NX, 1, NY, nt, (*waveAC).pvx, (*waveAC).pvxp1, (*waveAC).pvxm1, (*waveAC).pvy, (*waveAC).pvyp1, (*waveAC).pvym1, (*waveAC).uttx, (*waveAC).utty, (*waveAC).p,       
                               (*matAC).prip, (*matAC).prjp, (*acq).srcpos_loc,(*acq).signals,(*acq).signals,nsrc_loc,(*waveAC_PML).absorb_coeff,hc,infoout, 0, (*waveAC_PML).K_x, (*waveAC_PML).a_x, 
                               (*waveAC_PML).b_x, (*waveAC_PML).K_x_half, (*waveAC_PML).a_x_half, (*waveAC_PML).b_x_half, (*waveAC_PML).K_y, (*waveAC_PML).a_y, (*waveAC_PML).b_y, (*waveAC_PML).K_y_half, 
-                              (*waveAC_PML).a_y_half, (*waveAC_PML).b_y_half, (*waveAC_PML).psi_sxx_x, (*waveAC_PML).psi_syy_y);
+                              (*waveAC_PML).a_y_half, (*waveAC_PML).b_y_half, (*waveAC_PML).psi_p_x, (*waveAC_PML).psi_p_y);
               }
 
               if(mode==1){
-	         update_v_PML_AC(1, NX, 1, NY, nt, (*waveAC).pvx, (*waveAC).pvxp1, (*waveAC).pvxm1, (*waveAC).pvy, (*waveAC).pvyp1, (*waveAC).pvym1, (*waveAC).uttx, (*waveAC).utty, (*waveAC).psxx, (*waveAC).psyy, 
+	         update_v_PML_AC(1, NX, 1, NY, nt, (*waveAC).pvx, (*waveAC).pvxp1, (*waveAC).pvxm1, (*waveAC).pvy, (*waveAC).pvyp1, (*waveAC).pvym1, (*waveAC).uttx, (*waveAC).utty, (*waveAC).p, 
                               (*matAC).prip, (*matAC).prjp, (*acq).srcpos_loc_back, (*seisPSVfwi).sectionvxdiff, (*seisPSVfwi).sectionvydiff,ntr,(*waveAC_PML).absorb_coeff,hc,infoout, 1, (*waveAC_PML).K_x,
  	                      (*waveAC_PML).a_x, (*waveAC_PML).b_x, (*waveAC_PML).K_x_half, (*waveAC_PML).a_x_half, (*waveAC_PML).b_x_half, (*waveAC_PML).K_y, (*waveAC_PML).a_y, (*waveAC_PML).b_y, (*waveAC_PML).K_y_half, 
-                              (*waveAC_PML).a_y_half, (*waveAC_PML).b_y_half, (*waveAC_PML).psi_sxx_x, (*waveAC_PML).psi_syy_y);
+                              (*waveAC_PML).a_y_half, (*waveAC_PML).b_y_half, (*waveAC_PML).psi_p_x, (*waveAC_PML).psi_p_y);
               }
 		                 
 		/*if (MYID==0){
@@ -131,7 +131,7 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 		}*/
 		                                           
 		/* exchange of particle velocities between PEs */
-		exchange_v_PSV((*waveAC).pvx,(*waveAC).pvy, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
+		exchange_v_AC((*waveAC).pvx,(*waveAC).pvy, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
 		                                                       
 		/*if (MYID==0){
 		  time5=MPI_Wtime();
@@ -147,7 +147,7 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
                                   (*wavePSV_PML).psi_vyy, (*wavePSV_PML).psi_vxy, (*wavePSV_PML).psi_vyx, mode);
 	    else*/
 
-	   	update_s_acoustic_PML_AC(1, NX, 1, NY, (*waveAC).pvx, (*waveAC).pvy, (*waveAC).ux, (*waveAC).uy, (*waveAC).psxx, (*waveAC).psyy, (*matAC).ppi, 
+	   	update_s_acoustic_PML_AC(1, NX, 1, NY, (*waveAC).pvx, (*waveAC).pvy, (*waveAC).ux, (*waveAC).p, (*matAC).ppi, 
                                      (*waveAC_PML).absorb_coeff, (*matAC).prho, hc, infoout, (*waveAC_PML).K_x, (*waveAC_PML).a_x, (*waveAC_PML).b_x, (*waveAC_PML).K_x_half, (*waveAC_PML).a_x_half, 
                                      (*waveAC_PML).b_x_half, (*waveAC_PML).K_y, (*waveAC_PML).a_y, (*waveAC_PML).b_y, (*waveAC_PML).K_y_half, (*waveAC_PML).a_y_half, (*waveAC_PML).b_y_half, (*waveAC_PML).psi_vxx,  
                                      (*waveAC_PML).psi_vyy, mode);  
@@ -157,7 +157,7 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 	   if (QUELLTYP==1){
 	   
 	       if(mode==0 || mode==2){
-	         psource(nt,(*waveAC).psxx,(*waveAC).psyy,(*acq).srcpos_loc,(*acq).signals,nsrc_loc,0);
+	         psource_AC(nt,(*waveAC).p,(*acq).srcpos_loc,(*acq).signals,nsrc_loc,0);
 	       }
 	       
            }
@@ -165,7 +165,7 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 	   
 	   /* adjoint explosive source */
            if((QUELLTYPB>=4)&&(mode==1)){ 	
-	       psource(nt,(*waveAC).psxx,(*waveAC).psyy,(*acq).srcpos_loc_back,(*seisPSVfwi).sectionpdiff,nsrc_loc,1);
+	       psource_AC(nt,(*waveAC).p,(*acq).srcpos_loc_back,(*seisPSVfwi).sectionpdiff,nsrc_loc,1);
            }
  	 
 	   if ((FREE_SURF) && (POS[2]==0)){
@@ -174,8 +174,8 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 					    (*matPSV).pu, (*matPSV).prho, (*matPSV).ptaup, (*matPSV).ptaus, (*matPSV).etajm, (*matPSV).peta, hc, (*wavePSV_PML).K_x, (*wavePSV_PML).a_x, 
 					    (*wavePSV_PML).b_x, (*wavePSV_PML).psi_vxxs);
 		else */     /* acoustic */
-	   		surface_acoustic_PML_AC(1, (*waveAC).pvx, (*waveAC).pvy, (*waveAC).psxx, (*waveAC).psyy, (*matAC).ppi, (*matAC).prho, hc, 
-					       (*waveAC_PML).K_x, (*waveAC_PML).a_x, (*waveAC_PML).b_x, (*waveAC_PML).psi_vxxs);
+	   		
+                surface_acoustic_PML_AC(1, (*waveAC).p);
 	   }
 
 	   /*if (MYID==0){
@@ -186,10 +186,7 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 
 
 	   /* stress exchange between PEs */
-	    exchange_s_AC((*waveAC).psxx,(*waveAC).psyy, 
-	      (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, 
-	      (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top,
-	      req_send, req_rec);
+	   exchange_p_AC((*waveAC).p, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
 
 	   /*if (MYID==0){
 	      time7=MPI_Wtime();
@@ -199,16 +196,16 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 
 		/* store amplitudes at receivers in section-arrays */
 		if (SEISMO && (mode==0 || mode==2)){
-			seismo_ssg(nt, ntr, (*acq).recpos_loc, (*seisPSV).sectionvx, (*seisPSV).sectionvy, 
+			seismo_AC(nt, ntr, (*acq).recpos_loc, (*seisPSV).sectionvx, (*seisPSV).sectionvy, 
 				(*seisPSV).sectionp, (*seisPSV).sectioncurl, (*seisPSV).sectiondiv, 
-				(*waveAC).pvx, (*waveAC).pvy, (*waveAC).psxx, (*waveAC).psyy, (*matAC).ppi, (*matAC).ppi, (*matAC).prho, hc);
+				(*waveAC).pvx, (*waveAC).pvy, (*waveAC).p, (*matAC).ppi, (*matAC).ppi, (*matAC).prho, hc);
 			/*lsamp+=NDT;*/
 		}
 
 	   /* WRITE SNAPSHOTS TO DISK */
 	   if ((SNAP) && (nt==lsnap) && (nt<=iround(TSNAP2/DT))){
 
-	      snap(FP,nt,++nsnap,(*waveAC).pvx,(*waveAC).pvy,(*waveAC).psxx,(*waveAC).psyy,(*matAC).ppi,(*matAC).ppi,hc);
+	      snap_AC(FP,nt,++nsnap,(*waveAC).pvx,(*waveAC).pvy,(*waveAC).p,(*matAC).ppi,(*matAC).ppi,hc);
 
 	      lsnap=lsnap+iround(TSNAPINC/DT);
 	   }
@@ -238,8 +235,7 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 		    
 			/* gradients with data integration */
 		        if(GRAD_FORM==1){
-			   (*fwiPSV).forward_prop_x[imat]=(*waveAC).psxx[j][i];
-			   (*fwiPSV).forward_prop_y[imat]=(*waveAC).psyy[j][i];
+			   (*fwiPSV).forward_prop_x[imat]=(*waveAC).p[j][i];
 		        }		    
 		    
 			imat++;

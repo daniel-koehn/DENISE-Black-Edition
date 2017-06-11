@@ -122,7 +122,7 @@ struct matAC{
 /* AC (visco)-acoustic wavefield variables */
 struct waveAC{
    float  ** pvx, ** pvy, **  pvxp1, **  pvyp1, **  pvxm1, **  pvym1;
-   float  ** psxx, **  psyy, ** ux, ** uy, ** uxy, ** uyx, ** uttx, ** utty;
+   float  ** p, ** ux, ** uy, ** uxy, ** uyx, ** uttx, ** utty;
    float *** pr, ***pp, ***pq;
 } waveAC; 
 
@@ -130,7 +130,7 @@ struct waveAC{
 struct waveAC_PML{
    float * d_x, * K_x, * alpha_prime_x, * a_x, * b_x, * d_x_half, * K_x_half, * alpha_prime_x_half; 
    float * a_x_half, * b_x_half, * d_y, * K_y, * alpha_prime_y, * a_y, * b_y, * d_y_half, * K_y_half; 
-   float * alpha_prime_y_half, * a_y_half, * b_y_half, ** psi_sxx_x, ** psi_syy_y; 
+   float * alpha_prime_y_half, * a_y_half, * b_y_half, ** psi_p_x, ** psi_p_y; 
    float ** psi_vxx, ** psi_vyy, ** psi_vxxs;
    float  **  absorb_coeff;
 } waveAC_PML;
@@ -377,9 +377,10 @@ void checkfd_acoustic(FILE *fp, float ** prho, float ** ppi, float *hc);
 
 void dealloc_AC(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML);
 
-void exchange_s_AC(float ** sxx, float ** syy, 
-	float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
-	float ** buffertop_to_bot, float ** bufferbot_to_top,
+void exchange_p_AC(float ** p, float ** bufferlef_to_rig, float ** bufferrig_to_lef, float ** buffertop_to_bot, float ** bufferbot_to_top, 
+                   MPI_Request * req_send, MPI_Request * req_rec);
+
+void exchange_v_AC(float ** vx, float ** vy, float ** bufferlef_to_rig, float ** bufferrig_to_lef, float ** buffertop_to_bot, float ** bufferbot_to_top,
 	MPI_Request * req_send, MPI_Request * req_rec);
 
 void FD_AC();
@@ -388,28 +389,35 @@ void matcopy_acoustic_AC(float ** rho, float ** pi);
 
 void physics_AC();
 
+void psource_AC(int nt, float ** p, float **  srcpos_loc, float ** signals, int nsrc, int sw);
+
 void readmod_AC(float  **  rho, float **  pi);
 
-void surface_acoustic_PML_AC(int ndepth, float ** vx, float ** vy, float ** sxx, float ** syy,
-float  **  pi, float ** rho, float * hc, float * K_x, float * a_x, float * b_x, float ** psi_vxx);
+void seismo_AC(int lsamp, int ntr, int **recpos, float **sectionvx, 
+float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
+float **vx, float **vy, float **p, float **pi, float **u, float **rho, float *hc);
+
+void snap_AC(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **p, float **u, float **pi, float *hc);
+
+void surface_acoustic_PML_AC(int ndepth, float ** p);
 
 void update_s_acoustic_PML_AC(int nx1, int nx2, int ny1, int ny2,
-	float **  vx, float **   vy, float **  ux, float **   uy, float **   sxx, float **   syy,
+	float **  vx, float **   vy, float **  ux, float ** p,
 	float ** pi, float ** absorb_coeff, float **rho, float *hc, int infoout,
         float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
         float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
         float ** psi_vxx, float ** psi_vyy, int mode);
 
 void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
-	float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty,float ** sxx, float ** syy,
+	float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty, float ** p,
 	float  **rip, float **rjp, float **  srcpos_loc, float ** signals, float ** signals1, int nsrc, float ** absorb_coeff,
 	float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
         float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-        float ** psi_sxx_x, float ** psi_syy_y);
+        float ** psi_p_x, float ** psi_p_y);
 
-void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** sxx, 
-                             float ** syy, float ** vxm1, float ** vym1, float ** vxp1, float ** vyp1,
-                             float ** psi_sxx_x, float ** psi_vxx, float ** psi_syy_y, float ** psi_vyy, 
+void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, float ** vy, float ** p, 
+                             float ** vxm1, float ** vxp1, float ** vyp1,
+                             float ** psi_p_x, float ** psi_vxx, float ** psi_p_y, float ** psi_vyy, 
                              float ** psi_vxxs);
 
 /* ----------------- */

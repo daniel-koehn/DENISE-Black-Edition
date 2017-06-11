@@ -12,16 +12,16 @@
 
 
 void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
-	float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty,float ** sxx, float ** syy,
+	float **  vx, float **  vxp1, float **  vxm1, float ** vy, float **  vyp1, float **  vym1, float **  uttx, float **  utty,float ** p,
 	float  **rip, float **rjp, float **  srcpos_loc, float ** signals, float ** signals1, int nsrc, float ** absorb_coeff,
 	float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
         float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-        float ** psi_sxx_x, float ** psi_syy_y){
+        float ** psi_p_x, float ** psi_p_y){
 
 	int i, j,l,fdoh,m, h, h1;
 	float amp, dtdh, azi_rad;
 	float vxtmp, vytmp;
-        float sxx_x, syy_y;
+        float p_x, p_y;
 	
 	extern float DT, DH, ANGLE;
 	double time1, time2;
@@ -55,15 +55,15 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 		for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
 
-                           sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i]);
-                           syy_y = hc[1]*(syy[j+1][i]-syy[j][i]);
+                           p_x =  hc[1]*(p[j][i+1]-p[j][i]);
+                           p_y = hc[1]*(p[j+1][i]-p[j][i]);
                           
 
 	/* left boundary */                                         
         if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
 			         
-                           psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];
+                           psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];
 
               
          }
@@ -74,11 +74,11 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            h1 = (i-nx2+2*FW);
                             h=i; 
                                 
-                           /*psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];*/
+                           /*psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];*/
                            
-                           psi_sxx_x[j][h1] = b_x_half[h1] * psi_sxx_x[j][h1] + a_x_half[h1] * sxx_x;                                                
-			   sxx_x = sxx_x / K_x_half[h1] + psi_sxx_x[j][h1];
+                           psi_p_x[j][h1] = b_x_half[h1] * psi_p_x[j][h1] + a_x_half[h1] * p_x;                                                
+			   p_x = p_x / K_x_half[h1] + psi_p_x[j][h1];
 
          }
 
@@ -86,8 +86,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 	  /* top boundary */                                         
         if((POS[2]==0) && (!(FREE_SURF)) && (j<=FW)){
 					   
-		           psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i]; 
+		           psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i]; 
                          
          }
 		
@@ -98,19 +98,19 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            h1 = (j-ny2+2*FW);
 		            h = j;
 		            			   
-       		           /*psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i];*/
+       		           /*psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i];*/
                            
-                           psi_syy_y[h1][i] = b_y_half[h1] * psi_syy_y[h1][i] + a_y_half[h1] * syy_y;                                                
-			   syy_y = syy_y / K_y_half[h1] + psi_syy_y[h1][i];                           
+                           psi_p_y[h1][i] = b_y_half[h1] * psi_p_y[h1][i] + a_y_half[h1] * p_y;                                                
+			   p_y = p_y / K_y_half[h1] + psi_p_y[h1][i];                           
 
         }                       
                            
                            if(GRAD_FORM==1){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*(sxx_x)/DH;                  
-                                 vyp1[j][i] = rjp[j][i]*(syy_y)/DH;}   
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;                  
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
 
                               if(sw==1){
                                  vxp1[j][i] += DT*vx[j][i];
@@ -121,8 +121,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            if(GRAD_FORM==2){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*(sxx_x)/DH;    
-                                 vyp1[j][i] = rjp[j][i]*(syy_y)/DH;}   
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;    
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
 
                               if(sw==1){
                                  vxp1[j][i] = vx[j][i]; 
@@ -130,8 +130,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
                            
-                           vx[j][i] += DT*rip[j][i]*(sxx_x)/DH;
-		           vy[j][i] += DT*rjp[j][i]*(syy_y)/DH; 		         
+                           vx[j][i] += DT*rip[j][i]*p_x/DH;
+		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 		         
       
      }
 }
@@ -141,18 +141,18 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 		for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
 
-                           sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i])
-					    + hc[2]*(sxx[j][i+2]-sxx[j][i-1]);  
+                           p_x =  hc[1]*(p[j][i+1]-p[j][i])
+					    + hc[2]*(p[j][i+2]-p[j][i-1]);  
 
-                           syy_y = hc[1]*(syy[j+1][i]-syy[j][i])
-					    + hc[2]*(syy[j+2][i]-syy[j-1][i]);
+                           p_y = hc[1]*(p[j+1][i]-p[j][i])
+					    + hc[2]*(p[j+2][i]-p[j-1][i]);
                           
 
 	/* left boundary */                                         
         if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
 			         
-                           psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];
+                           psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];
               
          }
 
@@ -162,11 +162,11 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            h1 = (i-nx2+2*FW);
                             h=i; 
                                 
-                           /*psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];*/
+                           /*psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];*/
                            
-                           psi_sxx_x[j][h1] = b_x_half[h1] * psi_sxx_x[j][h1] + a_x_half[h1] * sxx_x;                                                
-			   sxx_x = sxx_x / K_x_half[h1] + psi_sxx_x[j][h1];
+                           psi_p_x[j][h1] = b_x_half[h1] * psi_p_x[j][h1] + a_x_half[h1] * p_x;                                                
+			   p_x = p_x / K_x_half[h1] + psi_p_x[j][h1];
 
          }
 
@@ -174,8 +174,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 	  /* top boundary */                                         
         if((POS[2]==0) && (!(FREE_SURF)) && (j<=FW)){
 					   
-		           psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i]; 
+		           psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i]; 
                          
          }
 		
@@ -186,11 +186,11 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            h1 = (j-ny2+2*FW);
 		            h = j;
 		            			   
-       		           /*psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i];*/
+       		           /*psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i];*/
                            
-                           psi_syy_y[h1][i] = b_y_half[h1] * psi_syy_y[h1][i] + a_y_half[h1] * syy_y;                                                
-			   syy_y = syy_y / K_y_half[h1] + psi_syy_y[h1][i];
+                           psi_p_y[h1][i] = b_y_half[h1] * psi_p_y[h1][i] + a_y_half[h1] * p_y;                                                
+			   p_y = p_y / K_y_half[h1] + psi_p_y[h1][i];
                             
 
         }                       
@@ -198,8 +198,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            if(GRAD_FORM==1){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;                  
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}   
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;                  
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
 
                               if(sw==1){
                                  vxp1[j][i] += DT*vx[j][i];
@@ -210,8 +210,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            if(GRAD_FORM==2){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;    
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}   
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;    
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
 
                               if(sw==1){
                                  vxp1[j][i] = vx[j][i]; 
@@ -219,8 +219,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
                            
-                           vx[j][i] += DT*rip[j][i]*sxx_x/DH;
-		           vy[j][i] += DT*rjp[j][i]*syy_y/DH; 		         
+                           vx[j][i] += DT*rip[j][i]*p_x/DH;
+		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 		         
       
      }
 }
@@ -231,20 +231,20 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 		for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
 
-                           sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i])
-					    + hc[2]*(sxx[j][i+2]-sxx[j][i-1])
-					    + hc[3]*(sxx[j][i+3]-sxx[j][i-2]);
+                           p_x =  hc[1]*(p[j][i+1]-p[j][i])
+					    + hc[2]*(p[j][i+2]-p[j][i-1])
+					    + hc[3]*(p[j][i+3]-p[j][i-2]);
 
-                           syy_y = hc[1]*(syy[j+1][i]-syy[j][i])
-					    + hc[2]*(syy[j+2][i]-syy[j-1][i])
-					    + hc[3]*(syy[j+3][i]-syy[j-2][i]);
+                           p_y = hc[1]*(p[j+1][i]-p[j][i])
+					    + hc[2]*(p[j+2][i]-p[j-1][i])
+					    + hc[3]*(p[j+3][i]-p[j-2][i]);
                           
 
 	/* left boundary */                                         
         if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
 			         
-                           psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];
+                           psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];
               
          }
 
@@ -254,11 +254,11 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            h1 = (i-nx2+2*FW);
                             h=i; 
                                 
-                           /*psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];*/
+                           /*psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];*/
                            
-                           psi_sxx_x[j][h1] = b_x_half[h1] * psi_sxx_x[j][h1] + a_x_half[h1] * sxx_x;                                                
-			   sxx_x = sxx_x / K_x_half[h1] + psi_sxx_x[j][h1];
+                           psi_p_x[j][h1] = b_x_half[h1] * psi_p_x[j][h1] + a_x_half[h1] * p_x;                                                
+			   p_x = p_x / K_x_half[h1] + psi_p_x[j][h1];
 
          }
 
@@ -266,8 +266,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 	  /* top boundary */                                         
         if((POS[2]==0) && (!(FREE_SURF)) && (j<=FW)){
 					   
-		           psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i]; 
+		           psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i]; 
                          
          }
 		
@@ -278,19 +278,19 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            h1 = (j-ny2+2*FW);
 		            h = j;
 		            			   
-       		           /*psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i];*/
+       		           /*psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i];*/
                            
-                           psi_syy_y[h1][i] = b_y_half[h1] * psi_syy_y[h1][i] + a_y_half[h1] * syy_y;                                                
-			   syy_y = syy_y / K_y_half[h1] + psi_syy_y[h1][i];                           
+                           psi_p_y[h1][i] = b_y_half[h1] * psi_p_y[h1][i] + a_y_half[h1] * p_y;                                                
+			   p_y = p_y / K_y_half[h1] + psi_p_y[h1][i];                           
 
         }                       
                            
                            if(GRAD_FORM==1){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;                  
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}   
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;                  
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
 
                               if(sw==1){
                                  vxp1[j][i] += DT*vx[j][i];
@@ -301,8 +301,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
                            if(GRAD_FORM==2){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;    
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}   
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;    
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
 
                               if(sw==1){
                                  vxp1[j][i] = vx[j][i]; 
@@ -310,8 +310,8 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            }
                            
-                           vx[j][i] += DT*rip[j][i]*sxx_x/DH;
-		           vy[j][i] += DT*rjp[j][i]*syy_y/DH; 		         
+                           vx[j][i] += DT*rip[j][i]*p_x/DH;
+		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 		         
       
      }
 }
@@ -324,22 +324,22 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 for (j=ny1;j<=ny2;j++){
 	for (i=nx1;i<=nx2;i++){
 
-                           sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i])
-					    + hc[2]*(sxx[j][i+2]-sxx[j][i-1])
-					    + hc[3]*(sxx[j][i+3]-sxx[j][i-2])
-					    + hc[4]*(sxx[j][i+4]-sxx[j][i-3]);
+                           p_x =  hc[1]*(p[j][i+1]-p[j][i])
+					    + hc[2]*(p[j][i+2]-p[j][i-1])
+					    + hc[3]*(p[j][i+3]-p[j][i-2])
+					    + hc[4]*(p[j][i+4]-p[j][i-3]);
 
-                           syy_y = hc[1]*(syy[j+1][i]-syy[j][i])
-					    + hc[2]*(syy[j+2][i]-syy[j-1][i])
-					    + hc[3]*(syy[j+3][i]-syy[j-2][i])
-					    + hc[4]*(syy[j+4][i]-syy[j-3][i]);
+                           p_y = hc[1]*(p[j+1][i]-p[j][i])
+					    + hc[2]*(p[j+2][i]-p[j-1][i])
+					    + hc[3]*(p[j+3][i]-p[j-2][i])
+					    + hc[4]*(p[j+4][i]-p[j-3][i]);
                           
 
 	/* left boundary */                                         
         if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
 			         
-                           psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];
+                           psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];
               
          }
 
@@ -349,11 +349,11 @@ for (j=ny1;j<=ny2;j++){
                            h1 = (i-nx2+2*FW);
                             h=i; 
                                 
-                           /*psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];*/
+                           /*psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];*/
                            
-                           psi_sxx_x[j][h1] = b_x_half[h1] * psi_sxx_x[j][h1] + a_x_half[h1] * sxx_x;                                                
-			   sxx_x = sxx_x / K_x_half[h1] + psi_sxx_x[j][h1];
+                           psi_p_x[j][h1] = b_x_half[h1] * psi_p_x[j][h1] + a_x_half[h1] * p_x;                                                
+			   p_x = p_x / K_x_half[h1] + psi_p_x[j][h1];
 
          }
 
@@ -361,8 +361,8 @@ for (j=ny1;j<=ny2;j++){
 	  /* top boundary */                                         
         if((POS[2]==0) && (!(FREE_SURF)) && (j<=FW)){
 					   
-		           psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i]; 
+		           psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i]; 
                         
          }
 		
@@ -373,19 +373,19 @@ for (j=ny1;j<=ny2;j++){
                            h1 = (j-ny2+2*FW);
 		            h = j;
 		            			   
-       		           /*psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i];*/
+       		           /*psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i];*/
                            
-                           psi_syy_y[h1][i] = b_y_half[h1] * psi_syy_y[h1][i] + a_y_half[h1] * syy_y;                                                
-			   syy_y = syy_y / K_y_half[h1] + psi_syy_y[h1][i];
+                           psi_p_y[h1][i] = b_y_half[h1] * psi_p_y[h1][i] + a_y_half[h1] * p_y;                                                
+			   p_y = p_y / K_y_half[h1] + psi_p_y[h1][i];
                            
 
         }                       
                            if(GRAD_FORM==1){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;                 
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}                 
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;                 
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}                 
 
                               if(sw==1){ 
                                  vxp1[j][i] += DT*vx[j][i];
@@ -396,8 +396,8 @@ for (j=ny1;j<=ny2;j++){
                            if(GRAD_FORM==2){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}
                            
                               if(sw==1){
 			         vxp1[j][i] = vx[j][i];
@@ -405,8 +405,8 @@ for (j=ny1;j<=ny2;j++){
 
                            }
 
-                           vx[j][i] += DT*rip[j][i]*sxx_x/DH;
-		           vy[j][i] += DT*rjp[j][i]*syy_y/DH; 		         
+                           vx[j][i] += DT*rip[j][i]*p_x/DH;
+		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 		         
       
      }
 }
@@ -419,24 +419,24 @@ for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
 				
 
-			   sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i])
-					    + hc[2]*(sxx[j][i+2]-sxx[j][i-1])
-					    + hc[3]*(sxx[j][i+3]-sxx[j][i-2])
-					    + hc[4]*(sxx[j][i+4]-sxx[j][i-3])
-					    + hc[5]*(sxx[j][i+5]-sxx[j][i-4]);
+			   p_x =  hc[1]*(p[j][i+1]-p[j][i])
+					    + hc[2]*(p[j][i+2]-p[j][i-1])
+					    + hc[3]*(p[j][i+3]-p[j][i-2])
+					    + hc[4]*(p[j][i+4]-p[j][i-3])
+					    + hc[5]*(p[j][i+5]-p[j][i-4]);
 
-                           syy_y = hc[1]*(syy[j+1][i]-syy[j][i])
-					    + hc[2]*(syy[j+2][i]-syy[j-1][i])
-					    + hc[3]*(syy[j+3][i]-syy[j-2][i])
-					    + hc[4]*(syy[j+4][i]-syy[j-3][i])
-					    + hc[5]*(syy[j+5][i]-syy[j-4][i]);
+                           p_y = hc[1]*(p[j+1][i]-p[j][i])
+					    + hc[2]*(p[j+2][i]-p[j-1][i])
+					    + hc[3]*(p[j+3][i]-p[j-2][i])
+					    + hc[4]*(p[j+4][i]-p[j-3][i])
+					    + hc[5]*(p[j+5][i]-p[j-4][i]);
                           
 
 	/* left boundary */                                         
         if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
 			         
-                           psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];
+                           psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];
 
               
          }
@@ -447,11 +447,11 @@ for (j=ny1;j<=ny2;j++){
                            h1 = (i-nx2+2*FW);
                             h=i; 
                                 
-                           /*psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];*/
+                           /*psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];*/
                            
-                           psi_sxx_x[j][h1] = b_x_half[h1] * psi_sxx_x[j][h1] + a_x_half[h1] * sxx_x;                                                
-			   sxx_x = sxx_x / K_x_half[h1] + psi_sxx_x[j][h1];
+                           psi_p_x[j][h1] = b_x_half[h1] * psi_p_x[j][h1] + a_x_half[h1] * p_x;                                                
+			   p_x = p_x / K_x_half[h1] + psi_p_x[j][h1];
 
          }
 
@@ -459,8 +459,8 @@ for (j=ny1;j<=ny2;j++){
 	  /* top boundary */                                         
         if((POS[2]==0) && (!(FREE_SURF)) && (j<=FW)){
 					   
-		           psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i]; 
+		           psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i]; 
                          
          }
 		
@@ -471,19 +471,19 @@ for (j=ny1;j<=ny2;j++){
                            h1 = (j-ny2+2*FW);
 		            h = j;
 		            			   
-       		           /*psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i];*/
+       		           /*psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i];*/
                            
-                           psi_syy_y[h1][i] = b_y_half[h1] * psi_syy_y[h1][i] + a_y_half[h1] * syy_y;                                                
-			   syy_y = syy_y / K_y_half[h1] + psi_syy_y[h1][i];                           
+                           psi_p_y[h1][i] = b_y_half[h1] * psi_p_y[h1][i] + a_y_half[h1] * p_y;                                                
+			   p_y = p_y / K_y_half[h1] + psi_p_y[h1][i];                           
 
         }                       
 
                            if(GRAD_FORM==1){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;                 
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}                 
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;                 
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}                 
 
                               if(sw==1){ 
                                  vxp1[j][i] += DT*vx[j][i];
@@ -494,8 +494,8 @@ for (j=ny1;j<=ny2;j++){
                            if(GRAD_FORM==2){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}
                            
                               if(sw==1){
 			         vxp1[j][i] = vx[j][i];
@@ -503,8 +503,8 @@ for (j=ny1;j<=ny2;j++){
 
                            }
 
-                           vx[j][i] += DT*rip[j][i]*sxx_x/DH;
-		           vy[j][i] += DT*rjp[j][i]*syy_y/DH; 
+                           vx[j][i] += DT*rip[j][i]*p_x/DH;
+		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 
 				
 			}
 		}
@@ -514,26 +514,26 @@ for (j=ny1;j<=ny2;j++){
 		for (j=ny1;j<=ny2;j++){
 			for (i=nx1;i<=nx2;i++){
 			
-			   sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i])
-					    + hc[2]*(sxx[j][i+2]-sxx[j][i-1])
-					    + hc[3]*(sxx[j][i+3]-sxx[j][i-2])
-					    + hc[4]*(sxx[j][i+4]-sxx[j][i-3])
-					    + hc[5]*(sxx[j][i+5]-sxx[j][i-4])
-					    + hc[6]*(sxx[j][i+6]-sxx[j][i-5]);
+			   p_x =  hc[1]*(p[j][i+1]-p[j][i])
+					    + hc[2]*(p[j][i+2]-p[j][i-1])
+					    + hc[3]*(p[j][i+3]-p[j][i-2])
+					    + hc[4]*(p[j][i+4]-p[j][i-3])
+					    + hc[5]*(p[j][i+5]-p[j][i-4])
+					    + hc[6]*(p[j][i+6]-p[j][i-5]);
 
-                           syy_y = hc[1]*(syy[j+1][i]-syy[j][i])
-					    + hc[2]*(syy[j+2][i]-syy[j-1][i])
-					    + hc[3]*(syy[j+3][i]-syy[j-2][i])
-					    + hc[4]*(syy[j+4][i]-syy[j-3][i])
-					    + hc[5]*(syy[j+5][i]-syy[j-4][i])
-					    + hc[6]*(syy[j+6][i]-syy[j-5][i]);
+                           p_y = hc[1]*(p[j+1][i]-p[j][i])
+					    + hc[2]*(p[j+2][i]-p[j-1][i])
+					    + hc[3]*(p[j+3][i]-p[j-2][i])
+					    + hc[4]*(p[j+4][i]-p[j-3][i])
+					    + hc[5]*(p[j+5][i]-p[j-4][i])
+					    + hc[6]*(p[j+6][i]-p[j-5][i]);
                           
 
 	/* left boundary */                                         
         if((!BOUNDARY) && (POS[1]==0) && (i<=FW)){
 			         
-                           psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];
+                           psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];
               
          }
 
@@ -543,11 +543,11 @@ for (j=ny1;j<=ny2;j++){
                            h1 = (i-nx2+2*FW);
                             h=i; 
                                 
-                           /*psi_sxx_x[j][i] = b_x_half[i] * psi_sxx_x[j][i] + a_x_half[i] * sxx_x;                                                
-                           sxx_x = sxx_x / K_x_half[i] + psi_sxx_x[j][i];*/
+                           /*psi_p_x[j][i] = b_x_half[i] * psi_p_x[j][i] + a_x_half[i] * p_x;                                                
+                           p_x = p_x / K_x_half[i] + psi_p_x[j][i];*/
                            
-                           psi_sxx_x[j][h1] = b_x_half[h1] * psi_sxx_x[j][h1] + a_x_half[h1] * sxx_x;                                                
-			   sxx_x = sxx_x / K_x_half[h1] + psi_sxx_x[j][h1];
+                           psi_p_x[j][h1] = b_x_half[h1] * psi_p_x[j][h1] + a_x_half[h1] * p_x;                                                
+			   p_x = p_x / K_x_half[h1] + psi_p_x[j][h1];
 
          }
 
@@ -555,8 +555,8 @@ for (j=ny1;j<=ny2;j++){
 	  /* top boundary */                                         
         if((POS[2]==0) && (!(FREE_SURF)) && (j<=FW)){
 					   
-		           psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i]; 
+		           psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i]; 
                          
          }
 		
@@ -567,18 +567,18 @@ for (j=ny1;j<=ny2;j++){
                            h1 = (j-ny2+2*FW);
 		            h = j;
 		            			   
-       		           /*psi_syy_y[j][i] = b_y_half[j] * psi_syy_y[j][i] + a_y_half[j] * syy_y;                                                
-                           syy_y = syy_y / K_y_half[j] + psi_syy_y[j][i];*/
+       		           /*psi_p_y[j][i] = b_y_half[j] * psi_p_y[j][i] + a_y_half[j] * p_y;                                                
+                           p_y = p_y / K_y_half[j] + psi_p_y[j][i];*/
                            
-                           psi_syy_y[h1][i] = b_y_half[h1] * psi_syy_y[h1][i] + a_y_half[h1] * syy_y;                                                
-			   syy_y = syy_y / K_y_half[h1] + psi_syy_y[h1][i];                           
+                           psi_p_y[h1][i] = b_y_half[h1] * psi_p_y[h1][i] + a_y_half[h1] * p_y;                                                
+			   p_y = p_y / K_y_half[h1] + psi_p_y[h1][i];                           
 
         }                       
                            if(GRAD_FORM==1){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;                 
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}                 
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;                 
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}                 
 
                               if(sw==1){ 
                                  vxp1[j][i] += DT*vx[j][i];
@@ -589,8 +589,8 @@ for (j=ny1;j<=ny2;j++){
                            if(GRAD_FORM==2){
 
                               if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*sxx_x/DH;
-                                 vyp1[j][i] = rjp[j][i]*syy_y/DH;}
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}
                            
                               if(sw==1){
 			         vxp1[j][i] = vx[j][i];
@@ -598,8 +598,8 @@ for (j=ny1;j<=ny2;j++){
 
                            }
 
-                           vx[j][i] += DT*rip[j][i]*sxx_x/DH;
-		           vy[j][i] += DT*rjp[j][i]*syy_y/DH; 
+                           vx[j][i] += DT*rip[j][i]*p_x/DH;
+		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 
 			
 			
 			}
@@ -612,8 +612,8 @@ for (j=ny1;j<=ny2;j++){
 				vxtmp = 0;
 				vytmp = 0;
 				for (m=1; m<=fdoh; m++) {
-					vxtmp +=   hc[m]*( sxx[j][i+m]   - sxx[j][i-m+1] );							
-					vytmp +=   hc[m]*( syy[j+m][i]   - syy[j-m+1][i] );
+					vxtmp +=   hc[m]*( p[j][i+m]   - p[j][i-m+1] );							
+					vytmp +=   hc[m]*( p[j+m][i]   - p[j-m+1][i] );
 				}
 					
 				vx[j][i] += vxtmp*dtdh*rip[j][i];
@@ -655,18 +655,7 @@ for (j=ny1;j<=ny2;j++){
                     }
 
 		}}                         
-			
-	
-	/*if (FW>0.0)
-	for (j=ny1;j<=ny2;j++){
-		for (i=nx1;i<=nx2;i++){
-			vx[j][i]*=absorb_coeff[j][i];
-			vy[j][i]*=absorb_coeff[j][i];
-			sxy[j][i]*=absorb_coeff[j][i];
-			sxx[j][i]*=absorb_coeff[j][i];
-			syy[j][i]*=absorb_coeff[j][i];
-		
-	}}*/
+				
 
 	if (infoout && (MYID==0)){
 		time2=MPI_Wtime();

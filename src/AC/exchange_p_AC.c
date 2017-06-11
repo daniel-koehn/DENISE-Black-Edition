@@ -2,14 +2,13 @@
  *   write values of dynamic field variables at the edges of the
  *   local grid into buffer arrays and  exchanged between
  *   processes.
- *   last update 10.06.2017, D. Koehn
+ *   last update 24.07.2016, D. Koehn
  *
  *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void exchange_s_AC(float ** sxx, float ** syy, 
-	float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
+void exchange_p_AC(float ** p, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
 	float ** buffertop_to_bot, float ** bufferbot_to_top,
 	MPI_Request * req_send, MPI_Request * req_rec){
 
@@ -29,25 +28,21 @@ void exchange_s_AC(float ** sxx, float ** syy,
 	
 	if (POS[2]!=0)	/* no boundary exchange at top of global grid */
 	for (i=1;i<=NX;i++){
-
 		/* storage of top of local volume into buffer */
 		n = 1;
-		for (l=1;l<=fdo-1;l++) {
-			buffertop_to_bot[i][n++]  = syy[l][i];
+		for (l=1;l<=fdo;l++) {
+			buffertop_to_bot[i][n++]  = p[l][i];
 		}
-
 	}
 
 
 	if (POS[2]!=NPROCY-1)	/* no boundary exchange at bottom of global grid */
-	for (i=1;i<=NX;i++){
-			
+	for (i=1;i<=NX;i++){			
 		/* storage of bottom of local volume into buffer */
 		n = 1;
-		for (l=1;l<=fdo;l++) {
-			bufferbot_to_top[i][n++]  = syy[NY-l+1][i];
+		for (l=1;l<=fdo-1;l++) {
+			bufferbot_to_top[i][n++]  = p[NY-l+1][i];
 		}
-
 	}
 	
 	
@@ -78,22 +73,18 @@ void exchange_s_AC(float ** sxx, float ** syy,
 
 	if (POS[2]!=NPROCY-1)	/* no boundary exchange at bottom of global grid */
 	for (i=1;i<=NX;i++){
-
 		n = 1;
-		for (l=1;l<=fdo-1;l++) {
-			syy[NY+l][i] = buffertop_to_bot[i][n++];
+		for (l=1;l<=fdo;l++) {
+			p[NY+l][i] = buffertop_to_bot[i][n++];
 		}
-
 	}
 
 	if (POS[2]!=0)	/* no boundary exchange at top of global grid */
 	for (i=1;i<=NX;i++){
-
 		n = 1;
-		for (l=1;l<=fdo;l++) {
-			syy[1-l][i] = bufferbot_to_top[i][n++];
+		for (l=1;l<=fdo-1;l++) {
+			p[1-l][i] = bufferbot_to_top[i][n++];
 		}
-
 	}
 	
 	
@@ -101,25 +92,21 @@ void exchange_s_AC(float ** sxx, float ** syy,
 
 	if ((BOUNDARY) || (POS[1]!=0))	/* no boundary exchange at left edge of global grid */
 	for (j=1;j<=NY;j++){
-
 		/* storage of left edge of local volume into buffer */
 		n = 1;
-		for (l=1;l<fdo-1;l++) {
-			bufferlef_to_rig[j][n++] =  sxx[j][l];
+		for (l=1;l<fdo;l++) {
+			bufferlef_to_rig[j][n++] =  p[j][l];
 		}
-
 	}
 
 
 	if ((BOUNDARY) || (POS[1]!=NPROCX-1))	/* no boundary exchange at right edge of global grid */
 	for (j=1;j<=NY;j++){
-
 		/* storage of right edge of local volume into buffer */
 		n = 1;
-		for (l=1;l<fdo;l++) {
-			bufferrig_to_lef[j][n++] =  sxx[j][NX-l+1];
+		for (l=1;l<fdo-1;l++) {
+			bufferrig_to_lef[j][n++] =  p[j][NX-l+1];
 		}
-
 	}	
 	
 	
@@ -154,19 +141,17 @@ void exchange_s_AC(float ** sxx, float ** syy,
 	if ((BOUNDARY) || (POS[1]!=NPROCX-1))	/* no boundary exchange at right edge of global grid */
 	for (j=1;j<=NY;j++){
 		n = 1;
-		for (l=1;l<fdo-1;l++) {
-			sxx[j][NX+l] = bufferlef_to_rig[j][n++];
+		for (l=1;l<fdo;l++) {
+			p[j][NX+l] = bufferlef_to_rig[j][n++];
 		}
-
 	}
 
 	if ((BOUNDARY) || (POS[1]!=0))	/* no boundary exchange at left edge of global grid */
 	for (j=1;j<=NY;j++){
 		n = 1;
-		for (l=1;l<fdo;l++) {
-			sxx[j][1-l] = bufferrig_to_lef[j][n++];
+		for (l=1;l<fdo-1;l++) {
+			p[j][1-l] = bufferrig_to_lef[j][n++];
 		}
-
 	}
 
 

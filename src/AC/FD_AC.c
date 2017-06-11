@@ -188,7 +188,7 @@ nsrc_glob=nsrc;
 		else model(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup,matPSV.peta);
 } else{*/
 	if (READMOD) readmod_AC(matAC.prho,matAC.ppi);
-    		/*else model_elastic(matPSV.prho,matPSV.ppi,matPSV.pu);*/
+    		else model_acoustic(matAC.prho,matAC.ppi);
 /*}*/
 
 /* check if the FD run will be stable and free of numerical dispersion */

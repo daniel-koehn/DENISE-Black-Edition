@@ -18,8 +18,7 @@ void alloc_AC(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML){
         nd = FDORDER/2 + 1;	
 
         /* memory allocation for elastic wavefield variables */
-        (*waveAC).psxx =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	(*waveAC).psyy =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+        (*waveAC).p =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*waveAC).pvx  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*waveAC).pvy  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*waveAC).pvxp1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
@@ -27,7 +26,6 @@ void alloc_AC(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML){
 	(*waveAC).pvxm1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*waveAC).pvym1  =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*waveAC).ux   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
-	(*waveAC).uy   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*waveAC).uttx   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*waveAC).utty   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 
@@ -65,8 +63,8 @@ void alloc_AC(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML){
 	  (*waveAC_PML).a_y_half = vector(1,2*FW);
 	  (*waveAC_PML).b_y_half = vector(1,2*FW);
 
-	  (*waveAC_PML).psi_sxx_x =  matrix(1,NY,1,2*FW); 
-	  (*waveAC_PML).psi_syy_y =  matrix(1,2*FW,1,NX);
+	  (*waveAC_PML).psi_p_x =  matrix(1,NY,1,2*FW); 
+	  (*waveAC_PML).psi_p_y =  matrix(1,2*FW,1,NX);
 	  (*waveAC_PML).psi_vxx   =  matrix(1,NY,1,2*FW);
 	  (*waveAC_PML).psi_vxxs  =  matrix(1,NY,1,2*FW); 
 	  (*waveAC_PML).psi_vyy   =  matrix(1,2*FW,1,NX);

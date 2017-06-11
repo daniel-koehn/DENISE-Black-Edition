@@ -46,8 +46,8 @@ void dealloc_AC(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML){
 		free_vector((*waveAC_PML).a_y_half,1,2*FW);
 		free_vector((*waveAC_PML).b_y_half,1,2*FW);
 
-		free_matrix((*waveAC_PML).psi_sxx_x,1,NY,1,2*FW);
-		free_matrix((*waveAC_PML).psi_syy_y,1,2*FW,1,NX);
+		free_matrix((*waveAC_PML).psi_p_x,1,NY,1,2*FW);
+		free_matrix((*waveAC_PML).psi_p_y,1,2*FW,1,NX);
 		free_matrix((*waveAC_PML).psi_vxx,1,NY,1,2*FW);
 		free_matrix((*waveAC_PML).psi_vxxs,1,NY,1,2*FW);
 		free_matrix((*waveAC_PML).psi_vyy,1,2*FW,1,NX);
@@ -55,8 +55,7 @@ void dealloc_AC(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML){
        }
 
 	/* elastic wavefield variables */
-	free_matrix((*waveAC).psxx,-nd+1,NY+nd,-nd+1,NX+nd);
-	free_matrix((*waveAC).psyy,-nd+1,NY+nd,-nd+1,NX+nd);
+	free_matrix((*waveAC).p,-nd+1,NY+nd,-nd+1,NX+nd);
 	free_matrix((*waveAC).pvx,-nd+1,NY+nd,-nd+1,NX+nd);
 	free_matrix((*waveAC).pvy,-nd+1,NY+nd,-nd+1,NX+nd);
 	free_matrix((*waveAC).pvxp1,-nd+1,NY+nd,-nd+1,NX+nd);
@@ -64,7 +63,6 @@ void dealloc_AC(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML){
 	free_matrix((*waveAC).pvxm1,-nd+1,NY+nd,-nd+1,NX+nd);
 	free_matrix((*waveAC).pvym1,-nd+1,NY+nd,-nd+1,NX+nd);
 	free_matrix((*waveAC).ux,-nd+1,NY+nd,-nd+1,NX+nd);
-	free_matrix((*waveAC).uy,-nd+1,NY+nd,-nd+1,NX+nd);
 	free_matrix((*waveAC).uttx,-nd+1,NY+nd,-nd+1,NX+nd);
 	free_matrix((*waveAC).utty,-nd+1,NY+nd,-nd+1,NX+nd);
 

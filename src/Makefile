@@ -6,6 +6,7 @@
 # source code for model generation
 MODEL = model_ainos_visc.c
 MODEL_EL = model_ainos.c
+MODEL_AC = model_acoustic.c
 MODEL_VTI = zinc_vti.c
 MODEL_TTI = zinc_tti.c
 EXEC= ../bin
@@ -149,11 +150,16 @@ DENISE += ac.c \
 	  alloc_matAC.c \
 	  checkfd_acoustic.c \
 	  dealloc_AC.c \
-	  exchange_s_AC.c \
+	  exchange_p_AC.c \
+	  exchange_v_AC.c \
 	  FD_AC.c \
 	  matcopy_acoustic_AC.c \
+	  $(MODEL_AC) \
 	  physics_AC.c \
+	  psource_AC.c \
 	  readmod_AC.c \
+	  seismo_AC.c \
+	  snap_AC.c \
 	  surface_acoustic_PML_AC.c \
 	  update_s_acoustic_PML_AC.c \
 	  update_v_PML_AC.c \
