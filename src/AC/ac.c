@@ -262,9 +262,10 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 	                
 		    for (i=1;i<=NX;i=i+IDXI){   
 			for (j=1;j<=NY;j=j+IDYI){ 
-		                                   
-			   	(*fwiPSV).waveconv_rho_shot[j][i]+=((*waveAC).pvxp1[j][i]*(*fwiPSV).forward_prop_rho_x[imat])+((*waveAC).pvyp1[j][i]*(*fwiPSV).forward_prop_rho_y[imat]);			
-									                                                                                                     
+		                
+				(*fwiPSV).waveconv_shot[j][i] += (*fwiPSV).forward_prop_x[imat] * (*waveAC).p[j][i];                   
+			   	(*fwiPSV).waveconv_rho_shot[j][i] += ((*waveAC).pvxp1[j][i]*(*fwiPSV).forward_prop_rho_x[imat])+((*waveAC).pvyp1[j][i]*(*fwiPSV).forward_prop_rho_y[imat]);
+																                                                                                                     
 			   imat++;
 			   }
 		    }  

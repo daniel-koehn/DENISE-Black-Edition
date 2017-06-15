@@ -147,19 +147,35 @@ DENISE += alloc_matTTI.c \
 # add AC source files
 DENISE += ac.c \
 	  alloc_AC.c \
+	  alloc_fwiAC.c \
 	  alloc_matAC.c \
+	  ass_gradAC.c \
+	  calc_mat_change_test_AC.c \
 	  checkfd_acoustic.c \
 	  dealloc_AC.c \
 	  exchange_p_AC.c \
 	  exchange_v_AC.c \
+	  extract_LBFGS_AC.c \
+	  extract_PCG_AC.c \
 	  FD_AC.c \
+	  FWI_AC.c \
+	  grad_obj_ac.c \
 	  matcopy_acoustic_AC.c \
+	  mem_fwiAC.c \
 	  $(MODEL_AC) \
+	  model_freq_out_AC.c \
+	  model_it_out_AC.c \
+	  obj_ac.c \
 	  physics_AC.c \
+	  precond_AC.c \
 	  psource_AC.c \
 	  readmod_AC.c \
 	  seismo_AC.c \
 	  snap_AC.c \
+	  step_length_est_ac.c \
+	  stf_ac.c \
+	  store_LBFGS_AC.c \
+	  store_PCG_AC.c \
 	  surface_acoustic_PML_AC.c \
 	  update_s_acoustic_PML_AC.c \
 	  update_v_PML_AC.c \

@@ -18,9 +18,9 @@ void physics_AC(){
 	}
 
 	/* 2D AC Full Waveform Inversion */
-	/*if(MODE==1){
-	   FWI_PSV();
-	}*/
+	if(MODE==1){
+	   FWI_AC();
+	}
 
         /* 2D AC Reverse Time Migration */
 	/*if(MODE==2){

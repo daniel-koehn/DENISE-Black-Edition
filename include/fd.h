@@ -371,7 +371,14 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 
 void alloc_AC(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML);
 
+void alloc_fwiAC(struct fwiPSV *fwiPSV);
+
 void alloc_matAC(struct matAC *matAC);
+
+void ass_gradAC(struct fwiPSV *fwiPSV, struct matAC *matAC, int iter);
+
+float calc_mat_change_test_AC(float  **  waveconv, float  **  waveconv_rho, float  **  rho, float  **  rhonp1, float **  pi, float **  pinp1, int iter, 
+                          int epstest, float eps_scale, int itest);
 
 void checkfd_acoustic(FILE *fp, float ** prho, float ** ppi, float *hc);
 
@@ -383,11 +390,34 @@ void exchange_p_AC(float ** p, float ** bufferlef_to_rig, float ** bufferrig_to_
 void exchange_v_AC(float ** vx, float ** vy, float ** bufferlef_to_rig, float ** bufferrig_to_lef, float ** buffertop_to_bot, float ** bufferbot_to_top,
 	MPI_Request * req_send, MPI_Request * req_rec);
 
+void extract_LBFGS_AC( int iter, float ** waveconv, float ** gradp, float ** waveconv_rho, float ** gradp_rho, float **ppi, float ** prho, float * r_LBFGS);
+
+void extract_PCG_AC(float * PCG_old, float ** waveconv, float ** waveconv_rho);
+
 void FD_AC();
+
+void FWI_AC();
+
+float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
+         int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
+         MPI_Request * req_send, MPI_Request * req_rec);
 
 void matcopy_acoustic_AC(float ** rho, float ** pi);
 
+void mem_fwiAC(int nseismograms, int ntr, int ns, int fdo3, int nd, float buffsize, int ntr_glob);
+
+void model_freq_out_AC(float ** ppi, float  **  rho, int iter, float freq);
+
+void model_it_out_AC(float ** ppi, float  **  rho, int nstage, int iter, float freq);
+
+float obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
+         int ntr_glob, int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec);
+
 void physics_AC();
+
+void precond_AC(struct fwiPSV *fwiPSV, struct acq *acq, int nsrc, int ntr_glob, float ** taper_coeff, FILE *FP_GRAV);
 
 void psource_AC(int nt, float ** p, float **  srcpos_loc, float ** signals, int nsrc, int sw);
 
@@ -398,6 +428,19 @@ float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
 float **vx, float **vy, float **p, float **pi, float **u, float **rho, float *hc);
 
 void snap_AC(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **p, float **u, float **pi, float *hc);
+
+float step_length_est_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
+         float * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
+         float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
+
+void stf_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, 
+             struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, int ns, int ntr, int ntr_glob, int iter, float **Ws, 
+             float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
+
+void store_LBFGS_AC(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float ** gradp, float ** waveconv_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float **ppi, float ** prho, int nxnyi, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
+
+void store_PCG_AC(float * PCG_old, float ** waveconv, float ** waveconv_rho);
 
 void surface_acoustic_PML_AC(int ndepth, float ** p);
 
