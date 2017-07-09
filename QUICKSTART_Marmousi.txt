@@ -11,7 +11,7 @@ C-Compiler: gcc, icc (recommended)
 MPI-library: OpenMPI, Intel-MPI (recommended)
 other libraries: Fastest Fourier Transform in the West (FFTW) - https://github.com/FFTW/fftw3
 
-Seismic Unix, Matlab or Numpy/Scipy/Matplotlib for seismic data and model visualization 
+Seismic Unix and/or Numpy/Scipy/Matplotlib/Obspy for seismic data and model visualization 
 
 1. Clone DENISE-Black-Edition on your local machine
 
@@ -29,11 +29,9 @@ make denise
 
 git clone https://github.com/daniel-koehn/DENISE-Benchmark
 
-5. Copy source, receiver and model files for the Marmousi-II model from DENISE-Benchmark to DENISE-Black-Edition 
+5. Copy model files for the Marmousi-II model from DENISE-Benchmark to DENISE-Black-Edition 
 
 cp DENISE-Benchmark/Marmousi-II/start/marmousi_II_* DENISE-Black-Edition/par/start/
-cp DENISE-Benchmark/Marmousi-II/receiver/receiver_OBC DENISE-Black-Edition/par/receiver/
-cp DENISE-Benchmark/Marmousi-II/source/source_OBC_VSP.dat DENISE-Black-Edition/par/source/
 
 6. In DENISE-Black-Edition/par/DENISE_marm_OBC.inp check if the following parameters are set correctly
 
@@ -51,6 +49,10 @@ needs. The total number of cores = NPROCX * NPROCY.
 8. Check if the modelling results are plausible, e.g. with Seismic Unix
 
 sugain qbal=1 < su/DENISE_MARMOUSI_y.su.shot1 | suximage &
+
+or the Jupyter notebook 
+
+/visu/plot_shot_gather.ipynb
 
 9. In DENISE-Black-Edition/par/su generate the directory MARMOUSI_spike
 
@@ -91,12 +93,11 @@ You can visualize the results with Seismic Unix
 
 ximage n1=174 < model/modelTest_vs_stage_2.bin 
 
-or with the Matlab code 
+or the Jupyter notebook 
 
-marmousi_II_marine_result_vel_result_lecture.m
-
-in DENISE-Benchmark/Marmousi-II
+/visu/FWI_marmousi.ipynb
 
 14. Wait 1-2 days until the FWI is finished ...
 
-Congratulation, you just finished your first time-domain elastic FWI with DENISE Black Edition.  
+Congratulations, you just finished your first time-domain elastic FWI with DENISE Black Edition.
+  
