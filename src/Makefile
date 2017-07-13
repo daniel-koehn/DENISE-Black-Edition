@@ -170,6 +170,9 @@ DENISE += ac.c \
 	  precond_AC.c \
 	  psource_AC.c \
 	  readmod_AC.c \
+	  RTM_AC.c \
+	  RTM_AC_out.c \
+	  RTM_AC_out_shot.c \
 	  seismo_AC.c \
 	  snap_AC.c \
 	  step_length_est_ac.c \

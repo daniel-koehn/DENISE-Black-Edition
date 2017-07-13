@@ -23,9 +23,9 @@ void physics_AC(){
 	}
 
         /* 2D AC Reverse Time Migration */
-	/*if(MODE==2){
-	   RTM_PSV();
-	}*/
+	if(MODE==2){
+	   RTM_AC();
+	}
 
 }
 

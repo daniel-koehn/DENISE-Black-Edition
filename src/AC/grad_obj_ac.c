@@ -226,7 +226,7 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 		}
 	}
 
-	if(RTM_SHOT==1){RTM_PSV_out_shot(fwiPSV,ishot);}
+	if(RTM_SHOT==1){RTM_AC_out_shot(fwiPSV,ishot);}
 
 	if((N_STREAMER>0)||(READREC==2)){
 

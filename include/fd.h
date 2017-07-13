@@ -423,6 +423,12 @@ void psource_AC(int nt, float ** p, float **  srcpos_loc, float ** signals, int 
 
 void readmod_AC(float  **  rho, float **  pi);
 
+void RTM_AC();
+
+void RTM_AC_out(struct fwiPSV *fwiPSV);
+
+void RTM_AC_out_shot(struct fwiPSV *fwiPSV, int ishot);
+
 void seismo_AC(int lsamp, int ntr, int **recpos, float **sectionvx, 
 float **sectionvy, float **sectionp, float **sectioncurl, float **sectiondiv,
 float **vx, float **vy, float **p, float **pi, float **u, float **rho, float *hc);
