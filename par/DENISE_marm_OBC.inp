@@ -48,11 +48,13 @@ run_multiple_shots_defined_in_SOURCE_FILE_(yes=1)_(RUN_MULTIPLE_SHOTS) = 1
 corner_frequency_of_highpass_filtered_spike_(FC_SPIKE_1) = -5.0
 corner_frequency_of_lowpass_filtered_spike_(FC_SPIKE_2) = 15.0
 order_of_Butterworth_filter_(ORDER_SPIKE) = 5
+write_source_wavelet_(yes=1)_(WRITE_STF) = 1
 #
 #
 #--------------------- Model -------------------------------------
 read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
 MFILE = start/marmousi_II_marine
+write_model_files_(yes=1)_(WRITEMOD) = 1
 #
 #---------------------Q-approximation-----------------------------
 Number_of_relaxation_mechanisms_(L) = 0

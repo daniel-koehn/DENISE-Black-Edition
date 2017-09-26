@@ -18,7 +18,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
         extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
         extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG;
-        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT;
+        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, WRITE_STF;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
         extern float C_vp, C_vs, C_rho;
         extern char MFILE[STRING_SIZE];
@@ -138,17 +138,10 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	}
 
-	/*printf("MYID=%d, nsrc_loc = %d \n",MYID,nsrc_loc);*/
-
-	/*char  source_signal_file[STRING_SIZE];
-	sprintf(source_signal_file,"source_signal.%d.su.shot%d.it%d",MYID,ishot,iter);
-	fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
-	output_source_signal(fopen(source_signal_file,"w"),signals,NT,3);*/
-
 	/* output source signal e.g. for cross-correlation of comparison with analytical solutions */
 	if(RUN_MULTIPLE_SHOTS){
 
-		if(nsrc_loc>0){
+		if((nsrc_loc>0) && WRITE_STF){
 			   sprintf(source_signal_file,"%s_source_signal.%d.su.shot%d", MFILE, MYID,ishot);
 			   fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
 			   output_source_signal(fopen(source_signal_file,"w"),(*acq).signals,NT,1);

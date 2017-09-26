@@ -130,3 +130,6 @@ float COMP_WEIGHT;
 
 /* RTM parameter */
 int RTM_SHOT;
+
+/* Parameters for output control */
+int WRITE_STF, WRITEMOD;

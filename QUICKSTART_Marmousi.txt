@@ -13,9 +13,13 @@ other libraries: Fastest Fourier Transform in the West (FFTW) - https://github.c
 
 Seismic Unix and/or Numpy/Scipy/Matplotlib/Obspy for seismic data and model visualization 
 
+On NEC-cluster @ RZ Kiel activate libraries by typing
+
+module load intel17.0.4 intelmpi17.0.4
+
 1. Clone DENISE-Black-Edition on your local machine
 
-git clone https://github.com/daniel-koehn/DENISE-Black-Edition
+git clone --depth=1 https://github.com/daniel-koehn/DENISE-Black-Edition
 
 2. Compile the library cseife in /libcseife with
 
@@ -27,7 +31,7 @@ make denise
 
 4. Clone DENISE-Benchmark on your local machine 
 
-git clone https://github.com/daniel-koehn/DENISE-Benchmark
+git clone --depth=1 https://github.com/daniel-koehn/DENISE-Benchmark
 
 5. Copy model files for the Marmousi-II model from DENISE-Benchmark to DENISE-Black-Edition 
 

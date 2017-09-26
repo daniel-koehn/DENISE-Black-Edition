@@ -11,6 +11,7 @@
 void readmod_elastic_PSV(float  **  rho, float **  pi, float **  u){
 
 	extern int NX, NY, NXG, NYG,  POS[3], MYID, INVMAT1;
+	extern int WRITEMOD;
 	extern char  MFILE[STRING_SIZE];	
 	extern FILE *FP;
 
@@ -99,23 +100,27 @@ void readmod_elastic_PSV(float  **  rho, float **  pi, float **  u){
 	
 	
 	/* each PE writes his model to disk */
-	sprintf(filename,"%s.fdveps.pi",MFILE);
-	writemod(filename,pi,3);
-	MPI_Barrier(MPI_COMM_WORLD);
+        if(WRITEMOD){
 
-	if (MYID==0) mergemod(filename,3);
+	   sprintf(filename,"%s.denise.pi",MFILE);
+	   writemod(filename,pi,3);
+ 	   MPI_Barrier(MPI_COMM_WORLD);
+
+	   if (MYID==0) mergemod(filename,3);
 	
-	sprintf(filename,"%s.fdveps.mu",MFILE);
-        writemod(filename,u,3);
-	MPI_Barrier(MPI_COMM_WORLD);
+	   sprintf(filename,"%s.denise.mu",MFILE);
+           writemod(filename,u,3);
+	   MPI_Barrier(MPI_COMM_WORLD);
 	                           
-	if (MYID==0) mergemod(filename,3);
+	   if (MYID==0) mergemod(filename,3);
 	
-	sprintf(filename,"%s.fdveps.rho",MFILE);
-	writemod(filename,rho,3);
-	MPI_Barrier(MPI_COMM_WORLD);
+	   sprintf(filename,"%s.denise.rho",MFILE);
+	   writemod(filename,rho,3);
+	   MPI_Barrier(MPI_COMM_WORLD);
 	                        
-	if (MYID==0) mergemod(filename,3);
+	   if (MYID==0) mergemod(filename,3);
+
+	}
 
 }
 

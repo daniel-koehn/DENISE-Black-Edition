@@ -12,6 +12,7 @@ void FD_PSV(){
 /* global variables */
 extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, QUELLTYP, ORDER_SPIKE, RUN_MULTIPLE_SHOTS, TIME_FILT, ORDER, READREC;
 extern int LOG, SEISMO, N_STREAMER, FW, NXG, NYG, IENDX, IENDY, NTDTINV, IDXI, IDYI, NXNYI, INV_STF, DTINV, SNAP, SNAP_SHOT;
+extern int WRITE_STF;
 extern float FC_SPIKE_1, FC_SPIKE_2, FC, FC_START, TIME, DT;
 extern char LOG_FILE[STRING_SIZE], MFILE[STRING_SIZE];
 extern FILE *FP;
@@ -288,7 +289,7 @@ if (nsrc_loc){if(QUELLART==6){
 /* output source signal */
 if(RUN_MULTIPLE_SHOTS){
 
-	if(nsrc_loc>0){
+	if((nsrc_loc>0)&&(WRITE_STF)){
         	   char  source_signal_file[STRING_SIZE];
         	   sprintf(source_signal_file,"%s_source_signal.%d.su.shot%d", MFILE, MYID,ishot);
         	   fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
