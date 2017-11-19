@@ -3,7 +3,7 @@
 *   time-shift, centre frequency and amplitude (as specified in SOURCE_FILE).
 *   Source signals are written to array signals 
 *
-*   last update 19/01/02, T. Bohlen
+*   last update 19/11/2017, D. Koehn
 *  ----------------------------------------------------------------------*/
 
 #include "fd.h"
@@ -13,13 +13,13 @@ float ** wavelet(float ** srcpos_loc, int nsrc, int ishot){
 
 
 	/* extern variables */
-	extern int QUELLART, NT, MYID;
+	extern int QUELLART, NT, MYID, N_ORDER;
 	extern float  DT, TS, FC_SPIKE_1, FC_SPIKE_2;
 	extern char SIGNAL_FILE[STRING_SIZE];
 	extern FILE *FP;
 
 	/*local variables */
-	int nts, nt, k;
+	int nts, nt, k, i;
 	float *psource=NULL, tshift, amp=0.0, a, fc, tau, t, ts, ag;
 	float ** signals, k1, f0, t1;
 	double complex amp1;
@@ -96,7 +96,19 @@ float ** wavelet(float ** srcpos_loc, int nsrc, int ishot){
 					signals[k][nt]=amp*a;
 		}
 	}
-	
+
+	/* integrate source wavelet N_ORDER times*/
+        if(N_ORDER>0){
+	    for (i=1;i<=N_ORDER;i++) {	
+                for (k=1;k<=nsrc;k++) {
+                    signals[k][1]=signals[k][1]*DT; 
+                    for (nt=2;nt<=NT;nt++){
+                        signals[k][nt] = signals[k][nt-1]+signals[k][nt]*DT;
+                    }
+                 }
+            }
+	}	
+
 	fprintf(FP," Message from function wavelet written by PE %d \n",MYID);
 	fprintf(FP," %d source positions located in subdomain of PE %d \n",nsrc,MYID);
 	fprintf(FP," have been assigned with a source signal. \n");

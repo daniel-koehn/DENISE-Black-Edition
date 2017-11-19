@@ -9,11 +9,11 @@ double calc_res(float **sectiondata, float **section, float **sectiondiff, float
 /* declaration of variables */
 extern float DT, DH, OFFSETC, FC, FC_START, C_vp, C_rho;
 extern int REC1, REC2, MYID, ORDER, COMP_WEIGHT;
-extern int TRKILL, GRAD_FORM, ENV;
+extern int TRKILL, GRAD_FORM, ENV, N_ORDER;
 extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, MODE, OFFSET_MUTE;
 float RMS, RMS_obs, signL1, intseis;
-int Lcount,i,j,invtime,k,h,umax=0;
+int Lcount,i,j,invtime,k,h,umax=0,h1;
 float l2;
 float abs_data, abs_synthetics, data_mult_synthetics, intseis_data, intseis_synthetics;
 float intseis_section, intseis_sectiondata, offset, xr, yr, xs, ys;
@@ -366,6 +366,23 @@ for(i=1;i<=ntr;i++){
 	}
 	
      }
+
+     /* integrate synthetic and field data N_ORDER times */
+     if(N_ORDER){
+
+	 for(h1=1;h1<=N_ORDER;h1++){
+
+             sectiondata[i][1] = sectiondata[i][1] * DT;
+                 section[i][1] = section[i][1] * DT;
+
+	     for(j=2;j<=ns;j++){
+	         sectiondata[i][j] = sectiondata[i][j-1] + sectiondata[i][j] * DT;
+		     section[i][j] = section[i][j-1] + section[i][j] * DT;    
+	     }
+
+	 }
+
+     }
 	
       for(j=1;j<=ns;j++){
                        
@@ -450,7 +467,8 @@ for(i=1;i<=ntr;i++){
 
 						
 			invtime--;                                      /* reverse time direction */
-       } 
+       }
+      
 }
 
    if(LNORM==6){

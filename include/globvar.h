@@ -1,6 +1,6 @@
 /*------------------------------------------------------------------------
- *   globvar.h - global variables of viscoelastic FD programs   
- *   last update 05/04/02 T. Bohlen
+ *   globvar.h - global variables of DENISE Black-Edition  
+ *   last update D. Koehn, 19.11.2017 
  *
  *  ----------------------------------------------------------------------*/
 
@@ -131,5 +131,8 @@ float COMP_WEIGHT;
 /* RTM parameter */
 int RTM_SHOT;
 
-/* Parameters for output control */
+/* parameters for output control */
 int WRITE_STF, WRITEMOD;
+
+/* parameters for time integation */
+int N_ORDER;
