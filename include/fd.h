@@ -135,6 +135,47 @@ struct waveAC_PML{
    float  **  absorb_coeff;
 } waveAC_PML;
 
+/* ---------------------------------- */
+/* declaration of SH data-structures */
+/* ---------------------------------- */
+
+/* SH material parameters */
+struct matSH{
+   float  **prho, **puip, **pujp, **pu, **puipjp;
+   float **ptaus, *etaip, *etajm, *peta, **ptausipjp, **fipjp, ***dip, *bip, *bjm;
+   float *cip, *cjm, ***d, ***e, **f, **g;
+} matSH;
+
+/* SH seismogram variables */
+struct seisSH{
+   float ** sectionvz;
+   float ** fulldata_vz;
+} seisSH;
+
+/* SH seismogram variables for FWI */
+struct seisSHfwi{
+   float ** sectionvzdata, ** sectionvzdiff, ** sectionvzdiffold;
+   float ** sectionread;
+   float energy;
+   float L2;
+} seisSHfwi;
+
+/* SH (visco)-elastic wavefield variables */
+struct waveSH{
+   float  ** pvz, **  pvzp1, **  pvzm1, ** psxz, ** psyz;
+   float  ** uz, ** uxz, ** uzx, ** uttz;
+   float *** pr, ***pp, ***pq;
+} waveSH; 
+
+/* SH PML variables*/
+struct waveSH_PML{
+   float * d_x, * K_x, * alpha_prime_x, * a_x, * b_x, * d_x_half, * K_x_half, * alpha_prime_x_half; 
+   float * a_x_half, * b_x_half, * d_y, * K_y, * alpha_prime_y, * a_y, * b_y, * d_y_half, * K_y_half; 
+   float * alpha_prime_y_half, * a_y_half, * b_y_half, ** psi_p_x, ** psi_p_y; 
+   float ** psi_syz_y, ** psi_sxz_x, ** psi_vzy, ** psi_vzx;
+   float  **  absorb_coeff;
+} waveSH_PML;
+
 /* ------------- */
 /* PSV functions */
 /* ------------- */
@@ -362,7 +403,7 @@ void TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matTTI
          int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
 
 /* ------------- */
-/* AC functions */
+/* AC functions  */
 /* ------------- */
 
 void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
@@ -468,6 +509,90 @@ void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, fl
                              float ** vxm1, float ** vxp1, float ** vyp1,
                              float ** psi_p_x, float ** psi_vxx, float ** psi_p_y, float ** psi_vyy, 
                              float ** psi_vxxs);
+
+/* ------------- */
+/* SH functions  */
+/* ------------- */
+
+void alloc_matSH(struct matSH *matSH);
+
+void alloc_seisSHfull(struct seisSH *seisSH, int ntr_glob);
+
+void alloc_seisSH(int ntr, int ns, struct seisSH *seisSH);
+
+void alloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML);
+
+void av_mu_SH(float ** u, float ** uip, float ** ujp, float ** rho);
+
+void checkfd_elast_SH(FILE *fp, float ** prho, float ** pu, float *hc);
+
+void checkfd_visc_SH(FILE *fp, float ** prho, float ** pu, float ** ptaus, float *peta, float *hc);
+
+void dealloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML);
+
+void exchange_s_SH(float ** sxz, float ** syz, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
+	           float ** buffertop_to_bot, float ** bufferbot_to_top, MPI_Request * req_send, 
+		   MPI_Request * req_rec);
+
+void exchange_v_SH(float ** vz, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
+		   float ** buffertop_to_bot, float ** bufferbot_to_top,
+	           MPI_Request * req_send, MPI_Request * req_rec);
+
+void FD_SH();
+
+void matcopy_elastic_SH(float ** rho, float ** u);
+
+void matcopy_SH(float ** rho, float ** u, float ** taus);
+
+void mem_SH(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize);
+
+void outseis_SHfor(struct seisSH *seisSH, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int iter, FILE *FP);
+
+void physics_SH();
+
+void prepare_update_s_visc_SH(float *etajm, float *etaip, float *peta, float **fipjp, float **pujp, 
+		float **puip, float **prho, float **ptaus, float **ptausipjp, float **f, float **g, 
+		float *bip, float *bjm, float *cip, float *cjm, float ***dip, float ***d, float ***e);
+
+void readmod_elastic_SH(float  **rho, float **u);
+
+void readmod_visc_SH(float  **rho, float **u, float **taus, float *eta);
+
+void saveseis_glob_SH(FILE *fp, float **sectionvz, int  **recpos, int  **recpos_loc, int ntr, float ** srcpos, int ishot, int ns, int iter);
+
+void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
+
+void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
+	float ** vz, float **  uz, float **  uzx, float **   syz, float **   sxz,
+	float ** ujp, float ** uip, float **rho, float *hc, int infoout,
+        float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
+        float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
+        float ** psi_vzx, float ** psi_vzy, int mode);
+
+void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
+	float ** vz, float **  uz, float **  uzx, float **   syz, float **   sxz,
+	float ** ujp, float ** uip, float **rho, float *hc, int infoout,
+	float ***r, float ***p, float ***q, float **fipjp, float **f, float **g, float *bip, float *bjm, 
+	float *cip, float *cjm, float ***d, float ***e, float ***dip, 
+        float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
+        float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
+        float ** psi_vzx, float ** psi_vzy, int mode);
+
+void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
+	float **  vz, float **  vzp1, float **  vzm1, float **  utty,float ** sxz, float ** syz,
+	float  **rho, float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff,
+	float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, 
+	float * b_x_half, float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, 
+	float * b_y_half, float ** psi_sxz_x, float ** psi_syz_y);
+
+void zero_denise_elast_SH(int ny1, int ny2, int nx1, int nx2, float ** vz, float ** sxz, float ** syz, float ** vzm1, 
+			 float ** vzp1, float ** psi_sxz_x, float ** psi_syz_y, float ** psi_vzx,  float ** psi_vzy);
+
+void zero_denise_visc_SH(int ny1, int ny2, int nx1, int nx2, float ** vz, float ** sxz, float ** syz, float ** vzm1, 
+			 float ** vzp1, float ** psi_sxz_x, float ** psi_syz_y, float ** psi_vzx,  float ** psi_vzy, 
+                         float ***pr, float ***pp, float ***pq);
 
 /* ----------------- */
 /* General functions */

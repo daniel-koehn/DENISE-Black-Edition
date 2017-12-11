@@ -1,4 +1,4 @@
-# Makefile for fdveps
+# Makefile for DENISE Black-Edition
 
 #--------------------------------------------------------
 # edit here:
@@ -50,7 +50,7 @@ IFLAGS=-I./../libcseife -I$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/include -I./..
 .c.o:
 	$(CC) $(CFLAGS) -c $< $(IFLAGS)
 
-VPATH = snapmerge:PSV:VTI:TTI:AC:models
+VPATH = snapmerge:PSV:VTI:TTI:AC:SH:models
         
 SNAPMERGE_SCR = \
 	merge.c \
@@ -181,6 +181,34 @@ DENISE += ac.c \
 	  update_s_acoustic_PML_AC.c \
 	  update_v_PML_AC.c \
 	  zero_denise_acoustic_AC.c
+
+# add SH source files
+DENISE += alloc_matSH.c \
+	  alloc_seisSH.c \
+	  alloc_seisSHfull.c \
+	  alloc_SH.c \
+	  av_mu_SH.c \
+	  checkfd_elast_SH.c \
+	  checkfd_visc_SH.c \
+	  dealloc_SH.c \
+	  exchange_s_SH.c \
+	  exchange_v_SH.c \
+	  FD_SH.c \
+	  matcopy_elastic_SH.c \
+	  matcopy_SH.c \
+	  mem_SH.c \
+	  outseis_SHfor.c \
+	  physics_SH.c \
+	  prepare_update_s_visc_SH.c \
+	  readmod_elastic_SH.c \
+	  readmod_visc_SH.c \
+	  saveseis_glob_SH.c \
+	  sh.c \
+	  update_s_elastic_PML_SH.c \
+	  update_s_visc_PML_SH.c \
+	  update_v_PML_SH.c \
+	  zero_denise_elast_SH.c \
+	  zero_denise_visc_SH.c
 
 SNAPMERGE_OBJ = $(SNAPMERGE_SCR:.c=.o)
 DENISE_OBJ = $(DENISE:.c=.o)      

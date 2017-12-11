@@ -98,7 +98,7 @@ if(PHYSICS==1){
 }
 
 /* ---------------------------------------------------- */
-/* Forward, FWI, RTM and RTMOD modules (2D AC-problem) */
+/* Forward, FWI, RTM and RTMOD modules (2D AC-problem)  */
 /* ---------------------------------------------------- */
 if(PHYSICS==2){
   physics_AC();
@@ -116,6 +116,13 @@ if(PHYSICS==3){
 /* ---------------------------------------------------- */
 if(PHYSICS==4){
   physics_TTI();
+}
+
+/* ---------------------------------------------------- */
+/* Forward, FWI, RTM and RTMOD modules (2D SH-problem)  */
+/* ---------------------------------------------------- */
+if(PHYSICS==5){
+  physics_SH();
 }
 
 

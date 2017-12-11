@@ -39,7 +39,7 @@ void check_mode_phys(){
 
 		switch (PHYSICS){
 		case 1 :
-			printf(" PHYSICS=%d: Solve 2D elastic PSV problem.\n",PHYSICS);
+			printf(" PHYSICS=%d: Solve 2D isotropic elastic PSV problem.\n",PHYSICS);
 			break;
 		case 2 :
 			printf(" PHYSICS=%d: Solve 2D acoustic problem.\n",PHYSICS);
@@ -49,6 +49,9 @@ void check_mode_phys(){
 			break;
 		case 4 :
 			printf(" PHYSICS=%d: Solve 2D elastic PSV TTI problem.\n",PHYSICS);
+			break;
+		case 5 :
+			printf(" PHYSICS=%d: Solve 2D isotropic elastic SH problem.\n",PHYSICS);
 			break;
 
 		default:

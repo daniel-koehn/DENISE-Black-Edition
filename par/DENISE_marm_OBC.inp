@@ -9,7 +9,7 @@
 (forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 0
 #
 # ---------------- DENISE Physics -----------------------------
-(2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4)_(PHYSICS) = 1
+(2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
 number_of_processors_in_x-direction_(NPROCX) = 5
