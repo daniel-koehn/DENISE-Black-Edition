@@ -7,7 +7,7 @@ Since then the code has been extended by Lisa Groos, Sven Heider, Martin Schäfe
 
 Manual available at:
 
-http://www.geophysik.uni-kiel.de/~dkoehn/software.htm
+https://danielkoehnsite.wordpress.com/software/
 
 DENISE-Black-Edition is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2.0 of the License only.
 
