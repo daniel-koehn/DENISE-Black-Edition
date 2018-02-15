@@ -139,6 +139,16 @@ struct waveAC_PML{
 /* declaration of SH data-structures */
 /* ---------------------------------- */
 
+/* SH FWI variables */
+struct fwiSH{
+   float  **  prho_old, **pu_old;
+   float  ** Vs0, ** Rho0;
+   float  ** waveconv_mu, **waveconv_rho, **waveconv_rho_s, **waveconv_u;
+   float  ** waveconv_u_shot, **waveconv_rho_shot;
+   float  ** gradg_rho, ** gradp_rho, ** gradg_u, ** gradp_u;
+   float  * forward_prop_z, *forward_prop_rho_z, *forward_prop_sxz, *forward_prop_syz;
+} fwiSH;
+
 /* SH material parameters */
 struct matSH{
    float  **prho, **puip, **pujp, **pu, **puipjp;
@@ -514,21 +524,33 @@ void zero_denise_acoustic_AC(int ny1, int ny2, int nx1, int nx2, float ** vx, fl
 /* SH functions  */
 /* ------------- */
 
+void alloc_fwiSH(struct fwiSH *fwiSH);
+
 void alloc_matSH(struct matSH *matSH);
 
 void alloc_seisSHfull(struct seisSH *seisSH, int ntr_glob);
+
+void alloc_seisSHfwi(int ntr, int ntr_glob, int ns, struct seisSHfwi *seisSHfwi);
 
 void alloc_seisSH(int ntr, int ns, struct seisSH *seisSH);
 
 void alloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML);
 
+void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter);
+
 void av_mu_SH(float ** u, float ** uip, float ** ujp, float ** rho);
+
+float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  u, float **  unp1, int iter, int epstest, float eps_scale, int itest);
+
+void calc_res_SH(struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, int swstestshot);
 
 void checkfd_elast_SH(FILE *fp, float ** prho, float ** pu, float *hc);
 
 void checkfd_visc_SH(FILE *fp, float ** prho, float ** pu, float ** ptaus, float *peta, float *hc);
 
 void dealloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML);
+
+void eprecond_SH(float ** W, float ** vz);
 
 void exchange_s_SH(float ** sxz, float ** syz, float ** bufferlef_to_rig, float ** bufferrig_to_lef, 
 	           float ** buffertop_to_bot, float ** bufferbot_to_top, MPI_Request * req_send, 
@@ -538,7 +560,16 @@ void exchange_v_SH(float ** vz, float ** bufferlef_to_rig, float ** bufferrig_to
 		   float ** buffertop_to_bot, float ** bufferbot_to_top,
 	           MPI_Request * req_send, MPI_Request * req_rec);
 
+void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho);
+
 void FD_SH();
+
+void FWI_SH();
+
+float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
+         int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
+         MPI_Request * req_send, MPI_Request * req_rec);
 
 void matcopy_elastic_SH(float ** rho, float ** u);
 
@@ -546,9 +577,21 @@ void matcopy_SH(float ** rho, float ** u, float ** taus);
 
 void mem_SH(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize);
 
+void model_freq_out_SH(float  **  rho, float **  pu, int iter, float freq);
+
+void model_it_out_SH(float  **  rho, float **  pu, int nstage, int iter, float freq);
+
+float obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
+         int ntr_glob, int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec);
+
 void outseis_SHfor(struct seisSH *seisSH, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int iter, FILE *FP);
 
+void outseis_SHres(struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int nstage, FILE *FP);
+
 void physics_SH();
+
+void precond_SH(struct fwiSH *fwiSH, struct acq *acq, int nsrc, int ntr_glob, float ** taper_coeff, FILE *FP_GRAV);
 
 void prepare_update_s_visc_SH(float *etajm, float *etaip, float *peta, float **fipjp, float **pujp, 
 		float **puip, float **prho, float **ptaus, float **ptausipjp, float **f, float **g, 
@@ -558,11 +601,24 @@ void readmod_elastic_SH(float  **rho, float **u);
 
 void readmod_visc_SH(float  **rho, float **u, float **taus, float *eta);
 
+void RTM_SH_out_shot(struct fwiSH *fwiSH, int ishot);
+
 void saveseis_glob_SH(FILE *fp, float **sectionvz, int  **recpos, int  **recpos_loc, int ntr, float ** srcpos, int ishot, int ns, int iter);
 
-void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
-         struct seisSH *seisSH, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
          int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
+
+float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
+         float * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
+         float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
+
+void stf_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, struct seisSH *seisSH, 
+             struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, int ns, int ntr, int ntr_glob, int iter, float **Ws, 
+             float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
+
+void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho);
 
 void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 	float ** vz, float **  uz, float **  uzx, float **   syz, float **   sxz,
