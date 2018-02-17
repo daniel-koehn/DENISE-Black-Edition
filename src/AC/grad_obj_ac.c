@@ -18,7 +18,7 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
         extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
         extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG;
-        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT;
+        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, MODE;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
         extern float C_vp, C_vs, C_rho;
         extern char MFILE[STRING_SIZE];
@@ -119,6 +119,11 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	/* calculate wavelet for each source point */
 	(*acq).signals=NULL;
 	(*acq).signals=wavelet((*acq).srcpos_loc,nsrc_loc,ishot);
+
+	/* read source wavelet for each source if RTM of plane waves is applied */
+	if((MODE==2)&&(RUN_MULTIPLE_SHOTS==0)){
+	    wavelet_su(ishot, (*acq).signals, nsrc, ns, nsrc_loc, (*acq).srcpos_loc);
+	}
 
 	if (nsrc_loc){if(QUELLART==6){
 
