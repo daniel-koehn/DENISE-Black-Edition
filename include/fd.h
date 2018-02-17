@@ -864,6 +864,8 @@ float ** wavelet(float ** srcpos_loc, int nsrc, int ishot);
 
 float ** wavelet_stf(int nsrc, int ishot, float ** signals_stf);
 
+void  wavelet_su(int comp, float **section, int ntr, int ns, int nsrc_loc, float ** srcpos_loc);
+
 void  wavenumber(float ** grad);
 
 void write_par(FILE *fp);
