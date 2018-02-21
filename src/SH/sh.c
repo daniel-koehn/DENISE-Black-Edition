@@ -14,8 +14,8 @@
 
 #include "fd.h"
 
-void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
-         struct seisSH *seisSH, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
          int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
@@ -23,7 +23,7 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	extern int MYID, FDORDER, FW, L, GRAD_FORM, FC_SPIKE_1, FC_SPIKE_2, ORDER_SPIKE;
         extern int NX, NY, FREE_SURF, BOUNDARY, MODE, QUELLTYP, QUELLTYPB, QUELLART, FDORDER;
 	extern int NPROCX, NPROCY, POS[3], NDT, SEISMO, IDXI, IDYI, GRAD_FORM, DTINV;
-        extern int SNAP, INVMAT1, INV_STF, EPRECOND, NTDTINV, NXNYI, NT;
+        extern int SNAP, INVMAT1, INV_STF, EPRECOND, NTDTINV, NXNYI, NT, ADJ_SIGN;
 	extern FILE *FP;
 
         /* local variables */
@@ -89,11 +89,18 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	   imat=1;
 	   imat1=1;
 	   imat2=1;
+	   ADJ_SIGN=1;
+        }
+
+	if(mode==2){
+	   ADJ_SIGN=1;
         }
 
         if(mode==1){
 	   hin=1;
 	   hin1=1;
+	   ADJ_SIGN=1;
+	   // ADJ_SIGN=-1;
         }
 
 	for (nt=1;nt<=NT;nt++){     
@@ -118,9 +125,9 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
               }
 
               if(mode==1){
-		/*update_v_PML_SH(1, NX, 1, NY, nt, (*waveSH).pvz, (*waveSH).pvzp1, (*waveSH).pvzm1, (*waveSH).uttz, (*waveSH).psxz, (*waveSH).psyz, (*matSH).prho, (*acq).srcpos_loc_back, (*seisSHfwi).sectionvzdiff, nsrc_loc, 
+		update_v_PML_SH(1, NX, 1, NY, nt, (*waveSH).pvz, (*waveSH).pvzp1, (*waveSH).pvzm1, (*waveSH).uttz, (*waveSH).psxz, (*waveSH).psyz, (*matSH).prho, (*acq).srcpos_loc_back, (*seisSHfwi).sectionvzdiff, nsrc_loc, 
 			       (*waveSH_PML).absorb_coeff,hc, infoout, 1, (*waveSH_PML).K_x, (*waveSH_PML).a_x, (*waveSH_PML).b_x, (*waveSH_PML).K_x_half, (*waveSH_PML).a_x_half, (*waveSH_PML).b_x_half, (*waveSH_PML).K_y, 
-			       (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half, (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y);*/
+			       (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half, (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y);
               }
 		                 
 		/*if (MYID==0){
@@ -204,140 +211,81 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	      if (infoout)  fprintf(FP," total real time for timestep %d : %4.2f s.\n",nt,time8-time3);
 	      } */  		
 
-//	if((nt==hin1)&&(mode==0)&&(MODE>0)){
-//
-//	    /* store forward wavefields for time-domain inversion and RTM */
-//          /* ---------------------------------------------------------- */
-//	    
-//		for (i=1;i<=NX;i=i+IDXI){
-//		    for (j=1;j<=NY;j=j+IDYI){
-//			 (*fwiPSV).forward_prop_rho_x[imat1]=(*wavePSV).pvxp1[j][i];
-//			 (*fwiPSV).forward_prop_rho_y[imat1]=(*wavePSV).pvyp1[j][i];
-//		         imat1++;                                   
-//		    }
-//		}   
-//
-//		for (i=1;i<=NX;i=i+IDXI){ 
-//		    for (j=1;j<=NY;j=j+IDYI){
-//		    
-//			/* gradients with data integration */
-//		        if(GRAD_FORM==1){
-//			   (*fwiPSV).forward_prop_x[imat]=(*wavePSV).psxx[j][i];
-//			   (*fwiPSV).forward_prop_y[imat]=(*wavePSV).psyy[j][i];
-//		        }
-//		    
-//			/* gradients without data integration */
-//			if(GRAD_FORM==2){
-//		           (*fwiPSV).forward_prop_x[imat]=(*wavePSV).ux[j][i];
-//			   (*fwiPSV).forward_prop_y[imat]=(*wavePSV).uy[j][i];
-//			}
-//		    
-//			imat++;
-//		    }
-//		 }
-//	    
-//
-//		for (i=1;i<=NX;i=i+IDXI){ 
-//		    for (j=1;j<=NY;j=j+IDYI){
-//		    
-//			/* gradients with data integration */
-//		        if(GRAD_FORM==1){
-//	 	          (*fwiPSV).forward_prop_u[imat2]=(*wavePSV).psxy[j][i];
-//			}
-//
-//			/* gradients without data integration */
-//		        if(GRAD_FORM==2){
-//	 	          (*fwiPSV).forward_prop_u[imat2]=(*wavePSV).uxy[j][i];
-//		        }
-//
-//			imat2++;
-//		    
-//		    }
-//		}
-//	   
-//	    if((EPRECOND==1)||(EPRECOND==3)){
-//	      eprecond(Ws,(*wavePSV).pvx,(*wavePSV).pvy);
-//	    }
-//	 
-//	    hin++;
-//	    hin1=hin1+DTINV;
-//
-//            DTINV_help[nt]=1;
-//		                                                     
-//	}
-//
-//	/* save backpropagated wavefields for time-domain inversion and partially assemble gradients */ 
-//        /* ----------------------------------------------------------------------------------------- */
-//	   if((mode==1)&&(DTINV_help[NT-nt+1]==1)){
-//	    
-//		imat=((NXNYI*(NTDTINV)) - hin*NXNYI)+1;
-//	                
-//		    for (i=1;i<=NX;i=i+IDXI){   
-//			for (j=1;j<=NY;j=j+IDYI){ 
-//		                                   
-//			   	(*fwiPSV).waveconv_rho_shot[j][i]+=((*wavePSV).pvxp1[j][i]*(*fwiPSV).forward_prop_rho_x[imat])+((*wavePSV).pvyp1[j][i]*(*fwiPSV).forward_prop_rho_y[imat]);
-//			
-//			   	/* mu-gradient with data integration */
-//			   	if(GRAD_FORM==1){
-//			
-//				   (*fwiPSV).waveconv_shot[j][i]+= ((*fwiPSV).forward_prop_x[imat]+(*fwiPSV).forward_prop_y[imat])*((*wavePSV).psxx[j][i]+(*wavePSV).psyy[j][i]);			  
-//
-//		                   if(INVMAT1==1){
-//				       muss = (*matPSV).prho[j][i] * (*matPSV).pu[j][i] * (*matPSV).pu[j][i];
-//				       lamss = (*matPSV).prho[j][i] * (*matPSV).ppi[j][i] * (*matPSV).ppi[j][i] - 2.0 * muss;
-//				   }
-//			   
-//				   if(INVMAT1==3){
-//				       muss = (*matPSV).pu[j][i];
-//				       lamss = (*matPSV).ppi[j][i]; 
-//				   } 
-//			                
-//				   if(muss>0.0){
-//				      (*fwiPSV).waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*((*fwiPSV).forward_prop_u[imat] * (*wavePSV).psxy[j][i])) 
-//		                          + ((1.0/4.0) * (((*fwiPSV).forward_prop_x[imat] + (*fwiPSV).forward_prop_y[imat]) * ((*wavePSV).psxx[j][i] + (*wavePSV).psyy[j][i])) / ((lamss+muss)*(lamss+muss)))  
-//		                          + ((1.0/4.0) * (((*fwiPSV).forward_prop_x[imat] - (*fwiPSV).forward_prop_y[imat]) * ((*wavePSV).psxx[j][i] - (*wavePSV).psyy[j][i])) / (muss*muss));
-//				   }
-//				   
-//		                }
-//
-//				/* Vs-gradient without data integration (stress-velocity in non-conservative form) */
-//		                if(GRAD_FORM==2){
-//			
-//				   (*fwiPSV).waveconv_shot[j][i]+= ((*fwiPSV).forward_prop_x[imat]+(*fwiPSV).forward_prop_y[imat])*((*wavePSV).psxx[j][i]+(*wavePSV).psyy[j][i]);
-//
-//		                   if(INVMAT1==1){
-//				       muss = (*matPSV).prho[j][i] * (*matPSV).pu[j][i] * (*matPSV).pu[j][i];
-//				       lamss = (*matPSV).prho[j][i] * (*matPSV).ppi[j][i] * (*matPSV).ppi[j][i] - 2.0 * muss;
-//				   }
-//			   
-//				   if(INVMAT1==3){
-//				       muss = (*matPSV).pu[j][i];
-//				       lamss = (*matPSV).ppi[j][i]; 
-//				   } 
-//			                
-//				   if(muss>0.0){
-//								
-//				      tmp = (1.0/(4.0*(lamss+muss)*(lamss+muss))) - (1.0/(4.0*muss*muss));
-//				      tmp1 = (1.0/(4.0*(lamss+muss)*(lamss+muss))) + (1.0/(4.0*muss*muss));
-//			
-//				      (*fwiPSV).waveconv_u_shot[j][i]+= ((1.0/(muss*muss))*((*fwiPSV).forward_prop_u[imat] * (*wavePSV).psxy[j][i])) 
-//		                                           + ( tmp1 * ((*fwiPSV).forward_prop_x[imat] * (*wavePSV).psxx[j][i] + (*fwiPSV).forward_prop_y[imat] * (*wavePSV).psyy[j][i]))  
-//		                                           + ( tmp  * ((*fwiPSV).forward_prop_x[imat] * (*wavePSV).psyy[j][i] + (*fwiPSV).forward_prop_y[imat] * (*wavePSV).psxx[j][i]));	  
-//					  
-//				   } 
-//		                  
-//		                }			
-//						                                                                                                     
-//			   imat++;
-//			   }
-//		    }  
-//		  
-//		  if(EPRECOND==1){
-//		     eprecond(Wr,(*wavePSV).pvx,(*wavePSV).pvy);
-//		  }
-//		                                                                                                                       
-//	    hin++;
-//	    }
+	if((nt==hin1)&&(mode==0)&&(MODE>0)){
+
+	  /* store forward wavefields for time-domain inversion and RTM */
+          /* ---------------------------------------------------------- */
+	    
+		/* store forward wavefield for density gradient */
+		for (i=1;i<=NX;i=i+IDXI){
+		    for (j=1;j<=NY;j=j+IDYI){
+			 (*fwiSH).forward_prop_rho_z[imat1] = (*waveSH).pvzp1[j][i];
+		         imat1++;                                   
+		    }
+		}   
+	    
+		for (i=1;i<=NX;i=i+IDXI){ 
+		    for (j=1;j<=NY;j=j+IDYI){
+		    
+			/* store forward wavefield for Vs gradient */
+		        if(GRAD_FORM==2){
+	 	          (*fwiSH).forward_prop_sxz[imat2]=(*waveSH).uz[j][i];
+	 	          (*fwiSH).forward_prop_syz[imat2]=(*waveSH).uzx[j][i];
+		        }
+
+			imat2++;
+		    
+		    }
+		}
+	   
+	    if((EPRECOND==1)||(EPRECOND==3)){
+	      eprecond_SH(Ws,(*waveSH).pvz);
+	    }
+	 
+	    hin++;
+	    hin1=hin1+DTINV;
+
+            DTINV_help[nt]=1;
+		                                                     
+	}
+
+	/* save backpropagated wavefields for time-domain inversion and partially assemble gradients */ 
+        /* ----------------------------------------------------------------------------------------- */
+	if((mode==1)&&(DTINV_help[NT-nt+1]==1)){
+	    
+		imat=((NXNYI*(NTDTINV)) - hin*NXNYI)+1;
+	                
+		    for (i=1;i<=NX;i=i+IDXI){   
+			for (j=1;j<=NY;j=j+IDYI){ 
+		                                   
+			   	(*fwiSH).waveconv_rho_shot[j][i] += (*waveSH).pvz[j][i] * (*fwiSH).forward_prop_rho_z[imat];
+			
+				/* Vs-gradient without data integration (stress-velocity in non-conservative form) */
+		                if(GRAD_FORM==2){			
+
+		           	    if(INVMAT1==1){
+		               	        muss = (*matSH).prho[j][i] * (*matSH).pu[j][i] * (*matSH).pu[j][i];
+	                   	    }
+	           
+		           	    if(INVMAT1==3){
+		               	        muss = (*matSH).pu[j][i];
+				    } 			                
+
+				    if(muss>0.0){			
+				        (*fwiSH).waveconv_u_shot[j][i] += ((*fwiSH).forward_prop_sxz[imat] * (*waveSH).psxz[j][i]) + ((*fwiSH).forward_prop_syz[imat] * (*waveSH).psyz[j][i]);			  
+				    } 		                  
+		                }			
+						                                                                                                     
+			imat++;
+			}
+		    }  
+		  
+		  if(EPRECOND==1){
+		     eprecond_SH(Wr,(*waveSH).pvz);
+		  }
+		                                                                                                                       
+	    hin++;
+	    }
 
 	   }/*--------------------  End  of loop over timesteps ----------*/		
 

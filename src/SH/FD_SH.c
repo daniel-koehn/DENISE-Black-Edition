@@ -291,7 +291,7 @@ if(RUN_MULTIPLE_SHOTS){
 }
 		                                                              
 /* solve forward problem */
-sh(&waveSH,&waveSH_PML,&matSH,&fwiPSV,&mpiPSV,&seisSH,&seisPSVfwi,&acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+sh(&waveSH,&waveSH_PML,&matSH,&fwiSH,&mpiPSV,&seisSH,&seisSHfwi,&acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
 	
 /* output of forward model seismograms */
 outseis_SHfor(&seisSH,acq.recswitch,acq.recpos,acq.recpos_loc,ntr_glob,acq.srcpos,ishot,ns,iter,FP);
