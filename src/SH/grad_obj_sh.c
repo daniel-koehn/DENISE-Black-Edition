@@ -1,16 +1,16 @@
 /*------------------------------------------------------------------------
- * Calculate gradient and objective function for AC problem
+ * Calculate gradient and objective function for SH problem
  *
  *
  * D. Koehn
- * Kiel, 12.06.2017
- *  ----------------------------------------------------------------------*/
+ * Kiel, 13.12.2017
+ * ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
 
-float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
-         struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
+float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec){
 
@@ -18,9 +18,9 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
         extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
         extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG;
-        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, MODE;
+        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, WRITE_STF;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
-        extern float C_vp, C_vs, C_rho;
+        extern float C_vs, C_rho;
         extern char MFILE[STRING_SIZE];
 
         /* local variables */
@@ -33,16 +33,16 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	if ((MYID==0) && (LOG==1)) FP=stdout;
 
 	/* initialization of L2 calculation */
-	(*seisPSVfwi).L2=0.0;
-	(*seisPSVfwi).energy=0.0;
+	(*seisSHfwi).L2=0.0;
+	(*seisSHfwi).energy=0.0;
 	L2_all_shots=0.0;
 	energy_all_shots=0.0;
 
 	EPSILON=0.0;  /* test step length */
 
 	/* set gradient and preconditioning matrices 0 before next iteration*/
-	init_grad((*fwiPSV).waveconv);
-	init_grad((*fwiPSV).waveconv_rho);
+	init_grad((*fwiSH).waveconv_rho);
+	init_grad((*fwiSH).waveconv_u);
 
 	itestshot=TESTSHOT_START;
 	swstestshot=0;
@@ -54,8 +54,8 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	/*for (ishot=1;ishot<=1;ishot+=1){*/
 
 	/*initialize gradient matrices for each shot with zeros*/
-	init_grad((*fwiPSV).waveconv_shot);
-	init_grad((*fwiPSV).waveconv_rho_shot);
+	init_grad((*fwiSH).waveconv_u_shot);
+	init_grad((*fwiSH).waveconv_rho_shot);
 
 	if((EPRECOND==1)||(EPRECOND==3)){
 	   init_grad(Ws);
@@ -74,13 +74,13 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	   }
 
 	   /* Memory for seismic data */
-	   alloc_seisPSV(ntr,ns,seisPSV);
+	   alloc_seisSH(ntr,ns,seisSH);
 	   
 	   /* Memory for full data seismograms */
-           alloc_seisPSVfull(seisPSV,ntr_glob);
+           alloc_seisSHfull(seisSH,ntr_glob);
 
 	   /* Memory for FWI seismic data */ 
-	   alloc_seisPSVfwi(ntr,ntr_glob,ns,seisPSVfwi);
+	   alloc_seisSHfwi(ntr,ntr_glob,ns,seisSHfwi);
 
 	}
 
@@ -109,7 +109,7 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	==================================================================================*/
 
 	if((INV_STF)&&(iter==1)){
-	  stf_ac(waveAC,waveAC_PML,matAC,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,ishot,nshots,nsrc_loc,nsrc,ns,ntr,ntr_glob,iter,Ws,Wr,hin,DTINV_help,req_send,req_rec);
+	  stf_sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,nsrc,ns,ntr,ntr_glob,iter,Ws,Wr,hin,DTINV_help,req_send,req_rec);
 	}
 	 
 	/*==================================================================================
@@ -119,11 +119,6 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	/* calculate wavelet for each source point */
 	(*acq).signals=NULL;
 	(*acq).signals=wavelet((*acq).srcpos_loc,nsrc_loc,ishot);
-
-	/* read source wavelet for each source if RTM of plane waves is applied */
-	if((MODE==2)&&(RUN_MULTIPLE_SHOTS==0)){
-	    wavelet_su(ishot, (*acq).signals, nsrc, ns, nsrc_loc, (*acq).srcpos_loc);
-	}
 
 	if (nsrc_loc){if(QUELLART==6){
 
@@ -141,17 +136,10 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 
 	}
 
-	/*printf("MYID=%d, nsrc_loc = %d \n",MYID,nsrc_loc);*/
-
-	/*char  source_signal_file[STRING_SIZE];
-	sprintf(source_signal_file,"source_signal.%d.su.shot%d.it%d",MYID,ishot,iter);
-	fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
-	output_source_signal(fopen(source_signal_file,"w"),signals,NT,3);*/
-
 	/* output source signal e.g. for cross-correlation of comparison with analytical solutions */
 	if(RUN_MULTIPLE_SHOTS){
 
-		if(nsrc_loc>0){
+		if((nsrc_loc>0) && WRITE_STF){
 			   sprintf(source_signal_file,"%s_source_signal.%d.su.shot%d", MFILE, MYID,ishot);
 			   fprintf(stdout,"\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
 			   output_source_signal(fopen(source_signal_file,"w"),(*acq).signals,NT,1);
@@ -160,8 +148,9 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
 				                                                      
-	/* solve forward problem */
-	ac(waveAC,waveAC_PML,matAC,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+	/* solve forward problem */	
+        sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+
 
 	/* ===============================================
 	   Calculate objective function and data residuals
@@ -170,7 +159,7 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){swstestshot=1;}
 
 	if (ntr > 0){
-	   calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
+	   calc_res_SH(seisSH,seisSHfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
 	}
 
 	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
@@ -180,28 +169,29 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 
 	/* output of time reversed residual seismograms */
 	if ((SEISMO)&&(iter==1)&&(ishot==1)){
-	   outseis_PSVres(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,(*acq).srcpos,ishot,ns,nstage,FP);       
+	   outseis_SHres(seisSH,seisSHfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,(*acq).srcpos,ishot,ns,nstage,FP);       
 	}
 		          	    		    
 	/*================================================================================
 		        Starting simulation (backward model)
 	==================================================================================*/
 	    
-	    /* Distribute multiple source positions on subdomains */
-	    /* define source positions at the receivers */
-	    (*acq).srcpos_loc_back = matrix(1,6,1,ntr);
-	    for (i=1;i<=ntr;i++){
-		(*acq).srcpos_loc_back[1][i] = ((*acq).recpos_loc[1][i]);
-		(*acq).srcpos_loc_back[2][i] = ((*acq).recpos_loc[2][i]);
-	    }
+	/* Distribute multiple source positions on subdomains */
+	/* define source positions at the receivers */
+	(*acq).srcpos_loc_back = matrix(1,6,1,ntr);
+	for (i=1;i<=ntr;i++){
+	    (*acq).srcpos_loc_back[1][i] = ((*acq).recpos_loc[1][i]);
+	    (*acq).srcpos_loc_back[2][i] = ((*acq).recpos_loc[2][i]);
+	}
 		                            
-	   /* solve adjoint problem */	   
-	   ac(waveAC,waveAC_PML,matAC,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,1,req_send,req_rec);
+	/* solve adjoint problem */	  
+        sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,1,req_send,req_rec);
 
-	   /* assemble AC gradients for each shot */
-	   ass_gradAC(fwiPSV,matAC,iter);
+	/* assemble SH gradients for each shot */
+	ass_gradSH(fwiSH,matSH,iter);
 
 	if((EPRECOND==1)||(EPRECOND==3)){
+
 	  /* calculate energy weights */
 	  eprecond1(We,Ws,Wr);
 	      
@@ -209,8 +199,9 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	  for(i=1;i<=NX;i=i+IDX){
 	      for(j=1;j<=NY;j=j+IDY){
 
-		     (*fwiPSV).waveconv_shot[j][i] = (*fwiPSV).waveconv_shot[j][i]/(We[j][i]*C_vp*C_vp);
-		     (*fwiPSV).waveconv_rho_shot[j][i] = (*fwiPSV).waveconv_rho_shot[j][i]/(We[j][i]*C_rho*C_rho);
+		     (*fwiSH).waveconv_u_shot[j][i] = (*fwiSH).waveconv_u_shot[j][i]/(We[j][i]*C_vs*C_vs);
+		     if(C_vs==0.0){(*fwiSH).waveconv_u_shot[j][i] = 0.0;}
+		     (*fwiSH).waveconv_rho_shot[j][i] = (*fwiSH).waveconv_rho_shot[j][i]/(We[j][i]*C_rho*C_rho);
 
 	      }
 	  }
@@ -219,19 +210,19 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	if (SWS_TAPER_CIRCULAR_PER_SHOT){    /* applying a circular taper at the source position to the gradient of each shot */
 	
 		/* applying the preconditioning */
-		taper_grad_shot((*fwiPSV).waveconv_shot,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,ishot);
-		taper_grad_shot((*fwiPSV).waveconv_rho_shot,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,ishot);
+		taper_grad_shot((*fwiSH).waveconv_rho_shot,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,ishot);
+		taper_grad_shot((*fwiSH).waveconv_u_shot,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,ishot);
 	
 	} /* end of SWS_TAPER_CIRCULAR_PER_SHOT == 1 */
 
 	for(i=1;i<=NX;i=i+IDX){
 		for(j=1;j<=NY;j=j+IDY){
-			(*fwiPSV).waveconv[j][i] += (*fwiPSV).waveconv_shot[j][i];
-			(*fwiPSV).waveconv_rho[j][i] += (*fwiPSV).waveconv_rho_shot[j][i];
+			(*fwiSH).waveconv_rho[j][i] += (*fwiSH).waveconv_rho_shot[j][i];
+			(*fwiSH).waveconv_u[j][i] += (*fwiSH).waveconv_u_shot[j][i];
 		}
 	}
 
-	if(RTM_SHOT==1){RTM_AC_out_shot(fwiPSV,ishot);}
+	if(RTM_SHOT==1){RTM_SH_out_shot(fwiSH,ishot);}
 
 	if((N_STREAMER>0)||(READREC==2)){
 
@@ -244,50 +235,22 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 	 
 		   switch (SEISMO){
 		   case 1 : /* particle velocities only */
-		           free_matrix((*seisPSV).sectionvx,1,ntr,1,ns);
-		           free_matrix((*seisPSV).sectionvy,1,ntr,1,ns);
-		           (*seisPSV).sectionvx=NULL;
-		           (*seisPSV).sectionvy=NULL;
-		           break;
-		    case 2 : /* pressure only */
-		           free_matrix((*seisPSV).sectionp,1,ntr,1,ns);
-		           break;
-		    case 3 : /* curl and div only */
-		           free_matrix((*seisPSV).sectioncurl,1,ntr,1,ns);
-		           free_matrix((*seisPSV).sectiondiv,1,ntr,1,ns);
-		           break;
-		    case 4 : /* everything */
-		           free_matrix((*seisPSV).sectionvx,1,ntr,1,ns);
-		           free_matrix((*seisPSV).sectionvy,1,ntr,1,ns);
-		           free_matrix((*seisPSV).sectionp,1,ntr,1,ns);
-		           free_matrix((*seisPSV).sectioncurl,1,ntr,1,ns);
-		           free_matrix((*seisPSV).sectiondiv,1,ntr,1,ns);
+		           free_matrix((*seisSH).sectionvz,1,ntr,1,ns);
+		           (*seisSH).sectionvz=NULL;
 		           break;
 
 		    }
 
 	   }
 
-	   free_matrix((*seisPSVfwi).sectionread,1,ntr_glob,1,ns);
+	   free_matrix((*seisSHfwi).sectionread,1,ntr_glob,1,ns);
 	   free_ivector((*acq).recswitch,1,ntr);
 	   
-	   if((QUELLTYPB==1)||(QUELLTYPB==3)||(QUELLTYPB==5)||(QUELLTYPB==7)){
-	      free_matrix((*seisPSVfwi).sectionvxdata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvxdiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvxdiffold,1,ntr,1,ns);
-	   }
-	   
-	   if((QUELLTYPB==1)||(QUELLTYPB==2)||(QUELLTYPB==6)||(QUELLTYPB==7)){   
-	      free_matrix((*seisPSVfwi).sectionvydata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvydiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvydiffold,1,ntr,1,ns);
-	   }
-	   
-	   if(QUELLTYPB>=4){   
-	      free_matrix((*seisPSVfwi).sectionpdata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionpdiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionpdiffold,1,ntr,1,ns);
-	   }
+	   if(QUELLTYPB){
+	      free_matrix((*seisSHfwi).sectionvzdata,1,ntr,1,ns);
+	      free_matrix((*seisSHfwi).sectionvzdiff,1,ntr,1,ns);
+	      free_matrix((*seisSHfwi).sectionvzdiffold,1,ntr,1,ns);
+	   }	   
 	   
 	   ntr=0;
 	   ntr_glob=0;
@@ -298,14 +261,14 @@ float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct m
 
 	} /* end of loop over shots (forward and backpropagation) */   
 
-	/* calculate L2 norm of all CPUs */
+	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
-        L2_tmp = (*seisPSVfwi).L2;
+        L2_tmp = (*seisSHfwi).L2;
 	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
 
-	/* calculate L2 norm of all CPUs */
+	/* calculate L2 norm of all CPUs*/
 	energy_all_shots = 0.0;
-        energy_tmp = (*seisPSVfwi).energy;
+        energy_tmp = (*seisSHfwi).energy;
 	MPI_Allreduce(&energy_tmp,&energy_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
 
 	/*if(MYID==0){

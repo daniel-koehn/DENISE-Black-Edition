@@ -24,7 +24,7 @@
 #ifndef SEGY_H
 #define SEGY_H
 
-#define SU_NFLTS	32768	/* Arbitrary limit on data array size	*/
+#define SU_NFLTS	60768	/* Arbitrary limit on data array size	*/
 
 
 /* TYPEDEFS */
