@@ -12,8 +12,8 @@
 (2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 5
-number_of_processors_in_y-direction_(NPROCY) = 3
+number_of_processors_in_x-direction_(NPROCX) = 1
+number_of_processors_in_y-direction_(NPROCY) = 1
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
@@ -27,15 +27,15 @@ FD_ORDER = 8
 #         4 =                 E = 3.0 %
 max_relative_error = 1
 #-------------------- 2-D Grid -----------------------------------
-number_of_gridpoints_in_x-direction_(NX) = 500
-number_of_gridpoints_in_y-direction_(NY) = 174
-distance_between_gridpoints(in_m)_(DH) = 20.0
+number_of_gridpoints_in_x-direction_(NX) = 4000
+number_of_gridpoints_in_y-direction_(NY) = 1392
+distance_between_gridpoints(in_m)_(DH) = 2.5
 #
 # Note that y denotes the vertical direction !
 #
 #-------------------Time Stepping -------------------------------
-time_of_wave_propagation_(in_sec)_(TIME) = 6.0
-timestep_(in_seconds)_(DT) = 2.0e-3
+time_of_wave_propagation_(in_sec)_(TIME) = 1.0
+timestep_(in_seconds)_(DT) = 2.5e-4
 #
 #--------------------Source---------------------------------------
 # Shape_of_source-signal:

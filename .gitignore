@@ -2,6 +2,12 @@
 Thumbs.db
 ehthumbs.db
 
+# compilation and execution outputs
+*.o
+*.err
+*.out
+*.su.shot*
+
 # Folder config file
 Desktop.ini
 

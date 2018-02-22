@@ -62,6 +62,9 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		}
 
         }
+
+#pragma acc data 
+{
 			    
 	/* initialize PSV wavefields with zero */
 	if (L){
@@ -94,7 +97,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	   hin=1;
 	   hin1=1;
         }
-
+//#pragma acc parallel private(i,j)
 	for (nt=1;nt<=NT;nt++){     
 		        
 		/* Check if simulation is still stable */
@@ -132,7 +135,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		}*/
 		                                           
 		/* exchange of particle velocities between PEs */
-		exchange_v_PSV((*wavePSV).pvx,(*wavePSV).pvy, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
+		//exchange_v_PSV((*wavePSV).pvx,(*wavePSV).pvy, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
 		                                                       
 		/*if (MYID==0){
 		  time5=MPI_Wtime();
@@ -190,11 +193,11 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
 
 	   /* stress exchange between PEs */
-	    exchange_s_PSV((*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy, 
+	   /* exchange_s_PSV((*wavePSV).psxx,(*wavePSV).psyy,(*wavePSV).psxy, 
 	      (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, 
 	      (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top,
 	      req_send, req_rec);
-
+*/
 	   /*if (MYID==0){
 	      time7=MPI_Wtime();
 	 	  time_av_s_exchange+=(time7-time6);
@@ -360,5 +363,5 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 	    }
 
 	   }/*--------------------  End  of loop over timesteps ----------*/		
-
+}
 }

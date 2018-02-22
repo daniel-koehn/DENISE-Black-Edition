@@ -364,8 +364,10 @@ void update_v_PML_PSV(int nx1, int nx2, int ny1, int ny2, int nt,
 		break;
 		
 	case 8:
-
+#pragma acc parallel
+#pragma acc loop independent gang
 for (j=ny1;j<=ny2;j++){
+#pragma acc loop independent vector
 	for (i=nx1;i<=nx2;i++){
 
                            sxx_x =  hc[1]*(sxx[j][i+1]-sxx[j][i])
