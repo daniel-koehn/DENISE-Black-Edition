@@ -428,6 +428,7 @@ if (L){
 MPI_Barrier(MPI_COMM_WORLD);
 
 av_mu_SH(matSH.pu, matSH.puip, matSH.pujp, matSH.prho);
+inv_rho_SH(matSH.prho, matSH.prhoi);
 if (L) av_tau(matSH.ptaus,matSH.ptausipjp);
 
 /* Preparing memory variables for update_s (viscoelastic) */

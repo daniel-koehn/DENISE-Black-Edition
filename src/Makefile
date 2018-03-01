@@ -191,6 +191,7 @@ DENISE += alloc_fwiSH.c \
 	  alloc_SH.c \
 	  ass_gradSH.c \
 	  av_mu_SH.c \
+	  inv_rho_SH.c \
 	  calc_mat_change_test_SH.c \
 	  calc_res_SH.c \
 	  checkfd_elast_SH.c \

@@ -744,8 +744,8 @@ for (j=ny1;j<=ny2;j++){
 		
 		    if(QUELLTYP==2){vx[j][i] +=  signals1[l][nt];}  /* single force in x */
 		    if(QUELLTYP==3){vy[j][i] +=  signals1[l][nt];}  /* single force in y */
-		    if(QUELLTYP==4){vx[j][i] +=  sin(azi_rad) * signals1[l][nt];    /* rotated force in x */
-		                    vy[j][i] +=  cos(azi_rad) * signals1[l][nt];}  /* rotated force in y */          
+		    if(QUELLTYP==4){vx[j][i] +=  -sin(azi_rad) * signals1[l][nt];    /* rotated force in x */
+		                    vy[j][i] +=   cos(azi_rad) * signals1[l][nt];}   /* rotated force in y */          
 		              
 		}}
 		

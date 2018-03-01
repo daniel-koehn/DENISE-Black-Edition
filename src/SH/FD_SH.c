@@ -202,7 +202,7 @@ if (L){
 MPI_Barrier(MPI_COMM_WORLD);
 
 av_mu_SH(matSH.pu, matSH.puip, matSH.pujp, matSH.prho);
-
+inv_rho_SH(matSH.prho, matSH.prhoi);
 if (L) av_tau(matSH.ptaus,matSH.ptausipjp);
 
 /* Preparing memory variables for update_s (viscoelastic) */
@@ -327,6 +327,7 @@ nsrc_loc=0;
 dealloc_SH(&waveSH,&waveSH_PML);
 
 free_matrix(matSH.prho,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matSH.prhoi,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matSH.puip,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matSH.pujp,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matSH.pu,-nd+1,NY+nd,-nd+1,NX+nd);

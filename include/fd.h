@@ -151,7 +151,7 @@ struct fwiSH{
 
 /* SH material parameters */
 struct matSH{
-   float  **prho, **puip, **pujp, **pu, **puipjp;
+   float  **prho, **prhoi, **puip, **pujp, **pu, **puipjp;
    float **ptaus, *etaip, *etajm, *peta, **ptausipjp, **fipjp, ***dip, *bip, *bjm;
    float *cip, *cjm, ***d, ***e, **f, **g;
 } matSH;
@@ -540,6 +540,8 @@ void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter);
 
 void av_mu_SH(float ** u, float ** uip, float ** ujp, float ** rho);
 
+void inv_rho_SH(float ** rho, float ** rhoi);
+
 float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  u, float **  unp1, int iter, int epstest, float eps_scale, int itest);
 
 void calc_res_SH(struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, int swstestshot);
@@ -638,7 +640,7 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 
 void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 	float **  vz, float **  vzp1, float **  vzm1, float **  utty,float ** sxz, float ** syz,
-	float  **rho, float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff,
+	float  **rho, float **rhoi, float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff,
 	float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, 
 	float * b_x_half, float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, 
 	float * b_y_half, float ** psi_sxz_x, float ** psi_syz_y);
