@@ -24,7 +24,7 @@ FILE *FP;
 
 /* Mpi-variables */
 int   NP, NPSP, NPROC, NPROCX, NPROCY, MYID, IENDX, IENDY;
-int   POS[3], INDEX[5];     
+int   POS[3], INDEX[5], NPROC_SHOT;     
 const int TAG1=1,TAG2=2, TAG3=3, TAG4=4, TAG5=5,TAG6=6; 
 
 /* spatial adaptive Code variables*/

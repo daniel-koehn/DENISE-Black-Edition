@@ -6,7 +6,7 @@
 #
 # ------------------ DENISE Mode ---------------------------------
 # Operation mode:
-(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 0
+(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 1 
 #
 # ---------------- DENISE Physics -----------------------------
 (2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
@@ -53,7 +53,7 @@ write_source_wavelet_(yes=1)_(WRITE_STF) = 1
 #
 #--------------------- Model -------------------------------------
 read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
-MFILE = start/marmousi_II_marine
+MFILE = start/marmousi_II_start_1D
 write_model_files_(yes=1)_(WRITEMOD) = 1
 #
 #---------------------Q-approximation-----------------------------
