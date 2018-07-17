@@ -1,0 +1,248 @@
+#-----------------------------------------------------------------
+#      PARAMETER FILE FOR DENISE BLACK-EDITION
+#-----------------------------------------------------------------
+# description:
+# description/name of the model: DAS_Aramco
+#
+# ------------------ DENISE Mode ---------------------------------
+# Operation mode:
+(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 0 
+#
+# ---------------- DENISE Physics -----------------------------
+(2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
+#
+#-------------- Domain Decomposition -----------------------------
+number_of_processors_in_x-direction_(NPROCX) = 4
+number_of_processors_in_y-direction_(NPROCY) = 6
+#
+#-------------------- FD order -----------------------------------
+# Order of ssg FD coefficients (values: 2, 4, ..., 12)
+FD_ORDER = 8
+# Maximum relative group velocity error E
+# (minimum number of grid points per shortest wavelength is defined by FD_ORDER and E)
+# values: 0 = Taylor coefficients
+#	  1 = Holberg coeff.: E = 0.1 %
+#	  2 =                 E = 0.5 %
+#	  3 =                 E = 1.0 %
+#         4 =                 E = 3.0 %
+max_relative_error = 1
+#-------------------- 2-D Grid -----------------------------------
+number_of_gridpoints_in_x-direction_(NX) = 500
+number_of_gridpoints_in_y-direction_(NY) = 174
+distance_between_gridpoints(in_m)_(DH) = 20.0
+#
+# Note that y denotes the vertical direction !
+#
+#-------------------Time Stepping -------------------------------
+time_of_wave_propagation_(in_sec)_(TIME) = 6.0
+timestep_(in_seconds)_(DT) = 2.0e-3
+#
+#--------------------Source---------------------------------------
+# Shape_of_source-signal:
+(ricker=1;fumue=2;from_SOURCE_FILE=3;SIN**3=4;Gaussian_deriv=5;Spike=6;Klauder=7)_(QUELLART) = 6
+SIGNAL_FILE = ./wavelet/wavelet_plexiglas
+duration_of_Klauder_wavelet_(in_seconds)_(TS) = 8.0
+read_source_positions_from_SOURCE_FILE_(yes=1)_(SRCREC) = 1
+SOURCE_FILE = ./source/source_3.dat
+run_multiple_shots_defined_in_SOURCE_FILE_(yes=1)_(RUN_MULTIPLE_SHOTS) = 1
+corner_frequency_of_highpass_filtered_spike_(FC_SPIKE_1) = -5.0
+corner_frequency_of_lowpass_filtered_spike_(FC_SPIKE_2) = 15.0
+order_of_Butterworth_filter_(ORDER_SPIKE) = 5
+write_source_wavelet_(yes=1)_(WRITE_STF) = 1
+#
+#
+#--------------------- Model -------------------------------------
+read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
+#MFILE = start/marmousi_II_marine 
+MFILE = start/marmousi_II_start_1D
+write_model_files_(yes=1)_(WRITEMOD) = 1
+#
+#---------------------Q-approximation-----------------------------
+Number_of_relaxation_mechanisms_(L) = 0
+L_Relaxation_frequencies_(FL) = 20000.0 
+Tau_(TAU) = 1.0
+#
+#----------------------Free Surface-------------------------------
+free_surface_(yes=1)(FREE_SURF) = 1
+#
+#--------------------PML Boundary---------------------------
+# quadratic damping applied
+width_of_absorbing_frame_(in_gridpoints)_(No<=0)_(FW) = 10
+Damping_velocity_in_CPML_(in_m/s)_(DAMPING) = 1500.0
+Frequency_within_the_PML_(Hz)_(FPML) = 10.0
+npower = 4.0;
+k_max_PML = 1.0;
+# apply_periodic_boundary_condition_at_edges_(BOUNDARY):
+(no=0)_(left_and_right=1) = 0
+#
+#----------------------Snapshots----------------------------------
+output_of_snapshots_(SNAP)(yes>0) = 0
+# output of particle velocities: SNAP=1
+# output of pressure field: SNAP=2
+# output of curl and divergence energy: SNAP=3
+# output of both particle velocities and energy : SNAP=4
+write_snapshots_for_shot_no_(SNAP_SHOT) = 1
+first_snapshot_(in_sec)_(TSNAP1) = 0.002
+last_snapshot_(in_sec)_(TSNAP2) = 3.0
+increment_(in_sec)_(TSNAPINC) = 0.06
+increment_x-direction_(IDX) = 1
+increment_y-direction_(IDY) = 1
+data-format_(SNAP_FORMAT)(ASCII(2);BINARY(3)) = 3
+basic_filename_(SNAP_FILE) = ./snap/waveform_forward
+#
+#----------------------Receiver-----------------------------------
+output_of_seismograms_(SEISMO) = 1
+# SEISMO=0: no seismograms
+# SEISMO=1: particle-velocities
+# SEISMO=2: pressure (hydrophones)
+# SEISMO=3: curl and div
+# SEISMO=4: everything
+read_receiver_positions_from_file_(single_file=1/multiple_files=2)_(READREC) = 1
+REC_FILE = ./receiver/receiver_OBC
+reference_point_for_receiver_coordinate_system_(REFREC) = 0.0 , 0.0
+#
+#
+#-------------------- Towed streamer -------------------------------
+# parameters for towed streamer acquisition
+The_first_(N_STREAMER)_receivers_in_REC_FILE_belong_to_streamer = 0
+Cable_increment_per_shot_(REC_INCR_X) = 80
+Cable_increment_per_shot_(REC_INCR_Y) = 0
+#
+#
+#--------------------  Seismograms  --------------------------------
+samplingrate_(in_timesteps!)_(NDT) = 1
+data-format_(SU(1);ASCII(2);BINARY(3)) = 1
+# output files for seismograms
+# particle velocities (if SEISMO=1 or SEISMO=4)
+filename_for_Vx_(SEIS_FILE_VX) = su/DENISE_MARMOUSI_x.su
+filename_for_Vy_(SEIS_FILE_VY) = su/DENISE_MARMOUSI_y.su
+# curl and div of wavefield (if SEISMO=3 or SEISMO=4)
+filename_for_curl_(SEIS_FILE_CURL) = su/2layer_rot.su
+filename_for_div_(SEIS_FILE_DIV) = su/2layer_div.su
+# pressure field (hydrophones) (if SEISMO=2 or SEISMO=4)
+filename_for_pressure_(SEIS_FILE_P) = su/DENISE_MARMOUSI_p.su
+#  
+#----------------------------------------------------------------
+# each PE is printing log-information to LOG_FILE.MYID
+log-file_for_information_about_progress_of_program_(LOG_FILE) = log/US.log
+info_of_processing_element_zero_to_stdout_(yes=1/no=0)_(LOG) = 1
+#----------------------------------------------------------------
+# DENISE_elastic specific parameters
+number_of_TDFWI_iterations_(ITERMAX) = 600
+output_of_jacobian_(JACOBIAN) = jacobian/jacobian_Test
+#
+# input DATA path goes here
+#
+seismograms_of_measured_data_(DATA_DIR) = su/MARMOUSI_spike/DENISE_MARMOUSI
+cosine_taper_(yes=1/no=0)_(TAPER) = 0
+taper_length_(in_rec_numbers)_(TAPERLENGTH) = 4
+gradient_taper_geometry_(GRADT1,GRADT2,GRADT3,GRADT4) = 21, 25, 490, 500
+type_of_material_parameters_to_invert_(Vp,Vs,rho=1/Zp,Zs,rho=2/lam,mu,rho=3)_(INVMAT1) = 1
+adjoint_source_type_(x-y_components=1/y_comp=2/x_comp=3/p_comp=4/x-p_comp=5/y-p_comp=6/x-y-p_comp=7)_(QUELLTYPB) = 1
+#
+#the last TESTSHOT_END is included
+#
+testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR) = 1, 3, 1
+#
+#
+# ----- Definition of gradient taper geometry ----- #
+# Vertical taper
+apply_vertical_taper_(yes=1)_(SWS_TAPER_GRAD_VERT) = 0
+# Horizontal taper
+apply_horizontal_taper_(yes=1)_(SWS_TAPER_GRAD_HOR) = 1
+exponent_of_depth_scaling_for_preconditioning_(EXP_TAPER_GRAD_HOR) = 2.0
+# Circular taper around all sources (not at receiver positions)
+apply_cylindrical_taper_(yes=1)_(SWS_TAPER_GRAD_SOURCES) = 0
+apply_cylindrical_taper_per_shot_(yes=1)_(SWS_TAPER_CIRCULAR_PER_SHOT) = 0
+(1=error_function,2=log_function)_(SRTSHAPE) = 1
+radius_in_m_(SRTRADIUS) = 5.0
+# --> minimum for SRTRADIUS is 5x5 gridpoints
+filtsize_in_gridpoints_(FILTSIZE) = 1
+read_taper_from_file_(yes=1)_(SWS_TAPER_FILE) = 0
+#
+#
+# ----- Output of inverted models ----- #
+write_inverted_model_after_each_iteration_(yes=1)_(INV_MOD_OUT) = 0
+output_of_models_(INV_MODELFILE) = model/modelTest
+#
+#
+# ----- Upper and lower limits for model parameters ----- #
+upper_limit_for_vp/lambda_(VPUPPERLIM) = 6000.0
+lower_limit_for_vp/lambda_(VPLOWERLIM) = 0.0
+upper_limit_for_vs/mu_(VSUPPERLIM) = 4000.0
+lower_limit_for_vs/mu_(VSLOWERLIM) = 0.0
+upper_limit_for_rho_(RHOUPPERLIM) = 3000.0
+lower_limit_for_rho_(RHOLOWERLIM) = 1000.0
+#
+#
+# ----- Optimization-Method ------ #
+gradient_method_(PCG=1/LBFGS=2)_(GRAD_METHOD) = 2
+PCG_BETA_(Fletcher_Reeves=1/Polak_Ribiere=2/Hestenes_Stiefel=3/Dai_Yuan=4) = 2
+save_(NLBFGS)_updates_during_LBFGS_optimization = 20
+#
+#
+#----- Definition of smoothing the models vp and vs ----- #
+apply_spatial_filtering_(1=yes)_(MODEL_FILTER) = 0
+filter_length_in_gridpoints_(FILT_SIZE) = 5
+#
+#
+#----- Reduce size of inversion grid ------#
+use_only_every_DTINV_time_sample_for_gradient_calculation_(DTINV) = 3
+#
+#
+#----- Step length estimation ------# 
+maximum_model_change_of_maximum_model_value_(EPS_SCALE) = 0.01 
+maximum_number_of_attemps_to_find_a_step_length_(STEPMAX) = 6;
+SCALEFAC = 2.0;
+#
+#
+#----- Trace killing -----#
+apply_trace_killing_(yes=1)_(TRKILL) = 0
+TRKILL_FILE = ./trace_kill/trace_kill.dat
+#
+#
+#----- Time windowing and damping -----#
+files_with_picked_times_(PICKS_FILE) = ./picked_times/picks_
+#
+#
+#----- MISFIT LOG FILE -----#
+log_file_for_misfit_evolution_(MISFIT_LOG_FILE) = LOG_TEST.dat
+#
+#
+# ----- Minimum number of iteration per frequency ----- #
+MIN_ITER = 0;
+#
+# ----- Definition of smoothing the Jacobians with 2D-Gaussian ----- #
+apply_spatial_filtering_(yes=1)_(GRAD_FILTER) = 0
+filter_length_in_gridpoints_(FILT_SIZE_GRAD) = 10
+#
+# ----- FWT double-difference time-lapse mode ---------------------------- #
+activate_time_lapse_mode_(yes=1)_(TIMELAPSE) = 0
+# if TIMELAPSE == 1, DATA_DIR should be the directory containing the data differences
+# between time t0 and t1 
+seismograms_of_synthetic_data_at_t0_(DATA_DIR_T0) = su/CAES_spike_time_0/DENISE_CAES
+#
+# ----- Reverse Time Modelling ------------------------- #
+apply_reverse_time_modelling_(yes=1)_(RTMOD) = 0
+#
+#
+# ----- Gravity Modelling/Inversion -----#
+# no gravity modelling and inversion: GRAVITY=0
+# activate only gravity modelling: GRAVITY=1
+# activate gravity modelling and inversion: GRAVITY=2
+active_gravity_modelling_(=1)_and_inversion_(=2)_(GRAVITY) = 0
+# boundaries in x-direction in gridpoints
+boundary_gridpoints_in_x_(NGRAVB) = 500
+# boundaries in z-direction in meter
+boundary_meter_in_z_(NZGRAV) = 200000
+# model and invert gravity data: GRAV_TYPE=1
+# model and invert gravity gradient data: GRAV_TYPE=2
+use_of_gravity_(=1)_or_gravity_gradient_(=2)_data_(GRAV_TYPE) = 1
+# use initial density model (=1) ,only reasonable for inversion, as background density or self-defined model (=2)
+chosen_background_density_model_(BACK_DENSITY) = 2
+# if BACK_DENSITY = 2, define your model 
+filename_for_background_density_(DFILE) = gravity/background_density.rho
+#
+# ----- RTM parameters ---------------------------- #
+output_of_RTM_result_for_each_shot_(yes=1)_(RTM_SHOT) = 0
+#
