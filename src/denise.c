@@ -58,6 +58,7 @@
 
 int main(int argc, char **argv){
 char * fileinp;
+FILE *fpsrc;
 
 /* Initialize MPI environment */
 MPI_Init(&argc,&argv);
@@ -84,8 +85,6 @@ if(FP==NULL) {
 
 /* read input file *.inp */
 read_par(FP);
-
-NSHOTS = 3;
  
 /* Init shot parallelization*/
 COLOR = MYID / (NPROCX * NPROCY);
@@ -98,6 +97,9 @@ printf("...........%d.. %d........shotcome\n", NP, NCOLORS);
 printf("...........%d.. %d........NX NY\n", NPROCX, NPROCY);
 
 MPI_Barrier(MPI_COMM_WORLD);
+
+sources(&NSHOTS);
+printf("The number of shots %d", NSHOTS);
 
 /* check if parameters for PHYSICS and MODE are correct */
 check_mode_phys();

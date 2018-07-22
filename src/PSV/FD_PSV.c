@@ -272,9 +272,10 @@ void FD_PSV()
                 ishot2 = SNAP_SHOT;
         }
 
-        NSHOT1 = NSHOTS / NCOLORS * COLOR + 1;
-        NSHOT2 = min(NSHOT1 + NSHOTS / NCOLORS - 1, NSHOTS);
-
+        // dividing shots into NCOLORS groups
+        NSHOT1 = (1 + (NSHOTS-1) / NCOLORS) * COLOR + 1;
+        NSHOT2 = min(NSHOT1 + (NSHOTS-1) / NCOLORS, NSHOTS);
+        
         for (ishot = NSHOT1; ishot <= NSHOT2; ishot += SHOTINC)
         {
                 /*for (ishot=1;ishot<=1;ishot+=1){*/

@@ -16,10 +16,6 @@ float **splitsrc(float **srcpos,int *nsrc_loc, int nsrc)
 	float ** srcpos_dummy, **srcpos_local=NULL;
 	srcpos_dummy = matrix(1,8,1,nsrc);
 
-	//NSHOTS = nsrc;
-	NSHOT1 = NSHOTS/NCOLORS*COLOR + 1;
-	NSHOT2 = min(NSHOT1 + NSHOTS/NCOLORS -1, NSHOTS);
-	printf("MYID = %d, COLOR =%d, NSHOT1 = %d, NSHOT2 = %d, NSHOTS =%d \n", MYID, COLOR, NSHOT1, NSHOT2, NSHOTS);
 	for (j=1;j<=nsrc;j++) {
 		a=(iround(srcpos[1][j]/DH)-1)/IENDX;
 		b=(iround(srcpos[2][j]/DH)-1)/IENDY;
