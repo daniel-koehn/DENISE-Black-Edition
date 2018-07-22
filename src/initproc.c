@@ -11,14 +11,14 @@
 void initproc(void)	{
 
 	extern int NX, NY, IENDX, IENDY, POS[3], INDEX[5];
-	extern int NP, NPROC, NPROCX, NPROCY, MYID;
+	extern int NP, NPROC, NPROCX, NPROCY, MYID, MYID_SHOT, NCOLORS;
 	extern FILE *FP;
 
-	if (NPROC != NP)
+	if (NPROC*NCOLORS != NP)
 		err("Number of processors specified in the parameter file \n and at command line (NP) differ !");
 
 
-	/*C-- determine the length of the subarray on this processor*/
+	/*C-- determine dimensions of subdomain processor*/
 	IENDX = NX/NPROCX;
 	IENDY = NY/NPROCY;
 
@@ -39,22 +39,22 @@ void initproc(void)	{
 
 
 	/*---------------   index is indicating neighbouring processes	--------------------*/
-	INDEX[1]=MYID-1;  		 /* left	*/
-	INDEX[2]=MYID+1;  		 /* right	*/
-	INDEX[3]=MYID-NPROCX;  		 /* upper	*/
-	INDEX[4]=MYID+NPROCX;  		 /* lower	*/
+	INDEX[1]=MYID_SHOT-1;  		 /* left	*/
+	INDEX[2]=MYID_SHOT+1;  		 /* right	*/
+	INDEX[3]=MYID_SHOT-NPROCX;  		 /* upper	*/
+	INDEX[4]=MYID_SHOT+NPROCX;  		 /* lower	*/
 	
 	/*---------------   POS indicates the processor location in the 3D logical processor array	---------*/
-	POS[1] = MYID % NPROCX;			/*  x coordinate */
-	POS[2] = (MYID/NPROCX); 	/*  y coordinate */
+	POS[1] = MYID_SHOT % NPROCX;			/*  x coordinate */
+	POS[2] = (MYID_SHOT/NPROCX); 	/*  y coordinate */
 
 	if (POS[1] == 0)        INDEX[1]=INDEX[1] + NPROCX;        	  
 	if (POS[1] == NPROCX-1) INDEX[2]=INDEX[2] - NPROCX;          	 
-	if (POS[2] == 0)        INDEX[3]=(NPROCX*NPROCY)+MYID-NPROCX; 	 
-	if (POS[2] == NPROCY-1) INDEX[4]=MYID+NPROCX-(NPROCX*NPROCY);	 
+	if (POS[2] == 0)        INDEX[3]=(NPROCX*NPROCY)+MYID_SHOT-NPROCX; 	 
+	if (POS[2] == NPROCY-1) INDEX[4]=MYID_SHOT+NPROCX-(NPROCX*NPROCY);	 
 
 	fprintf(FP,"\n");
-	fprintf(FP," **Message from initprocs (written by PE %d):\n",MYID);
+	fprintf(FP," **Message from initprocs (written by PEEEP %d):\n",MYID);
 	fprintf(FP," Processor locations in the 2D logical processor array\n");
 	fprintf(FP," MYID \t POS(1):left,right \t POS(2): top, bottom\n");
 	

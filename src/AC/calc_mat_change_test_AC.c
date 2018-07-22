@@ -16,7 +16,7 @@ float calc_mat_change_test_AC(float  **  waveconv, float  **  waveconv_rho, floa
 	/* extern variables */
 	extern float DH, DT;
 	extern float EPSILON, EPSILON_rho, MUN, SCALERHO;
-	extern int NX, NY, NXG, NYG,  POS[3], MYID, INVMAT1;
+	extern int NX, NY, NXG, NYG,  POS[3], MYID, MYID_SHOT, INVMAT1;
 	
 	extern int INV_RHO_ITER, INV_VP_ITER, INV_VS_ITER;
 	

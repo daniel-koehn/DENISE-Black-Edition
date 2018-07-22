@@ -21,7 +21,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
 	/* global variables */
 	extern float DT, DH, TSNAP1, TSNAP2, TSNAPINC;
-	extern int MYID, FDORDER, FW, L, GRAD_FORM, FC_SPIKE_1, FC_SPIKE_2, ORDER_SPIKE;
+	extern int MYID_SHOT, FDORDER, FW, L, GRAD_FORM, FC_SPIKE_1, FC_SPIKE_2, ORDER_SPIKE;
 	extern int NX, NY, FREE_SURF, BOUNDARY, MODE, QUELLTYP, QUELLTYPB, QUELLART, FDORDER;
 	extern int NPROCX, NPROCY, POS[3], NDT, SEISMO, IDXI, IDYI, GRAD_FORM, DTINV;
 	extern int SNAP, INVMAT1, INV_STF, EPRECOND, NTDTINV, NXNYI, NT;
@@ -35,7 +35,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
 	/*MPI_Barrier(MPI_COMM_WORLD);*/
 
-	if (MYID == 0)
+	if (MYID_SHOT == 0)
 	{
 
 		if ((INV_STF == 0) && (mode == 0))
@@ -104,7 +104,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
 		infoout = !(nt % 10000);
 
-		if (MYID == 0)
+		if (MYID_SHOT == 0)
 		{
 			if (infoout)
 				fprintf(FP, "\n Computing timestep %d of %d \n", nt, NT);
@@ -128,7 +128,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 							 (*wavePSV_PML).a_y_half, (*wavePSV_PML).b_y_half, (*wavePSV_PML).psi_sxx_x, (*wavePSV_PML).psi_syy_y, (*wavePSV_PML).psi_sxy_y, (*wavePSV_PML).psi_sxy_x);
 		}
 
-		/*if (MYID==0){
+		/*if (MYID_SHOT==0){
 			time4=MPI_Wtime();
 			time_av_v_update+=(time4-time3);
 			if (infoout)  fprintf(FP," particle velocity exchange between PEs ...");
@@ -137,7 +137,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 		/* exchange of particle velocities between PEs */
 		exchange_v_PSV((*wavePSV).pvx, (*wavePSV).pvy, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
 
-		/*if (MYID==0){
+		/*if (MYID_SHOT==0){
 		  time5=MPI_Wtime();
 		  time_av_v_exchange+=(time5-time4);
 		  if (infoout)  fprintf(FP," finished (real time: %4.2f s).\n",time5-time4);
@@ -186,7 +186,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 										(*wavePSV_PML).K_x, (*wavePSV_PML).a_x, (*wavePSV_PML).b_x, (*wavePSV_PML).psi_vxxs);
 		}
 
-		/*if (MYID==0){
+		/*if (MYID_SHOT==0){
 	      time6=MPI_Wtime();
 		  time_av_s_update+=(time6-time5);
 	      if (infoout)  fprintf(FP," stress exchange between PEs ...");
@@ -198,7 +198,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 					   (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top,
 					   req_send, req_rec);
 
-		/*if (MYID==0){
+		/*if (MYID_SHOT==0){
 	      time7=MPI_Wtime();
 	 	  time_av_s_exchange+=(time7-time6);
 	     if (infoout)  fprintf(FP," finished (real time: %4.2f s).\n",time7-time6);
@@ -222,7 +222,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 			lsnap = lsnap + iround(TSNAPINC / DT);
 		}
 
-		/*if (MYID==0){
+		/*if (MYID_SHOT==0){
 	      time8=MPI_Wtime();
 		  time_av_timestep+=(time8-time3);
 	      if (infoout)  fprintf(FP," total real time for timestep %d : %4.2f s.\n",nt,time8-time3);
