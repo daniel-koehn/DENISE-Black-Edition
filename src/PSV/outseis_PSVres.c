@@ -10,7 +10,7 @@
 void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob, float ** srcpos, int ishot, int ns, int nstage, FILE *FP){ 
 		
         /* global variables */
-	extern int QUELLTYPB, MYID;	
+	extern int QUELLTYPB, MYID_SHOT;	
 	
         /* local variables */
 
@@ -19,7 +19,7 @@ void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int 
            catseis((*seisPSVfwi).sectionvxdiff, (*seisPSV).fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
            catseis((*seisPSVfwi).sectionvydiff, (*seisPSV).fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
       
-           if (MYID==0){
+           if (MYID_SHOT==0){
 	      saveseis_glob(FP,(*seisPSV).fulldata_vx,(*seisPSV).fulldata_vy,(*seisPSV).sectionp,(*seisPSV).sectioncurl,(*seisPSV).sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
            }
       
@@ -29,7 +29,7 @@ void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int 
    
            catseis((*seisPSVfwi).sectionvydiff, (*seisPSV).fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
       
-           if (MYID==0){
+           if (MYID_SHOT==0){
               saveseis_glob(FP,(*seisPSV).fulldata_vy,(*seisPSV).fulldata_vy,(*seisPSV).sectionvy,(*seisPSV).sectionvy,(*seisPSV).sectionvy,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
            }
       
@@ -39,7 +39,7 @@ void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int 
    
            catseis((*seisPSVfwi).sectionvxdiff, (*seisPSV).fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
       
-           if (MYID==0){
+           if (MYID_SHOT==0){
               saveseis_glob(FP,(*seisPSV).fulldata_vx,(*seisPSV).fulldata_vy,(*seisPSV).sectionp,(*seisPSV).sectioncurl,(*seisPSV).sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
            }
       
@@ -49,7 +49,7 @@ void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int 
    
            catseis((*seisPSVfwi).sectionpdiff, (*seisPSV).fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
       
-           if (MYID==0){
+           if (MYID_SHOT==0){
               saveseis_glob(FP,(*seisPSV).sectionvx,(*seisPSV).sectionvy,(*seisPSV).fulldata_p,(*seisPSV).sectioncurl,(*seisPSV).sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 
            }
       
@@ -60,7 +60,7 @@ void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int 
            catseis((*seisPSVfwi).sectionvxdiff, (*seisPSV).fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
            catseis((*seisPSVfwi).sectionpdiff, (*seisPSV).fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
  
-           if (MYID==0){
+           if (MYID_SHOT==0){
               saveseis_glob(FP,(*seisPSV).fulldata_vx,(*seisPSV).fulldata_vy,(*seisPSV).fulldata_p,(*seisPSV).sectioncurl,(*seisPSV).sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage);
            }
 
@@ -71,7 +71,7 @@ void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int 
            catseis((*seisPSVfwi).sectionvydiff, (*seisPSV).fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
            catseis((*seisPSVfwi).sectionpdiff, (*seisPSV).fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
 
-           if (MYID==0){
+           if (MYID_SHOT==0){
               saveseis_glob(FP,(*seisPSV).fulldata_vx,(*seisPSV).fulldata_vy,(*seisPSV).fulldata_p,(*seisPSV).sectionvy,(*seisPSV).sectionvy,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage);
            }
 
@@ -82,7 +82,7 @@ void outseis_PSVres(struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, int 
            catseis((*seisPSVfwi).sectionvxdiff, (*seisPSV).fulldata_vx, recswitch, ntr_glob, MPI_COMM_WORLD);
            catseis((*seisPSVfwi).sectionvydiff, (*seisPSV).fulldata_vy, recswitch, ntr_glob, MPI_COMM_WORLD);
            catseis((*seisPSVfwi).sectionpdiff, (*seisPSV).fulldata_p, recswitch, ntr_glob, MPI_COMM_WORLD);
-           if (MYID==0){
+           if (MYID_SHOT==0){
               saveseis_glob(FP,(*seisPSV).fulldata_vx,(*seisPSV).fulldata_vy,(*seisPSV).fulldata_p,(*seisPSV).sectioncurl,(*seisPSV).sectiondiv,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage);
            }
 

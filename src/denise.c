@@ -85,6 +85,18 @@ if(FP==NULL) {
 /* read input file *.inp */
 read_par(FP);
 
+NSHOTS = 3;
+ 
+/* Init shot parallelization*/
+COLOR = MYID / (NPROCX * NPROCY);
+MPI_Comm_split(MPI_COMM_WORLD, COLOR, MYID, &SHOT_COMM);
+MPI_Comm_rank(SHOT_COMM, &MYID_SHOT);
+NCOLORS = NP / (NPROCX * NPROCY);
+printf("....MYID.......%d.. %d.. COLOR......shotcome\n", MYID, COLOR);
+printf("...........%d.. %d........shotcome\n", NP, NCOLORS);
+
+printf("...........%d.. %d........NX NY\n", NPROCX, NPROCY);
+
 MPI_Barrier(MPI_COMM_WORLD);
 
 /* check if parameters for PHYSICS and MODE are correct */
@@ -125,6 +137,7 @@ if(PHYSICS==5){
   physics_SH();
 }
 
+MPI_Comm_free(&SHOT_COMM);
 
 MPI_Finalize();
 return 0;	

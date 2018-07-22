@@ -22,6 +22,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
 	extern float C_vp, C_vs, C_rho;
 	extern char MFILE[STRING_SIZE];
+	extern int NSHOT1, NSHOT2, NSHOTS, COLOR, NCOLORS;
 
 	/* local variables */
 	int i, j, nshots, ishot, nt, lsnap, itestshot, swstestshot;
@@ -56,13 +57,13 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 		nshots = 1;
 
 	// adding shot parallelization
-	// we divide shots into groups of size <= NPROCSHOT
+	// we divide shots into groups of size <= NCOLORS
 	// for each
-	/*
-	NSHOT1 = NSHOTS/NRPOCSHOT*COLOR + 1;
-	NSHOT2 = min(NSHOT1 + NSHOTS/NRPOCSHOT, NSHOTS);*/
+	/**/
+	NSHOT1 = NSHOTS/NCOLORS*COLOR + 1;
+	NSHOT2 = min(NSHOT1 + NSHOTS/NCOLORS, NSHOTS);
 
-	for (ishot = 1; ishot <= nshots; ishot += SHOTINC)
+	for (ishot = NSHOT1; ishot <= NSHOT2; ishot += SHOTINC)
 	{
 		/*for (ishot=1;ishot<=1;ishot+=1){*/
 

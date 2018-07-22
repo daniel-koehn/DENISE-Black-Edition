@@ -11,7 +11,7 @@ void RTM_PSV_out_shot(struct fwiPSV *fwiPSV, int ishot){
 
         /* global variables */
 	extern int NX, NY, IDX, IDY;
-	extern int POS[3], MYID;
+	extern int POS[3], MYID_SHOT;
 	extern char JACOBIAN[STRING_SIZE];
 	
         /* local variables */
@@ -38,7 +38,7 @@ void RTM_PSV_out_shot(struct fwiPSV *fwiPSV, int ishot){
 
 	/* merge P-image file */ 
 	sprintf(jac1,"%s_P_image_shot_%i",JACOBIAN,ishot);
-	if (MYID==0) mergemod(jac1,3);
+	if (MYID_SHOT==0) mergemod(jac1,3);
 
         /* clean up temporary files*/
         MPI_Barrier(MPI_COMM_WORLD);
@@ -62,7 +62,7 @@ void RTM_PSV_out_shot(struct fwiPSV *fwiPSV, int ishot){
 
 	/* merge S-image file */ 
 	sprintf(jac1,"%s_S_image_shot_%i",JACOBIAN,ishot);
-	if (MYID==0) mergemod(jac1,3);
+	if (MYID_SHOT==0) mergemod(jac1,3);
 
         /* clean up temporary files*/
         MPI_Barrier(MPI_COMM_WORLD);

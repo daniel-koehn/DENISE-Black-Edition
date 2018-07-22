@@ -9,11 +9,12 @@
 void note(FILE *fp){
 
 extern char LOG_FILE[STRING_SIZE];
-extern int MYID, LOG;
+extern int MYID, MYID_SHOT, LOG;
 
 	fprintf(fp," Please note: \n");
 	fprintf(fp," Each processing element (PE) is writing log information during program \n");
 	fprintf(fp," execution to %s.PE .\n",LOG_FILE);
+	fprintf(fp," MYID_SHOT =  %i.................\n",MYID_SHOT);
 	fprintf(fp," See corresponding log-files for further information on program status.\n");
 	fprintf(fp," Information about overall program execution \n");
 	fprintf(fp," (numerical artefacts, accuracy, computing times etc) \n");

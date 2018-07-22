@@ -14,6 +14,7 @@ void matcopy_elastic_PSV(float ** rho, float ** pi, float ** u){
 	extern int MYID, NX, NY, INDEX[5];
 	extern const int TAG1,TAG2,TAG5,TAG6;
 	extern FILE *FP;
+	extern MPI_Comm SHOT_COMM;
 
 
 	MPI_Status status;	
@@ -56,12 +57,12 @@ void matcopy_elastic_PSV(float ** rho, float ** pi, float ** u){
 
  	/*=========sending and receiving of the boundaries==========*/
 
-	MPI_Bsend(&buffertop_to_bot_1[0][1],(NX+2)*3,MPI_FLOAT,INDEX[3],TAG5,MPI_COMM_WORLD);
-	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Recv(&buffertop_to_bot_1[0][1],(NX+2)*3,MPI_FLOAT,INDEX[4],TAG5,MPI_COMM_WORLD,&status);
-	MPI_Bsend(&bufferbot_to_top_1[0][1],(NX+2)*3,MPI_FLOAT,INDEX[4],TAG6,MPI_COMM_WORLD);
-	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Recv(&bufferbot_to_top_1[0][1],(NX+2)*3,MPI_FLOAT,INDEX[3],TAG6,MPI_COMM_WORLD,&status);   
+	MPI_Bsend(&buffertop_to_bot_1[0][1],(NX+2)*3,MPI_FLOAT,INDEX[3],TAG5,SHOT_COMM);
+	MPI_Barrier(SHOT_COMM);
+	MPI_Recv(&buffertop_to_bot_1[0][1],(NX+2)*3,MPI_FLOAT,INDEX[4],TAG5,SHOT_COMM,&status);
+	MPI_Bsend(&bufferbot_to_top_1[0][1],(NX+2)*3,MPI_FLOAT,INDEX[4],TAG6,SHOT_COMM);
+	MPI_Barrier(SHOT_COMM);
+	MPI_Recv(&bufferbot_to_top_1[0][1],(NX+2)*3,MPI_FLOAT,INDEX[3],TAG6,SHOT_COMM,&status);   
 
 
 /*	if (POS[2]!=NPROCY-1)*/	/* no boundary exchange at bottom of global grid */
@@ -101,12 +102,12 @@ void matcopy_elastic_PSV(float ** rho, float ** pi, float ** u){
 
 
 
- 	MPI_Bsend(&bufferlef_to_rig_1[0][1],(NY+2)*3,MPI_FLOAT,INDEX[1],TAG1,MPI_COMM_WORLD);
-	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Recv(&bufferlef_to_rig_1[0][1],(NY+2)*3,MPI_FLOAT,INDEX[2],TAG1,MPI_COMM_WORLD,&status);
-	MPI_Bsend(&bufferrig_to_lef_1[0][1],(NY+2)*3,MPI_FLOAT,INDEX[2],TAG2,MPI_COMM_WORLD);
-	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Recv(&bufferrig_to_lef_1[0][1],(NY+2)*3,MPI_FLOAT,INDEX[1],TAG2,MPI_COMM_WORLD,&status);
+ 	MPI_Bsend(&bufferlef_to_rig_1[0][1],(NY+2)*3,MPI_FLOAT,INDEX[1],TAG1,SHOT_COMM);
+	MPI_Barrier(SHOT_COMM);
+	MPI_Recv(&bufferlef_to_rig_1[0][1],(NY+2)*3,MPI_FLOAT,INDEX[2],TAG1,SHOT_COMM,&status);
+	MPI_Bsend(&bufferrig_to_lef_1[0][1],(NY+2)*3,MPI_FLOAT,INDEX[2],TAG2,SHOT_COMM);
+	MPI_Barrier(SHOT_COMM);
+	MPI_Recv(&bufferrig_to_lef_1[0][1],(NY+2)*3,MPI_FLOAT,INDEX[1],TAG2,SHOT_COMM,&status);
 
 
 /*	if (POS[1]!=NPROCX-1)*/	/* no boundary exchange at right edge of global grid */

@@ -8,13 +8,18 @@
 float **splitsrc(float **srcpos,int *nsrc_loc, int nsrc)
 {
 
-	extern int IENDX, IENDY, POS[3], MYID;
+	extern int IENDX, IENDY, POS[3], COLOR, MYID;
+	extern int NCOLORS, NSHOT1, NSHOT2, NSHOTS;
 	extern float DH;
 
 	int a,b,i=0,j,k,found=0;
 	float ** srcpos_dummy, **srcpos_local=NULL;
 	srcpos_dummy = matrix(1,8,1,nsrc);
 
+	//NSHOTS = nsrc;
+	NSHOT1 = NSHOTS/NCOLORS*COLOR + 1;
+	NSHOT2 = min(NSHOT1 + NSHOTS/NCOLORS -1, NSHOTS);
+	printf("MYID = %d, COLOR =%d, NSHOT1 = %d, NSHOT2 = %d, NSHOTS =%d \n", MYID, COLOR, NSHOT1, NSHOT2, NSHOTS);
 	for (j=1;j<=nsrc;j++) {
 		a=(iround(srcpos[1][j]/DH)-1)/IENDX;
 		b=(iround(srcpos[2][j]/DH)-1)/IENDY;
@@ -49,16 +54,16 @@ float **splitsrc(float **srcpos,int *nsrc_loc, int nsrc)
 
 	/*printf("\n **Message from splitsrc:\n");
 	printf(" Splitting of source positions from global to local grids finished.\n");
-	printf(" MYID= %d \t \t no. of sources= %d\n",MYID,i);
+	printf(" MYID_SHOT= %d \t \t no. of sources= %d\n",MYID_SHOT,i);
 	
 
 	printf("\n **Message from splitsrc:\n");
 	printf(" Table of local source positions (in gridpoints), time-shift, centre frequency and amplitude:\n");
-	printf(" MYID\t  x\t  y\t  z\t  tshift  fc\t  amp\n");
+	printf(" MYID_SHOT\t  x\t  y\t  z\t  tshift  fc\t  amp\n");
 
 	for (j=1;j<=i;j++)
 		printf(" %3d\t%4.0f\t%4.0f\t%4.0f\t%6.2f\t%6.2f\t%6.2f\n",
-		    MYID,srcpos_local[1][j],srcpos_local[2][j],srcpos_local[3][j],
+		    MYID_SHOT,srcpos_local[1][j],srcpos_local[2][j],srcpos_local[3][j],
 				   srcpos_local[4][j],srcpos_local[5][j],srcpos_local[6][j]);
 
         */

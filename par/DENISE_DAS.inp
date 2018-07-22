@@ -13,7 +13,9 @@
 #
 #-------------- Domain Decomposition -----------------------------
 number_of_processors_in_x-direction_(NPROCX) = 4
-number_of_processors_in_y-direction_(NPROCY) = 6
+number_of_processors_in_y-direction_(NPROCY) = 2
+#
+#total number of processes should be dividable by (NPROCX x NPROCY)
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
@@ -53,8 +55,8 @@ write_source_wavelet_(yes=1)_(WRITE_STF) = 1
 #
 #--------------------- Model -------------------------------------
 read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
-#MFILE = start/marmousi_II_marine 
-MFILE = start/marmousi_II_start_1D
+MFILE = start/marmousi_II_marine 
+#MFILE = start/marmousi_II_start_1D
 write_model_files_(yes=1)_(WRITEMOD) = 1
 #
 #---------------------Q-approximation-----------------------------
