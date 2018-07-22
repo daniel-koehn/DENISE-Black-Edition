@@ -45,7 +45,7 @@ timestep_(in_seconds)_(DT) = 2.0e-3
 SIGNAL_FILE = ./wavelet/wavelet_plexiglas
 duration_of_Klauder_wavelet_(in_seconds)_(TS) = 8.0
 read_source_positions_from_SOURCE_FILE_(yes=1)_(SRCREC) = 1
-SOURCE_FILE = ./source/source_3.dat
+SOURCE_FILE = ./source/source_10.dat
 run_multiple_shots_defined_in_SOURCE_FILE_(yes=1)_(RUN_MULTIPLE_SHOTS) = 1
 corner_frequency_of_highpass_filtered_spike_(FC_SPIKE_1) = -5.0
 corner_frequency_of_lowpass_filtered_spike_(FC_SPIKE_2) = 15.0
