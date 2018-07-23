@@ -583,80 +583,6 @@ void FWI_PSV()
       L2t[1] = L2sum;
       L2t[4] = L2sum;
 
-      if (GRAVITY == 2)
-      {
-
-        /* save seismic L2-norm of seismic data residuals */
-        L2sum = L2t[1];
-
-        /* global density model */
-        rho_grav = matrix(1, NYG, 1, NXG);
-        rho_grav_ext = matrix(1, nygrav, 1, nxgrav);
-
-        /* model gravity data */
-        /* save current density model */
-        sprintf(jac_grav, "%s_tmp.rho.%i%i", JACOBIAN, POS[1], POS[2]);
-        FP_GRAV = fopen(jac_grav, "wb");
-
-        for (i = 1; i <= NX; i = i + IDX)
-        {
-          for (j = 1; j <= NY; j = j + IDY)
-          {
-            fwrite(&matPSV.prho[j][i], sizeof(float), 1, FP_GRAV);
-          }
-        }
-
-        fclose(FP_GRAV);
-
-        MPI_Barrier(MPI_COMM_WORLD);
-
-        /* merge model file */
-        sprintf(jac_grav, "%s_tmp.rho", JACOBIAN);
-        if (MYID == 0)
-          mergemod(jac_grav, 3);
-
-        MPI_Barrier(MPI_COMM_WORLD);
-
-        /* gravity forward modelling */
-        read_density_glob(rho_grav, 2);
-        extend_mod(rho_grav, rho_grav_ext, nxgrav, nygrav);
-        grav_mod(rho_grav_ext, ngrav, gravpos, gz_mod, nxgrav, nygrav, NZGRAV);
-
-        /* calculate gravity data residuals */
-        L2_grav = calc_res_grav(ngrav, gz_mod, gz_res);
-
-        /* calculate lambda 1 */
-        if (iter == 1)
-        {
-          LAM_GRAV = GAMMA_GRAV * (L2sum / L2_grav);
-        }
-
-        /* add gravity penalty term to the seismic objective function */
-        L2t[1] += LAM_GRAV * L2_grav;
-        L2t[4] += LAM_GRAV * L2_grav;
-
-        /* calculate gravity gradient */
-        for (i = 1; i <= NX; i = i + IDX)
-        {
-          for (j = 1; j <= NY; j = j + IDY)
-          {
-            grad_grav[j][i] = 0.0;
-          }
-        }
-        grav_grad(ngrav, gravpos, grad_grav, gz_res);
-
-        MPI_Barrier(MPI_COMM_WORLD);
-
-        /* merge model file */
-        sprintf(jac, "%s_grav", JACOBIAN);
-        if (MYID == 0)
-          mergemod(jac, 3);
-
-        /* free memory */
-        free_matrix(rho_grav, 1, NYG, 1, NXG);
-        free_matrix(rho_grav_ext, 1, nygrav, 1, nxgrav);
-      }
-
       /* Interpolate missing spatial gradient values in case IDXI > 1 || IDXY > 1 */
       /* ------------------------------------------------------------------------ */
 
@@ -666,52 +592,6 @@ void FWI_PSV()
         interpol(IDXI, IDYI, fwiPSV.waveconv, 1);
         interpol(IDXI, IDYI, fwiPSV.waveconv_u, 1);
         interpol(IDXI, IDYI, fwiPSV.waveconv_rho, 1);
-      }
-
-      /* Add gravity gradient to FWI density gradient */
-      /* -------------------------------------------- */
-
-      if (GRAVITY == 2)
-      {
-
-        /* calculate maximum values of waveconv_rho and grad_grav */
-        FWImax = 0.0;
-        GRAVmax = 0.0;
-
-        for (i = 1; i <= NX; i++)
-        {
-          for (j = 1; j <= NY; j++)
-          {
-
-            if (fabs(fwiPSV.waveconv_rho[j][i]) > FWImax)
-            {
-              FWImax = fabs(fwiPSV.waveconv_rho[j][i]);
-            }
-            if (fabs(grad_grav[j][i]) > GRAVmax)
-            {
-              GRAVmax = fabs(grad_grav[j][i]);
-            }
-          }
-        }
-
-        MPI_Allreduce(&FWImax, &FWImax_all, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
-        MPI_Allreduce(&GRAVmax, &GRAVmax_all, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
-
-        /* calculate lambda 2, normalized with respect to the maximum gradients */
-        if (iter == 1)
-        {
-          LAM_GRAV_GRAD = GAMMA_GRAV * (FWImax_all / GRAVmax_all);
-        }
-
-        /* add gravity gradient to seismic gradient with respect to the density */
-        for (i = 1; i <= NX; i++)
-        {
-          for (j = 1; j <= NY; j++)
-          {
-
-            fwiPSV.waveconv_rho[j][i] += LAM_GRAV_GRAD * grad_grav[j][i];
-          }
-        }
       }
 
       /* apply smoothness constraints to gradients */
