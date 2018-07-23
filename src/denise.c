@@ -90,6 +90,11 @@ read_par(FP);
 COLOR = MYID / (NPROCX * NPROCY);
 MPI_Comm_split(MPI_COMM_WORLD, COLOR, MYID, &SHOT_COMM);
 MPI_Comm_rank(SHOT_COMM, &MYID_SHOT);
+
+/* Init subdomain communication*/
+MPI_Comm_split(MPI_COMM_WORLD, MYID_SHOT, MYID, &DOMAIN_COMM);
+
+
 NCOLORS = NP / (NPROCX * NPROCY);
 printf("....MYID.......%d.. %d.. COLOR......shotcome\n", MYID, COLOR);
 printf("...........%d.. %d........shotcome\n", NP, NCOLORS);

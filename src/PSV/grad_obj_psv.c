@@ -23,11 +23,11 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	extern float C_vp, C_vs, C_rho;
 	extern char MFILE[STRING_SIZE];
 	extern int NSHOT1, NSHOT2, NSHOTS, COLOR, NCOLORS;
-	extern MPI_Comm SHOT_COMM;
+	extern MPI_Comm SHOT_COMM, DOMAIN_COMM;
 
 	/* local variables */
 	int i, j, nshots, ishot, nt, lsnap, itestshot, swstestshot;
-	float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
+	float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp, tmp_dg;
 	char source_signal_file[STRING_SIZE];
 
 	FILE *FP;
@@ -259,6 +259,8 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 			printf("SHOT tapering applied applied ishot=%d; \n",ishot);
 		} /* end of SWS_TAPER_CIRCULAR_PER_SHOT == 1 */
 		printf("after SHOT tapering ishot=%d; \n",ishot);
+		
+		// loop for stacking the gradients
 		for (i = 1; i <= NX; i = i + IDX)
 		{
 			for (j = 1; j <= NY; j = j + IDY)
@@ -343,6 +345,24 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	} /* end of loop over shots (forward and backpropagation) */
 
+	/* stack gradient over colors */
+
+	// loop for stacking the gradients
+		for (i = 1; i <= NX; i = i + IDX)
+		{
+			for (j = 1; j <= NY; j = j + IDY)
+			{
+				// gathering gradients within subdomains
+				tmp_dg = (*fwiPSV).waveconv[j][i];
+				MPI_Allreduce(&tmp_dg, &((*fwiPSV).waveconv[j][i]), 1, MPI_FLOAT, MPI_SUM, DOMAIN_COMM);
+				//(*fwiPSV).waveconv[j][i] += (*fwiPSV).waveconv_shot[j][i];
+				tmp_dg = (*fwiPSV).waveconv_rho[j][i];
+				MPI_Allreduce(&tmp_dg, &((*fwiPSV).waveconv_rho[j][i]), 1, MPI_FLOAT, MPI_SUM, DOMAIN_COMM);
+				tmp_dg = (*fwiPSV).waveconv_u[j][i];
+				MPI_Allreduce(&tmp_dg, &((*fwiPSV).waveconv_u[j][i]), 1, MPI_FLOAT, MPI_SUM, DOMAIN_COMM);
+			}
+		}
+	
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
 	L2_tmp = (*seisPSVfwi).L2;
