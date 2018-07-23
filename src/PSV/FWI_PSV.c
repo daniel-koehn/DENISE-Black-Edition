@@ -14,7 +14,8 @@ void FWI_PSV()
   /* ---------------- */
 
   /* forward modelling */
-  extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, RUN_MULTIPLE_SHOTS, TIME_FILT, READREC;
+  extern int MYID, MYID_SHOT, COLOR; 
+  extern int FDORDER, NX, NY, NT, L, READMOD, QUELLART, RUN_MULTIPLE_SHOTS, TIME_FILT, READREC;
   extern int LOG, SEISMO, N_STREAMER, FW, NXG, NYG, IENDX, IENDY, NTDTINV, IDXI, IDYI, NXNYI, INV_STF, DTINV;
   extern float FC_SPIKE_1, FC_SPIKE_2, FC, FC_START, TIME, DT;
   extern char LOG_FILE[STRING_SIZE], MFILE[STRING_SIZE];
@@ -580,6 +581,15 @@ void FWI_PSV()
       L2sum = grad_obj_psv(&wavePSV, &wavePSV_PML, &matPSV, &fwiPSV, &mpiPSV, &seisPSV, &seisPSVfwi, &acq, hc, iter, nsrc, ns, ntr, ntr_glob,
                            nsrc_glob, nsrc_loc, ntr_loc, nstage, We, Ws, Wr, taper_coeff, hin, DTINV_help, req_send, req_rec);
 
+      MPI_Barrier(MPI_COMM_WORLD);
+      printf("I'm done with gradient MYID = %d, POS[1]=%d, POS[2]=%d\n", MYID, POS[1], POS[2]);
+      MPI_Barrier(MPI_COMM_WORLD);
+      if (COLOR==0)
+      {
+        RTM_PSV_out(&fwiPSV);
+      }
+      MPI_Barrier(MPI_COMM_WORLD);
+      
       L2t[1] = L2sum;
       L2t[4] = L2sum;
 
@@ -994,19 +1004,6 @@ frequency MIN_ITER */
     free_f3tensor(matPSV.dip, -nd + 1, NY + nd, -nd + 1, NX + nd, 1, L);
     free_f3tensor(matPSV.d, -nd + 1, NY + nd, -nd + 1, NX + nd, 1, L);
     free_f3tensor(matPSV.e, -nd + 1, NY + nd, -nd + 1, NX + nd, 1, L);
-  }
-
-  if (GRAVITY)
-  {
-
-    free_matrix(gravpos, 1, 2, 1, ngrav);
-    free_vector(gz_mod, 1, ngrav);
-    free_vector(gz_res, 1, ngrav);
-
-    if (GRAVITY == 2)
-    {
-      free_matrix(grad_grav, 1, NY, 1, NX);
-    }
   }
 
   /* de-allocate buffer for messages */

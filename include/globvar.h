@@ -28,7 +28,7 @@ int POS[3], INDEX[5];
 int COLOR, NCOLORS, NSHOT1, NSHOT2, MYID_SHOT;
 int NSHOTS; // read only in FD_PSV so far
 const int TAG1 = 1, TAG2 = 2, TAG3 = 3, TAG4 = 4, TAG5 = 5, TAG6 = 6;
-MPI_Comm COMM_CART, SHOT_COMM;
+MPI_Comm DOMAIN_COMM, SHOT_COMM;
 
 /* spatial adaptive Code variables*/
 int check_id, cfgt_id, cfgt, jumpid;
