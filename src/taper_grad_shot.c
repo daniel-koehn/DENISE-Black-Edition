@@ -17,7 +17,8 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 	extern int FREE_SURF, NX, NY, NXG, NYG;
 	extern int NPROCX, NPROCY, MYID_SHOT, POS[3];
 	extern FILE *FP;
-	
+	extern MPI_Comm SHOT_COMM;
+
 	/* local variables */
 	int i, j, h, ifw, ii, jj, n, xb, yb, xe, ye, taperlength,taperlength2, VTON, SRTON;
 	int ijc, iy, ix, iii, jjj, xx, yy, srctaper_gridpt, i1, j1;
@@ -55,7 +56,7 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
         for (iy=1;iy<=NYG;iy++)
                 for (ix=1;ix<=NXG;ix++)  msum[iy][ix] = 1.0;
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(SHOT_COMM);
 
         /*****************************/
         /* Taper at source positions */
@@ -260,10 +261,10 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 
  
 		
-	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Barrier(SHOT_COMM);
         sprintf(modfile,"taper_coeff_%i.bin",ishot);
         writemod(modfile,taper_coeff,3); 
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(SHOT_COMM);
         if (MYID_SHOT==0) mergemod(modfile,3); 
 	
 
