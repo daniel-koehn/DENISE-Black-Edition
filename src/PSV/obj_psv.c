@@ -18,6 +18,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
         extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB;
 		extern int COLOR, NSHOT1, NSHOT2, NSHOTS, NCOLORS;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
+	extern MPI_Comm SHOT_COMM;
 
         /* local variables */
         float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
@@ -44,8 +45,8 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 
 		if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
-		NSHOT1 = NSHOTS/NCOLORS*COLOR + 1;
-		NSHOT2 = min(NSHOT1 + NSHOTS/NCOLORS, NSHOTS);
+		//NSHOT1 = NSHOTS/NCOLORS*COLOR + 1;
+		//NSHOT2 = min(NSHOT1 + NSHOTS/NCOLORS, NSHOTS);
 
 		for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1)
 		{		
@@ -95,7 +96,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 				(*acq).srcpos_loc = splitsrc((*acq).srcpos,&nsrc_loc, nsrc);
 			}
 
-		MPI_Barrier(MPI_COMM_WORLD);
+		MPI_Barrier(SHOT_COMM);
 
 		/*==================================================================================
 		           Starting simulation (forward model)
