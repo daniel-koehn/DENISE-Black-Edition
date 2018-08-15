@@ -81,7 +81,7 @@ void readmod_visc_SH(float  **  rho, float **  u, float ** taus, float * eta){
 			fread(&vs, sizeof(float), 1, fp_vs);
 			fread(&rhov, sizeof(float), 1, fp_rho);
 			fread(&qs, sizeof(float), 1, fp_qs);
-			
+			qs = 10.0;
 				
 			/* only the PE which belongs to the current global gridpoint 
 			is saving model parameters in his local arrays */

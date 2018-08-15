@@ -15,24 +15,24 @@ void read_par_inv(FILE *fp,int nstage,int stagemax){
 /* declaration of extern variables */
 extern int MYID;
 extern int SPATFILTER, SPAT_FILT_SIZE, SPAT_FILT_1, SPAT_FILT_ITER, NORMALIZE;
-extern int INV_RHO_ITER, INV_VP_ITER, INV_VS_ITER, ENV;
+extern int INV_RHO_ITER, INV_VP_ITER, INV_VS_ITER, INV_QS_ITER, ENV;
 extern int TIME_FILT, ORDER, EPRECOND;
 extern int LNORM, OFFSET_MUTE;
 extern int INV_STF, N_ORDER;
 extern float PRO, FC_START, FC_END, EPS_STF, OFFSETC, OFFSETC_STF; 
 extern int TIMEWIN;
 extern float TWLENGTH_PLUS, TWLENGTH_MINUS, GAMMA;
-extern float WD_DAMP, WD_DAMP1, SCALERHO;
+extern float WD_DAMP, WD_DAMP1, SCALERHO, SCALEQS;
 extern float GAMMA_GRAV;
 
 /* definition of local variables */
 int i;
 char str [80];
 
-fscanf(fp,"%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str);
+fscanf(fp,"%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str);
 for (i=1;i<=nstage;i++){
      
-fscanf(fp,"%f%i%f%f%i%i%f%f%f%i%i%i%i%f%f%i%i%i%f%f%i%i%f%f%i%f%i",&PRO,&TIME_FILT,&FC_START,&FC_END,&ORDER,&TIMEWIN,&GAMMA,&TWLENGTH_MINUS,&TWLENGTH_PLUS,&INV_VP_ITER,&INV_VS_ITER,&INV_RHO_ITER,&SPATFILTER,&WD_DAMP,&WD_DAMP1,&EPRECOND,&LNORM,&INV_STF,&OFFSETC_STF,&EPS_STF,&NORMALIZE,&OFFSET_MUTE,&OFFSETC,&SCALERHO,&ENV,&GAMMA_GRAV,&N_ORDER);
+fscanf(fp,"%f%i%f%f%i%i%f%f%f%i%i%i%i%i%f%f%i%i%i%f%f%i%i%f%f%f%i%f%i",&PRO,&TIME_FILT,&FC_START,&FC_END,&ORDER,&TIMEWIN,&GAMMA,&TWLENGTH_MINUS,&TWLENGTH_PLUS,&INV_VP_ITER,&INV_VS_ITER,&INV_RHO_ITER,&INV_QS_ITER,&SPATFILTER,&WD_DAMP,&WD_DAMP1,&EPRECOND,&LNORM,&INV_STF,&OFFSETC_STF,&EPS_STF,&NORMALIZE,&OFFSET_MUTE,&OFFSETC,&SCALERHO,&SCALEQS,&ENV,&GAMMA_GRAV,&N_ORDER);
 }
 
 fclose(fp);
@@ -47,7 +47,9 @@ if(MYID==0){
    printf(" Vp is inverted from iteration step %d.\n",INV_VP_ITER);
    printf("\n");
    printf(" Vs is inverted from iteration step %d.\n",INV_VS_ITER);
-   
+   printf("\n");
+   printf(" Qs is inverted from iteration step %d.\n",INV_QS_ITER);
+
    printf("\n\n");
    printf(" Smoothing (spatial filtering) of the gradients: \n ");
    if(SPATFILTER){
@@ -142,7 +144,10 @@ if(MYID==0){
   if(OFFSET_MUTE==0){printf(" --------------- No Offset mute  -------------------\n\n");}
   
   printf(" --------------- Scale density update  -------------------\n");
-  printf(" SCALERHO=%f\n\n",SCALERHO);     
+  printf(" SCALERHO = %f\n\n",SCALERHO);     
+
+  printf(" --------------- Scale Qs update  -------------------\n");
+  printf(" SCALEQS = %f\n\n",SCALEQS);     
 
   if(LNORM==6){printf(" --------------- Specified type of envelope objective function (LNORM=6) -------------------\n\n");
     if(ENV==1){printf(" ENV = 1 L2-norm envelope objective function \n");}

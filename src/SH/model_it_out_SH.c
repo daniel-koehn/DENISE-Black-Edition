@@ -7,7 +7,7 @@
  *  ---------------------------------------------------------------------*/
 
 #include "fd.h"
-void model_it_out_SH(float  **  rho, float **  pu, int nstage, int iter, float freq){
+void model_it_out_SH(float  **  rho, float **  pu, float **  ptaus, int nstage, int iter, float freq){
 
 
 	/*--------------------------------------------------------------------------*/
@@ -36,6 +36,15 @@ void model_it_out_SH(float  **  rho, float **  pu, int nstage, int iter, float f
 	if (MYID==0) mergemod(modfile,3);
 	MPI_Barrier(MPI_COMM_WORLD); 
 	sprintf(modfile,"%s_rho_stage_%d_it_%d.bin.%i%i",INV_MODELFILE,nstage,iter,POS[1],POS[2]);
+	remove(modfile);
+
+	sprintf(modfile,"%s_taus_stage_%d_it_%d.bin",INV_MODELFILE,nstage,iter);
+	writemod(modfile,ptaus,3);
+	MPI_Barrier(MPI_COMM_WORLD);
+                                                                                                                                                                        
+	if (MYID==0) mergemod(modfile,3);
+	MPI_Barrier(MPI_COMM_WORLD); 
+	sprintf(modfile,"%s_taus_stage_%d_it_%d.bin.%i%i",INV_MODELFILE,nstage,iter,POS[1],POS[2]);
 	remove(modfile);
 
 }

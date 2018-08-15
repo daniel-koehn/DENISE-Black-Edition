@@ -26,7 +26,7 @@ if (MYID==0){
 /* --------------------------------- */
 if(QUELLTYPB){ /* if QUELLTYPB */
 
-    inseis(ishot,(*seisSHfwi).sectionread,ntr_glob,ns,16,iter);
+    inseis(ishot,(*seisSHfwi).sectionread,ntr_glob,ns,2,iter);
 
     if (TIME_FILT){
         apply_tdfilt((*seisSHfwi).sectionread,ntr_glob,ns,ORDER,FC,FC_START);

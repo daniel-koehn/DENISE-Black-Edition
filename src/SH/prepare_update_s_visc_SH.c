@@ -11,7 +11,7 @@ void prepare_update_s_visc_SH(float *etajm, float *etaip, float *peta, float **f
 		float *bip, float *bjm, float *cip, float *cjm, float ***dip, float ***d, float ***e) {
 
 	extern int NX, NY, L, INVMAT1;
-	extern float DT, *FL;
+	extern float DT, *FL, ALPHA_VISC;
 	int i, j, l;
 	extern char  MFILE[STRING_SIZE];
 	extern float TS;
@@ -34,6 +34,7 @@ void prepare_update_s_visc_SH(float *etajm, float *etaip, float *peta, float **f
 		sumu=sumu+((ws*ws*pts[l]*pts[l])/(1.0+ws*ws*pts[l]*pts[l]));
 	}
 	
+	ALPHA_VISC = sumu;
 
 	for (l=1;l<=L;l++){
 		etajm[l] = peta[l];

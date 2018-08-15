@@ -9,24 +9,24 @@ void saveseis_glob_SH(FILE *fp, float **sectionvz, int  **recpos, int  **recpos_
 int ntr, float ** srcpos, int ishot, int ns, int iter){ 
 		
 	extern int SEISMO, SEIS_FORMAT, MYID, RUN_MULTIPLE_SHOTS, MODE;	
-	extern char  SEIS_FILE_VX[STRING_SIZE]; 
+	extern char  SEIS_FILE_VY[STRING_SIZE]; 
 
-        char vzf[STRING_SIZE];
+        char vyf[STRING_SIZE];
         int nsrc=1;			
 
 	if(MODE>0){
-	  sprintf(vzf,"%s.shot%d.it%d",SEIS_FILE_VX,ishot,iter);
+	  sprintf(vyf,"%s.shot%d.it%d",SEIS_FILE_VY,ishot,iter);
 	}
 		
 	if(MODE==0){
-	  sprintf(vzf,"%s.shot%d",SEIS_FILE_VX,ishot);
+	  sprintf(vyf,"%s.shot%d",SEIS_FILE_VY,ishot);
 	}
 	
 	
 	switch (SEISMO){
-	case 1 : /* particle velocity (z-component) only */
-		fprintf(fp," PE %d is writing %d seismograms (vz) to\n\t %s \n",MYID,ntr,vzf);
-		outseis_glob(fp,fopen(vzf,"w"),1,sectionvz,recpos,recpos_loc,ntr,srcpos,nsrc,ns,SEIS_FORMAT,ishot,1);
+	case 1 : /* particle velocity (y-component) only */
+		fprintf(fp," PE %d is writing %d seismograms (vy) to\n\t %s \n",MYID,ntr,vyf);
+		outseis_glob(fp,fopen(vyf,"w"),1,sectionvz,recpos,recpos_loc,ntr,srcpos,nsrc,ns,SEIS_FORMAT,ishot,1);
 		break;			
         }     
 }
