@@ -735,6 +735,8 @@ void extend_mod(float  **rho_grav, float  **rho_grav_ext, int nxgrav, int nygrav
 
 void gauss_filt(float ** waveconv);
 
+void gauss_filt_var(float ** waveconv, float ** vel_mod);
+
 void grav_grad(int ngrav, float **gravpos, float **grad_grav, float *gz_res);
 
 void grav_mod(float  **rho, int ngrav, float **gravpos, float *gz, int NXGRAV, int NYGRAV, int NZGRAV);
@@ -889,7 +891,7 @@ void zero_PCG(float * PCG_old, float * PCG_new, float * PCG_dir, int PCG_vec);
 		 
 void FLnode(float  **  rho, float **  pi, float **  u, float **  taus, float **  taup, float *  eta);
 
-void smooth_grad(float ** waveconv);
+void smooth_grad(float ** waveconv, float ** vel_mod);
 
 void  smooth2(float ** grad);
 

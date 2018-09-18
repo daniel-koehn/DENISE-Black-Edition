@@ -660,9 +660,9 @@ if((IDXI>1)||(IDYI>1)){
    }
 
 /* apply smoothness constraints to gradients */
-smooth_grad(fwiSH.waveconv_u);
-smooth_grad(fwiSH.waveconv_rho);
-smooth_grad(fwiSH.waveconv_ts);
+smooth_grad(fwiSH.waveconv_u, matSH.pu);
+smooth_grad(fwiSH.waveconv_rho, matSH.pu);
+smooth_grad(fwiSH.waveconv_ts, matSH.pu);
 
 /* Preconditioning of gradients after shot summation and smoothing */
 precond_SH(&fwiSH,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
@@ -770,7 +770,7 @@ eps_true=calc_mat_change_test_SH(fwiSH.waveconv_rho,fwiSH.waveconv_u,fwiSH.wavec
 
 if (MODEL_FILTER){
 /* smoothing the velocity models vp and vs */
-//smooth_model(matPSV.ppi,matPSV.pu,matPSV.prho,iter);
+//	model(matPSV.ppi,matPSV.pu,matPSV.prho,iter);
 }
 
 if(MYID==0){	

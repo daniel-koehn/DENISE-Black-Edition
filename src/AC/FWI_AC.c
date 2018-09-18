@@ -651,8 +651,8 @@ if((IDXI>1)||(IDYI>1)){
    }
 
 /* apply smoothness constraints to gradients */
-smooth_grad(fwiPSV.waveconv);
-smooth_grad(fwiPSV.waveconv_rho);
+smooth_grad(fwiPSV.waveconv, matAC.ppi);
+smooth_grad(fwiPSV.waveconv_rho, matAC.ppi);
 
 /* Preconditioning of gradients after shot summation and smoothing */
 precond_AC(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
