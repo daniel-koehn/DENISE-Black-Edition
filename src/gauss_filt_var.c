@@ -191,7 +191,13 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
 			      
 			            grad_gauss[j][i] = grad_tmp[j][i];
 			      
-			       }	    
+			       }
+
+			       if(isnan(grad_gauss[j][i])){
+                                                                  
+			           grad_gauss[j][i] = grad_tmp[j][i];
+			       
+                               } 	    
 
       			    }
 			}
