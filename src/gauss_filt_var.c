@@ -12,7 +12,7 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
 
 	/* extern variables */
 
-        extern float DH, WD_DAMP, FC_END, C_vs;
+        extern float DH, WD_DAMP, WD_DAMP1, FC_END, C_vs;
 	extern int FREE_SURF, NX, NY, NXG, NYG, IDX, IDY;
 	extern int NPROCX, NPROCY, MYID, POS[3];
 	extern char JACOBIAN[STRING_SIZE];
@@ -20,18 +20,17 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
 	extern int FILT_SIZE_GRAD;
 	
 	/* local variables */
-	int i, j, ii, jj;
-	int i1, j1, filtsize, hfs, hfsmax;
+	int i, j, ii, jj, FILT_SIZE_GRAD_X, FILT_SIZE_GRAD_Z;
+	int i1, j1, filtsize, hfsx, hfsz, hfsmax;
 
 	float **model_tmp, **grad_tmp, ** grad_gauss, grad, mod, normgauss;
-	float lam, lam_max, sigma, s, sum, conv, vel_max, kernel;
+	float lam, lam_max, sigmax, sx, sigmaz, sz, sum, conv, vel_max, kernel;
 	
 	char jac_tmp[STRING_SIZE];
+	char modfile[STRING_SIZE];
 	
 	FILE *model, *FP1;
 	
-	char modfile[STRING_SIZE];
-
 	/* temporarily save gradient for Gaussian filtering */
         sprintf(jac_tmp,"%s_gauss.old.%i%i",JACOBIAN,POS[1],POS[2]);
         FP1=fopen(jac_tmp,"wb");
@@ -51,8 +50,8 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
         if (MYID==0) mergemod(jac_tmp,3);
 
 	/* temporarily save velocity model for Gaussian filtering */
-        sprintf(jac_tmp,"%s_velmod.old.%i%i",JACOBIAN,POS[1],POS[2]);
-        FP1=fopen(jac_tmp,"wb");
+        sprintf(modfile,"%s_velmod.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        FP1=fopen(modfile,"wb");
                         
         for (i=1;i<=NX;i=i+IDX){
             for (j=1;j<=NY;j=j+IDY){
@@ -65,17 +64,16 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
         MPI_Barrier(MPI_COMM_WORLD);
                                   
         /* merge gradient file */ 
-        sprintf(jac_tmp,"%s_velmod.old",JACOBIAN);
-        if (MYID==0) mergemod(jac_tmp,3);
-	
+        sprintf(modfile,"%s_velmod.old",JACOBIAN);
+        if (MYID==0) mergemod(modfile,3);
 
 	if(MYID==0){
 
 			/* load merged model */	
 			model_tmp = matrix(1,NYG,1,NXG);      
-			sprintf(jac_tmp,"%s_velmod.old",JACOBIAN);    
+			sprintf(modfile,"%s_velmod.old",JACOBIAN);    
 	
-		      	model=fopen(jac_tmp,"rb");
+		      	model=fopen(modfile,"rb");
 		      	if (model==NULL) err(" Could not open model file !");
 				      	
 		      	for (i=1;i<=NXG;i++){
@@ -94,10 +92,11 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
 			lam_max = vel_max / FC_END;
 			FILT_SIZE_GRAD = round((WD_DAMP * lam_max)/DH);
 			
-		      	if (FILT_SIZE_GRAD==0)	return;
 		      	if (!(FILT_SIZE_GRAD % 2)) {
 		      	    FILT_SIZE_GRAD += 1;
 		      	}
+			
+			if (FILT_SIZE_GRAD < 6){FILT_SIZE_GRAD = 6;}
 	  
 		      	hfsmax = abs(FILT_SIZE_GRAD)/2;
 			
@@ -159,25 +158,38 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
 
 				/* define maximum filter size as fraction of local velocity wavelength */
 				lam = model_tmp[j][i] / FC_END;
-				FILT_SIZE_GRAD = round((WD_DAMP * lam)/DH);
-			
-		      		if (FILT_SIZE_GRAD>0){
 				
-		      		    if (!(FILT_SIZE_GRAD % 2)) {
-		      		        FILT_SIZE_GRAD += 1;
+				FILT_SIZE_GRAD_X = round((WD_DAMP * lam)/DH);
+				FILT_SIZE_GRAD_Z = round((WD_DAMP1 * lam)/DH);
+			
+		      		if (FILT_SIZE_GRAD_Z>0){
+				
+		      		    if (!(FILT_SIZE_GRAD_X % 2)) {
+		      		        FILT_SIZE_GRAD_X += 1;
 		      		    }
+
+		      		    if (!(FILT_SIZE_GRAD_Z % 2)) {
+		      		        FILT_SIZE_GRAD_Z += 1;
+		      		    }
+				    
+				    if (FILT_SIZE_GRAD_X < 6){FILT_SIZE_GRAD_X = 6;}
+	  		            if (FILT_SIZE_GRAD_Z < 6){FILT_SIZE_GRAD_Z = 6;}
 	  
-		      		    hfs = abs(FILT_SIZE_GRAD)/2;
-				    sigma = hfs/2;
-				    s = 2.0 * sigma * sigma;
+		      		    hfsx = abs(FILT_SIZE_GRAD_X)/2;
+				    sigmax = hfsx/2;
+				    sx = 2.0 * sigmax * sigmax;
+
+		      		    hfsz = abs(FILT_SIZE_GRAD_Z)/2;
+				    sigmaz = hfsz/2;
+				    sz = 2.0 * sigmaz * sigmaz;
 
           		            conv = 0.0;
 				    sum = 0.0;
           		            /* loop over kernel*/
-	  			    for (ii=-hfs;ii<=hfs;ii++){
-	       			        for (jj=-hfs;jj<=hfs;jj++){
+	  			    for (ii=-hfsx;ii<=hfsx;ii++){
+	       			        for (jj=-hfsz;jj<=hfsz;jj++){
 
-					    kernel = exp(-((ii*ii)/s) - ((jj*jj)/s)); 
+					    kernel = exp(-((ii*ii)/sx) - ((jj*jj)/sz)); 
 	            		    	    conv += grad_tmp[j+jj][i+ii] * kernel;
 					    sum += kernel;				
 
@@ -185,19 +197,13 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
           			    }
 
           			    /* output of filtered gradient */
-          			    grad_gauss[j][i] = conv/sum;
+          			    grad_gauss[j][i] = conv/sum;				    
 				    
 			       }else{
 			      
 			            grad_gauss[j][i] = grad_tmp[j][i];
 			      
-			       }
-
-			       if(isnan(grad_gauss[j][i])){
-                                                                  
-			           grad_gauss[j][i] = grad_tmp[j][i];
-			       
-                               } 	    
+			       }			        	    
 
       			    }
 			}
