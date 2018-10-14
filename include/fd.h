@@ -568,6 +568,8 @@ void exchange_v_SH(float ** vz, float ** bufferlef_to_rig, float ** bufferrig_to
 		   float ** buffertop_to_bot, float ** bufferbot_to_top,
 	           MPI_Request * req_send, MPI_Request * req_rec);
 
+void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float ** waveconv_ts, float ** gradp_ts, float ** pu, float ** prho,  float ** ptaus, float * r_LBFGS);
+
 void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
 
 void FD_SH();
@@ -625,6 +627,10 @@ float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, s
 void stf_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, struct seisSH *seisSH, 
              struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, int ns, int ntr, int ntr_glob, int iter, float **Ws, 
              float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
+
+void store_LBFGS_SH(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, 
+                    float ** gradp_rho, float ** waveconv_ts, float ** gradp_ts, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float ** pu, float ** prho, float **ptaus, 
+		    int nxnyi, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
 
 void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
 

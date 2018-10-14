@@ -698,14 +698,14 @@ if(GRAD_METHOD==1){
 if(GRAD_METHOD==2){ 
 
     /* store models and gradients in l-BFGS vectors */
-    store_LBFGS_PSV(taper_coeff, nsrc, acq.srcpos, acq.recpos, ntr_glob, iter, fwiSH.waveconv_ts, fwiSH.gradp_ts, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, 
-		    fwiSH.gradp_rho, y_LBFGS, s_LBFGS, q_LBFGS, matSH.ptaus, matPSV.pu, matPSV.prho, NXNYI, LBFGS_pointer, NLBFGS, NLBFGS_vec);
+    store_LBFGS_SH(taper_coeff, nsrc, acq.srcpos, acq.recpos, ntr_glob, iter, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, 
+		    fwiSH.gradp_rho, fwiSH.waveconv_ts, fwiSH.gradp_ts, y_LBFGS, s_LBFGS, q_LBFGS, matSH.pu, matSH.prho, matSH.ptaus, NXNYI, LBFGS_pointer, NLBFGS, NLBFGS_vec);
 
     /* apply l-BFGS optimization */
     LBFGS(iter, y_LBFGS, s_LBFGS, rho_LBFGS, alpha_LBFGS, q_LBFGS, r_LBFGS, beta_LBFGS, LBFGS_pointer, NLBFGS, NLBFGS_vec);
 
     /* extract gradients and save old models/gradients for next l-BFGS iteration */
-    extract_LBFGS_PSV(iter, fwiSH.waveconv_ts, fwiSH.gradp_ts, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, fwiSH.gradp_rho, matSH.ptaus, matSH.pu, matSH.prho, r_LBFGS);
+    extract_LBFGS_SH(iter, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, fwiSH.gradp_rho, fwiSH.waveconv_ts, fwiSH.gradp_ts, matSH.pu, matSH.prho, matSH.ptaus, r_LBFGS);
 
 }
 

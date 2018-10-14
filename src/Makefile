@@ -201,6 +201,7 @@ DENISE += alloc_fwiSH.c \
 	  eprecond_SH.c \
 	  exchange_s_SH.c \
 	  exchange_v_SH.c \
+	  extract_LBFGS_SH.c \
 	  extract_PCG_SH.c \
 	  FD_SH.c \
 	  FWI_SH.c \
@@ -223,6 +224,7 @@ DENISE += alloc_fwiSH.c \
 	  sh.c \
           step_length_est_sh.c \
 	  stf_sh.c \
+	  store_LBFGS_SH.c \
 	  store_PCG_SH.c \
 	  update_s_elastic_PML_SH.c \
 	  update_s_visc_PML_SH.c \

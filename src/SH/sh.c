@@ -124,7 +124,7 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
               }
 
               if(mode==1){
-		update_v_PML_SH(1, NX, 1, NY, nt, (*waveSH).pvz, (*waveSH).pvzp1, (*waveSH).pvzm1, (*waveSH).uttz, (*waveSH).psxz, (*waveSH).psyz, (*matSH).prho, (*matSH).prhoi, (*acq).srcpos_loc_back, (*seisSHfwi).sectionvzdiff, nsrc_loc, 
+		update_v_PML_SH(1, NX, 1, NY, nt, (*waveSH).pvz, (*waveSH).pvzp1, (*waveSH).pvzm1, (*waveSH).uttz, (*waveSH).psxz, (*waveSH).psyz, (*matSH).prho, (*matSH).prhoi, (*acq).srcpos_loc_back, (*seisSHfwi).sectionvzdiff, ntr, 
 			       (*waveSH_PML).absorb_coeff,hc, infoout, 1, (*waveSH_PML).K_x, (*waveSH_PML).a_x, (*waveSH_PML).b_x, (*waveSH_PML).K_x_half, (*waveSH_PML).a_x_half, (*waveSH_PML).b_x_half, (*waveSH_PML).K_y, 
 			       (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half, (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y);
               }
@@ -278,9 +278,10 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 
 				    /* correlate forward and adjoint wavefields */
 				    P3 = ((*fwiSH).forward_prop_sxz[imat] * (*waveSH).uz[j][i]) + ((*fwiSH).forward_prop_syz[imat] * (*waveSH).uzx[j][i]);
-				      			            
+				    
+				    P5 = 0.0;  			            
 				    for (l=1;l<=L;l++){
-					P5 = ((*fwiSH).forward_prop_rxz[imat][l] * (*fwiSH).Rxz[j][i][l]) + ((*fwiSH).forward_prop_ryz[imat][l] * (*fwiSH).Ryz[j][i][l]); 
+					P5 += ((*fwiSH).forward_prop_rxz[imat][l] * (*fwiSH).Rxz[j][i][l]) + ((*fwiSH).forward_prop_ryz[imat][l] * (*fwiSH).Ryz[j][i][l]); 
 				    }    
 
 				    if(muss>0.0){			

@@ -28,7 +28,7 @@ float Qmod, Qtrue, Q1, Q2, Q3;
 float ** Q_mod=NULL, ** Q_true=NULL, **dQ=NULL; 
 
 /* EPS_LNORM=1e1; */
-EPS_LNORM=1e-10;
+EPS_LNORM=0.0;
 EPS_LNORM6=1e-9;
 eps=1e-15;
 

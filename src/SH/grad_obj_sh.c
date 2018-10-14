@@ -60,7 +60,7 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
 	for (ishot=1;ishot<=nshots;ishot+=SHOTINC){
-	/* for (ishot=26;ishot<=48;ishot+=1){*/
+	/*for (ishot=1;ishot<=1;ishot+=1){*/
 
 	/*initialize gradient matrices for each shot with zeros*/
 	init_grad((*fwiSH).waveconv_u_shot);
@@ -183,7 +183,7 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	}
 		          	    		    
 	/*================================================================================
-		        Starting simulation (backward model)
+		        Starting simulation (adjoint modelling)
 	==================================================================================*/
 	    
 	/* Distribute multiple source positions on subdomains */
