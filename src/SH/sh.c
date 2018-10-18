@@ -213,15 +213,7 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	if((nt==hin1)&&(mode==0)&&(MODE>0)){
 
 	  /* store forward wavefields for time-domain inversion and RTM */
-          /* ---------------------------------------------------------- */
-	    
-		/* store forward wavefield for density gradient */
-		/*for (i=1;i<=NX;i=i+IDXI){
-		    for (j=1;j<=NY;j=j+IDYI){
-			 (*fwiSH).forward_prop_rho_z[imat1] = (*waveSH).pvzp1[j][i];
-		         imat1++;                                   
-		    }
-		}*/   
+          /* ---------------------------------------------------------- */	    
 	    
 		for (i=1;i<=NX;i=i+IDXI){ 
 		    for (j=1;j<=NY;j=j+IDYI){

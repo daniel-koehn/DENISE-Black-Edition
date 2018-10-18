@@ -841,6 +841,8 @@ void saveseis_glob(FILE *fp, float **sectionvx, float **sectionvy,float **sectio
 float **sectioncurl, float **sectiondiv, int  **recpos, int  **recpos_loc, 
 int ntr, float ** srcpos_loc, int nsrc,int ns, int iter);
 
+void scale_grad(float ** A, float a, float ** B, int n, int m);
+
 void snap(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx,
 	float **syy, float **u, float **pi, float *hc);
 

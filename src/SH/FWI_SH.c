@@ -35,7 +35,7 @@ extern char *FILEINP1;
 int ns, nseismograms=0, nt, nd, fdo3, j, i, iter, h, hin, iter_true, SHOTINC, s=0;
 int buffsize, ntr=0, ntr_loc=0, ntr_glob=0, nsrc=0, nsrc_loc=0, nsrc_glob=0, ishot, nshots=0, itestshot;
 
-float sum, eps_scale, opteps_vp, opteps_vs, opteps_rho, opteps_ts, Vs_avg, rho_avg, taus_avg, Vs_sum, rho_sum, taus_sum;
+float sum, eps_scale, opteps_vp, opteps_vs, opteps_rho, opteps_ts, Vs_max, rho_max, taus_max, Vs_sum, rho_sum, taus_sum;
 char *buff_addr, ext[10], *fileinp, jac[225], source_signal_file[STRING_SIZE];
 
 double time1, time2, time7, time8, time_av_v_update=0.0, time_av_s_update=0.0, time_av_v_exchange=0.0; 
@@ -469,55 +469,56 @@ if(iter_true==1){
     }
     }
 
-/* ----------------------------- */
-/* calculate Covariance matrices */
-/* ----------------------------- */
+/* ---------------------------------- */
+/* calculate maximum model parameters */
+/* ---------------------------------- */
 
-	Vs_avg = 0.0;
-	rho_avg = 0.0;
-	taus_avg = 0.0;
+	Vs_max = 0.0;
+	rho_max = 0.0;
+	taus_max = 0.0;
 	 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
 	  
-		 /* calculate average Vs */
-		 Vs_avg+=matSH.pu[j][i];
+		 /* calculate maximum Vs */
+		 if(matSH.pu[j][i] > Vs_max){
+		     Vs_max = matSH.pu[j][i];
+		 }
 		 
-		 /* calculate average rho */
-		 rho_avg+=matSH.prho[j][i];
+		 /* calculate maximum rho */
+		 if(matSH.prho[j][i] > rho_max){
+		     rho_max = matSH.prho[j][i];
+		 }
 
-		 /* calculate average taus */
-		 taus_avg+=matSH.ptaus[j][i];
-
+		 /* calculate maximum taus */
+		 if(matSH.ptaus[j][i] > taus_max){
+		     taus_max = matSH.ptaus[j][i];
+		 }
 	
            }
         }
 		
-        /* calculate average Vs, rho and taus of all CPUs*/
+        /* calculate maximum Vs, rho and taus of all CPUs*/
 	
 	Vs_sum = 0.0;
-        MPI_Allreduce(&Vs_avg,&Vs_sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-        Vs_avg=Vs_sum;
+        MPI_Allreduce(&Vs_max,&Vs_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+        Vs_max=Vs_sum;
 	
 	rho_sum = 0.0;
-        MPI_Allreduce(&rho_avg,&rho_sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-        rho_avg=rho_sum;
+        MPI_Allreduce(&rho_max,&rho_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+        rho_max=rho_sum;
 
 	taus_sum = 0.0;
-        MPI_Allreduce(&taus_avg,&taus_sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-        taus_avg=taus_sum;
-	
-	Vs_avg /=NXG*NYG; 
-	rho_avg /=NXG*NYG;
-	taus_avg /=NXG*NYG;
-	
+        MPI_Allreduce(&taus_max,&taus_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+        taus_max=taus_sum;
+		
 	if(MYID==0){
-           printf("Vs_avg = %.0f \t rho_avg = %.0f \t taus_avg = %.0f \n ",Vs_avg,rho_avg, taus_avg);	
+           printf("Vs_max = %e \t rho_max = %e \t taus_max = %e \n ",Vs_max, rho_max, taus_max);	
 	}
 	
-	C_vs = Vs_avg;
-	C_rho = rho_avg;
-	C_taus = taus_avg;
+	C_vs = Vs_max;
+	C_rho = rho_max;
+	C_taus = taus_max;
 
 
 }

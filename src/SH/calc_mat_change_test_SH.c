@@ -15,6 +15,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	/* extern variables */
 	extern float DH, DT;
 	extern float EPSILON, EPSILON_u, EPSILON_rho, EPSILON_ts, MUN, SCALERHO, SCALEQS;
+	extern float C_vs, C_rho, C_taus;
 	extern int NX, NY, NXG, NYG,  POS[3], MYID, INVMAT1;
 	
 	extern int INV_RHO_ITER, INV_VS_ITER, INV_QS_ITER;
@@ -31,7 +32,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	int i, j, ii, jj, testuplow;
 	char modfile[STRING_SIZE];		
 	
-	/* find maximum of Zs and gradient waveconv_u */
+	/* find maximum of Vs and gradient waveconv_u */
 	
 
 	umax = 0.0;
@@ -40,7 +41,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){
 		
-		Zs = u[j][i];
+		Zs = u[j][i]/C_vs;     /* normalize Vs */
 		
 		if(Zs>umax){umax=Zs;}
 		
@@ -63,7 +64,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){
 		
-		if(rho[j][i]>rhomax){rhomax=rho[j][i];}
+		if(rho[j][i]/C_rho>rhomax){rhomax = rho[j][i]/C_rho;}
 		
 		if((i*j == 1) || (gradmax_rho == 0.0)) {
 		        gradmax_rho = fabs(waveconv_rho[j][i]);
@@ -83,7 +84,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){
 		
-		if(ts[j][i]>tausmax){tausmax=ts[j][i];}
+		if(ts[j][i]/C_taus>tausmax){tausmax=ts[j][i]/C_taus;}
 		
 		if((i*j == 1) || (gradmax_ts == 0.0)) {
 		        gradmax_ts = fabs(waveconv_ts[j][i]);
@@ -149,19 +150,24 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){		
 		    
-		    /* update lambda, mu, rho */
+		    /* update normalized material parameters Vs, rho, taus */
 		    if((INVMAT1==3) || (INVMAT1==1)){
 		      
 		      testuplow=0;
 		                         
-		        unp1[j][i] = u[j][i] - EPSILON_u*waveconv_u[j][i];   	
-		      rhonp1[j][i] = rho[j][i] - EPSILON_rho*waveconv_rho[j][i];
-		       tsnp1[j][i] = ts[j][i] - EPSILON_ts*waveconv_ts[j][i];
+		        unp1[j][i] = (u[j][i] / C_vs) - EPSILON_u * waveconv_u[j][i];   	
+		      rhonp1[j][i] = (rho[j][i] / C_rho) - EPSILON_rho * waveconv_rho[j][i];
+		       tsnp1[j][i] = (ts[j][i] / C_taus) - EPSILON_ts * waveconv_ts[j][i];
 		      
 			
 		      /* apply bound constraints */      
-                      if(INVMAT1==1){		  		      
+                      if(INVMAT1==1){
 		      
+		        /* Denormalize updated material parameters */
+		        unp1[j][i] *= C_vs;
+		        rhonp1[j][i] *= C_rho;			  
+		        tsnp1[j][i] *= C_taus;	
+		      		  		      		      
 			/* S-wave velocities */
 		        if((unp1[j][i]<VSLOWERLIM)&&(unp1[j][i]>1e-6)){
 		        	unp1[j][i] = u[j][i];
@@ -200,7 +206,10 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 		        rhonp1[j][i] = rho[j][i];
 		      }
 
-		      			  
+		      if(tsnp1[j][i]<0.0){
+		        tsnp1[j][i] = ts[j][i];
+		      }		      		  
+					  
 		      if(itest==0){
 			  rho[j][i] = rhonp1[j][i];
                             u[j][i] = unp1[j][i];

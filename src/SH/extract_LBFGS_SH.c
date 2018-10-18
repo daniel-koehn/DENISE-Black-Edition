@@ -20,6 +20,7 @@ void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float **
 	char jac[225], jac1[225];
 	int i, j, h;
         int ki, itershift;
+	float tmp;
 	FILE *FP3;
 	
         itershift = 1;
@@ -28,7 +29,7 @@ void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float **
 /* extract updated Hessian-gradient product from r_LBFGS vector */
 /* ------------------------------------------------------------ */
 
-if(iter>1){
+if(iter>1000){
 
      /* update gradients */
      h=1;
@@ -63,21 +64,23 @@ if(iter>1){
         }
      }
 
+}
 
-     /* Denormalize Gradients */
+/* Use negative gradient as search direction in case of LBFGS_RESET==1 */
+/*if(iter==1){
+
      for (i=1;i<=NX;i=i+IDX){
         for (j=1;j<=NY;j=j+IDY){
-                       
-	   waveconv_u[j][i] = waveconv_u[j][i] * C_vs;
-	   waveconv_rho[j][i] = waveconv_rho[j][i] * C_rho;
-	   waveconv_ts[j][i] = waveconv_ts[j][i] * C_taus;
-
+               
+	      waveconv_u[j][i] = - waveconv_u[j][i];   
+            waveconv_rho[j][i] = - waveconv_rho[j][i];	       
+             waveconv_ts[j][i] = - waveconv_ts[j][i];
+		  
         }
      }
 
-}
+}*/
 	
-
 /* save old models Vs */
 /* ------------------ */
 
@@ -87,7 +90,8 @@ if(iter>1){
 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
-               fwrite(&pu[j][i],sizeof(float),1,FP3);
+	       tmp = pu[j][i]/C_vs;
+               fwrite(&tmp,sizeof(float),1,FP3);
            }
         }
 	
@@ -143,7 +147,8 @@ if(iter>1){
 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
-               fwrite(&prho[j][i],sizeof(float),1,FP3);
+	       tmp = prho[j][i]/C_rho;
+               fwrite(&tmp,sizeof(float),1,FP3);
            }
         }
 	
@@ -199,7 +204,8 @@ if(iter>1){
 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
-               fwrite(&ptaus[j][i],sizeof(float),1,FP3);
+	       tmp = ptaus[j][i]/C_taus;
+               fwrite(&tmp,sizeof(float),1,FP3);
            }
         }
 	

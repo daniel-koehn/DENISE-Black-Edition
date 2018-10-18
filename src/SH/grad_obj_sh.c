@@ -200,18 +200,29 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	/* assemble SH gradients for each shot */
 	ass_gradSH(fwiSH,matSH,iter);
 
+	/* calculate gradients for normalized material parameters */
+	for(i=1;i<=NX;i=i+IDX){
+	    for(j=1;j<=NY;j=j+IDY){
+
+                (*fwiSH).waveconv_u_shot[j][i] = -C_vs * (*fwiSH).waveconv_u_shot[j][i];
+		(*fwiSH).waveconv_rho_shot[j][i] = -C_rho * (*fwiSH).waveconv_rho_shot[j][i];
+		(*fwiSH).waveconv_ts_shot[j][i] = -C_taus * (*fwiSH).waveconv_ts_shot[j][i];
+
+	    }
+	}
+
 	if((EPRECOND==1)||(EPRECOND==3)){
 
 	  /* calculate energy weights */
 	  eprecond1(We,Ws,Wr);
 	      
-	  /* scale gradient with energy weights*/
+	  /* scale gradient with maximum model parameters and energy weights*/
 	  for(i=1;i<=NX;i=i+IDX){
 	      for(j=1;j<=NY;j=j+IDY){
 
-		     (*fwiSH).waveconv_u_shot[j][i] = (*fwiSH).waveconv_u_shot[j][i]/(We[j][i]*C_vs*C_vs);
-		     (*fwiSH).waveconv_rho_shot[j][i] = (*fwiSH).waveconv_rho_shot[j][i]/(We[j][i]*C_rho*C_rho);
-		     (*fwiSH).waveconv_ts_shot[j][i] = (*fwiSH).waveconv_ts_shot[j][i]/(We[j][i]*C_taus*C_taus);
+		       (*fwiSH).waveconv_u_shot[j][i] = (*fwiSH).waveconv_u_shot[j][i] / We[j][i];
+		     (*fwiSH).waveconv_rho_shot[j][i] = (*fwiSH).waveconv_rho_shot[j][i] / We[j][i];
+		      (*fwiSH).waveconv_ts_shot[j][i] = (*fwiSH).waveconv_ts_shot[j][i] / We[j][i];
 
 	      }
 	  }

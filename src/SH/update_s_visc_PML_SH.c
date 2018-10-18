@@ -29,7 +29,7 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 	extern FILE *FP;
 	double time1, time2;
 	
-	float sumr=0.0, sumq=0.0, SUMr=0.0, SUMq=0.0;
+	float sumr=0.0, sumq=0.0, SUMr=0.0, SUMq=0.0, sxz_old, syz_old;
 	
 	dhi=1.0/DH;
 	dthalbe = DT/2.0;
@@ -97,8 +97,8 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			
 			
                         /* updating components of the stress tensor, partially */
-			sxz[j][i] += (fipjp[j][i]*(vzx)) + (dthalbe*sumr);			
-			syz[j][i] += f[j][i]*vzy + (dthalbe*sumq);
+			sxz[j][i] += ADJ_SIGN*((fipjp[j][i]*vzx) + (dthalbe*sumr));			
+			syz[j][i] += ADJ_SIGN*(f[j][i]*vzy + (dthalbe*sumq));
 				
 			
 			/* now updating the memory-variables and sum them up*/
@@ -107,8 +107,8 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			for (l=1;l<=L;l++){
 
 				/* store old memory variables */
-				(*fwiSH).rxzt[j][i][l] = -r[j][i][l];
- 				(*fwiSH).ryzt[j][i][l] = -q[j][i][l];
+				(*fwiSH).rxzt[j][i][l] = -r[j][i][l] / DT;
+ 				(*fwiSH).ryzt[j][i][l] = -q[j][i][l] / DT;
 
 				r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*vzx));
 				q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(d[j][i][l]*vzy));
@@ -196,13 +196,17 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 				vzy = vzy / K_y_half[h1] + psi_vzy[h1][i];
         
         		}
-	
+
 			/* computing sums of the old memory variables */
 			sumr=sumq=0.0;
 			for (l=1;l<=L;l++){
 				sumr+=r[j][i][l];
 				sumq+=q[j][i][l];
 			}
+			
+			/* store old stress tensor components */
+			sxz_old = sxz[j][i];
+			syz_old = syz[j][i];
 			
 			
                         /* updating components of the stress tensor, partially */
@@ -212,11 +216,30 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			
 			/* now updating the memory-variables and sum them up*/
 			sumr=sumq=0.0;
+			SUMr=SUMq=0.0;
 			for (l=1;l<=L;l++){
+
+				/* store old memory variables */
+				(*fwiSH).rxzt[j][i][l] = -r[j][i][l] / DT;
+ 				(*fwiSH).ryzt[j][i][l] = -q[j][i][l] / DT;
+
 				r[j][i][l] = bip[l]*(r[j][i][l]*cip[l]-(dip[j][i][l]*vzx));
 				q[j][i][l] = bjm[l]*(q[j][i][l]*cjm[l]-(d[j][i][l]*vzy));
 				sumr += r[j][i][l];
 				sumq += q[j][i][l];
+
+				/* calculate time derivative of memory variables */
+				(*fwiSH).rxzt[j][i][l] += r[j][i][l] / DT;
+ 				(*fwiSH).ryzt[j][i][l] += q[j][i][l] / DT;
+
+				/* time integration of memory variables */
+				(*fwiSH).Rxz[j][i][l] += r[j][i][l] * DT;
+ 				(*fwiSH).Ryz[j][i][l] += q[j][i][l] * DT;
+
+				/* summation of time integrated memory variables */
+				SUMr += (*fwiSH).Rxz[j][i][l];
+				SUMq += (*fwiSH).Ryz[j][i][l];
+
 			}
 			
 			
@@ -227,16 +250,16 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 
 			/* save forward wavefield for gradient calculation */
 			if(mode==0){
-			  uz[j][i] = sxz[j][i]/DT - sumr;
-			  uzx[j][i] = syz[j][i]/DT - sumq;
+			  uz[j][i] = (sxz[j][i] - sxz_old)/DT - sumr;
+			  uzx[j][i] = (syz[j][i] - syz_old)/DT - sumq;
 			}
 
 			/* save adjoint wavefield for gradient calculation */
 			if(mode==1){
-			  uz[j][i] = sxz[j][i] - sumr;
-			  uzx[j][i] = syz[j][i] - sumq;
-			}			
-
+			  uz[j][i] = sxz[j][i] - SUMr;
+			  uzx[j][i] = syz[j][i] - SUMq;
+			}
+				
 		    }
 		}
 		break;

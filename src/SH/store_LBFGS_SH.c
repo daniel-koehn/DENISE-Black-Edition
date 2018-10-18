@@ -34,14 +34,8 @@ void store_LBFGS_SH(float ** taper_coeff, int nsrc, float ** srcpos, int ** recp
 /* ===================================================== GRADIENT Vs ========================================================================= */
 /* =========================================================================================================================================== */
 	
-/* Normalization of the gradient   */
-/* ------------------------------- */
-for (i=1;i<=NX;i=i+IDX){
-   for (j=1;j<=NY;j=j+IDY){
-      waveconv_u[j][i] = C_vs * waveconv_u[j][i];
-   }
-}
-  
+/* Store Vs-gradient */
+/* ----------------- */  
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
 	  gradp_u[j][i] = waveconv_u[j][i];
@@ -52,14 +46,8 @@ for (i=1;i<=NX;i=i+IDX){
 /* ===================================================== GRADIENT Rho ============================================================================= */
 /* ================================================================================================================================================ */
 	
-/* Normalization of the gradient   */
-/* ------------------------------- */
-for (i=1;i<=NX;i=i+IDX){
-   for (j=1;j<=NY;j=j+IDY){
-      waveconv_rho[j][i] = C_rho * waveconv_rho[j][i];
-   }
-}
-  
+/* Store Rho-gradient */
+/* ------------------ */
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
 	  gradp_rho[j][i] = waveconv_rho[j][i];
@@ -70,14 +58,8 @@ for (i=1;i<=NX;i=i+IDX){
 /* ===================================================== GRADIENT Taus ================================================================================= */
 /* ===================================================================================================================================================== */
 
-/* Normalization of the gradient   */
-/* ------------------------------- */
-for (i=1;i<=NX;i=i+IDX){
-   for (j=1;j<=NY;j=j+IDY){
-      waveconv_ts[j][i] = C_taus * waveconv_ts[j][i];
-   }
-}
-
+/* Store Taus-gradient */
+/* ------------------- */
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
 	  gradp_ts[j][i] = waveconv_ts[j][i];
@@ -108,10 +90,10 @@ if(iter>1){
    	  
           /* calculate and save y, s at iteration step iter */
           fread(&gradplastiter,sizeof(float),1,FP6);
-          y_LBFGS[h] = waveconv_u[j][i]-gradplastiter;
+          y_LBFGS[h] = waveconv_u[j][i] - gradplastiter;
 
 	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = pu[j][i]-modellastiter;
+          s_LBFGS[h] = (pu[j][i] / C_vs) - modellastiter;
           
           h++;
  
@@ -134,10 +116,10 @@ if(iter>1){
    	  
           /* calculate and save y, s at iteration step iter */
           fread(&gradplastiter,sizeof(float),1,FP6);
-          y_LBFGS[h] = waveconv_rho[j][i]-gradplastiter;
+          y_LBFGS[h] = waveconv_rho[j][i] - gradplastiter;
 
     	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = prho[j][i]-modellastiter;  
+          s_LBFGS[h] = (prho[j][i] / C_rho) - modellastiter;  
           
           h++;
           
@@ -160,10 +142,10 @@ if(iter>1){
    	  
           /* calculate and save y, s at iteration step iter */
           fread(&gradplastiter,sizeof(float),1,FP6);
-          y_LBFGS[h] = waveconv_ts[j][i]-gradplastiter;
+          y_LBFGS[h] = waveconv_ts[j][i] - gradplastiter;
 
     	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = ptaus[j][i]-modellastiter;  
+          s_LBFGS[h] = (ptaus[j][i] / C_taus) - modellastiter;  
           
           h++;
           
