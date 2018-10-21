@@ -61,8 +61,8 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 
 		}
 
-        }
-			    
+        }	                                                        	
+		    
 	/* initialize SH wavefields with zero */
 	if (L){
 
@@ -75,7 +75,8 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
                 zero_denise_elast_SH(-nd+1,NY+nd,-nd+1,NX+nd, (*waveSH).pvz, (*waveSH).psxz, (*waveSH).psyz, (*waveSH).pvzm1, (*waveSH).pvzp1, 
 				   (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y, (*waveSH_PML).psi_vzx,  (*waveSH_PML).psi_vzy);
 	
-	}                                                         
+	}
+	                                                        
 	     
 	/*----------------------  loop over timesteps (forward model) ------------------*/
 
@@ -208,9 +209,9 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	      time8=MPI_Wtime();
 		  time_av_timestep+=(time8-time3);
 	      if (infoout)  fprintf(FP," total real time for timestep %d : %4.2f s.\n",nt,time8-time3);
-	      } */  		
+	      } */ 
 
-	if((nt==hin1)&&(mode==0)&&(MODE>0)){
+	if((nt==hin1)&&(mode==0)&&(MODE==1||MODE==2)){
 
 	  /* store forward wavefields for time-domain inversion and RTM */
           /* ---------------------------------------------------------- */	    
