@@ -574,6 +574,8 @@ void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho,
 
 void FD_SH();
 
+void FD_grad_SH();
+
 void FWI_SH();
 
 float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 

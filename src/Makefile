@@ -204,6 +204,7 @@ DENISE += alloc_fwiSH.c \
 	  extract_LBFGS_SH.c \
 	  extract_PCG_SH.c \
 	  FD_SH.c \
+	  FD_grad_SH.c \
 	  FWI_SH.c \
 	  grad_obj_sh.c \
 	  matcopy_elastic_SH.c \

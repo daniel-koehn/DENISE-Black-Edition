@@ -28,6 +28,9 @@ void check_mode_phys(){
 		case 2 :
 			printf(" MODE=%d: Elastic Reverse Time Migration RTM is applied.\n",MODE);
 			break;
+		case 3 :
+			printf(" MODE=%d: Calculate FD-based gradient.\n",MODE);
+			break;
 
 		default:
 			err(" Sorry, DENISE operation MODE unkown ! ");
