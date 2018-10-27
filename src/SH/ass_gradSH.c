@@ -13,7 +13,7 @@ void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter){
 	extern int NX, NY, IDX, IDY, INVMAT1;
         extern int GRAD_FORM;
         extern int INV_VP_ITER, INV_VS_ITER, INV_RHO_ITER;
-	extern float DT;
+	extern float DT, C_vs, C_rho;
 
 	/* local variables */
 	int i, j;
@@ -29,8 +29,8 @@ void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter){
       			(*fwiSH).waveconv_mu[j][i] = DT * (*fwiSH).waveconv_u_shot[j][i];
 		 
       			if(INVMAT1==1){		
-         			/* calculate Vs gradient */		 
-         			(*fwiSH).waveconv_u_shot[j][i] = 2.0 * (*matSH).prho[j][i] * (*matSH).pu[j][i] * (*fwiSH).waveconv_mu[j][i];         	 
+         			/* calculate Vs gradient */
+				(*fwiSH).waveconv_u_shot[j][i] = 2.0 * (*matSH).prho[j][i] * (*matSH).pu[j][i] * (*fwiSH).waveconv_mu[j][i];
       			}
 		 
       			if(INVMAT1==2){
@@ -60,7 +60,7 @@ void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter){
 				 
        			if(INVMAT1==1){
           			/* calculate density gradient */
-          			(*fwiSH).waveconv_rho_shot[j][i] = ((*matSH).pu[j][i] * (*matSH).pu[j][i] * (*fwiSH).waveconv_mu[j][i]) + (*fwiSH).waveconv_rho_s[j][i];
+          			(*fwiSH).waveconv_rho_shot[j][i] = ((*matSH).pu[j][i] * (*matSH).pu[j][i] * (*fwiSH).waveconv_mu[j][i]) + (*fwiSH).waveconv_rho_s[j][i];				 
        			}
 		 
        			if(INVMAT1==3){

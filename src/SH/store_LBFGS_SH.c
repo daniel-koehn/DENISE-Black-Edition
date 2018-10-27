@@ -38,6 +38,7 @@ void store_LBFGS_SH(float ** taper_coeff, int nsrc, float ** srcpos, int ** recp
 /* ----------------- */  
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
+       waveconv_u[j][i] = C_vs * waveconv_u[j][i];
 	  gradp_u[j][i] = waveconv_u[j][i];
    }
 }
@@ -50,6 +51,7 @@ for (i=1;i<=NX;i=i+IDX){
 /* ------------------ */
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
+       waveconv_rho[j][i] = C_rho * waveconv_rho[j][i];
 	  gradp_rho[j][i] = waveconv_rho[j][i];
    }
 }
@@ -62,6 +64,7 @@ for (i=1;i<=NX;i=i+IDX){
 /* ------------------- */
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
+       waveconv_ts[j][i] = C_taus * waveconv_ts[j][i];
 	  gradp_ts[j][i] = waveconv_ts[j][i];
    }
 }

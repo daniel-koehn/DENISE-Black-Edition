@@ -82,7 +82,7 @@ int ngrav=0, nxgrav, nygrav;
 float L2_grav, FWImax, GRAVmax, FWImax_all, GRAVmax_all ;
 char jac[STRING_SIZE];
 
-FILE *FPL2, *FP_stage, *FP_GRAV, *LAMBDA;
+FILE *FPL2, *FP_stage, *FP_GRAV, *LAMBDA, *FP_GRAD;
 
 if (MYID == 0){
    time1=MPI_Wtime(); 
@@ -462,8 +462,14 @@ for (imod=1;imod<=NXG;imod=imod+IDXMOD){
 	   ii=imod-POS[1]*NX;
 	   jj=jmod-POS[2]*NY;
 
-	   deltam = EPS_SCALE * fwiSH.Vs0[jj][ii];
-	   matSH.pu[jj][ii] = matSH.pu[jj][ii] + deltam;					
+	   //deltam = EPS_SCALE * fwiSH.Vs0[jj][ii];
+	   //deltam = EPS_SCALE * fwiSH.Rho0[jj][ii];
+	   deltam = EPS_SCALE * fwiSH.Taus0[jj][ii];
+	   
+	   //matSH.pu[jj][ii] = matSH.pu[jj][ii] + deltam;
+	   //matSH.prho[jj][ii] = matSH.prho[jj][ii] + deltam;
+	   matSH.ptaus[jj][ii] = matSH.ptaus[jj][ii] + deltam;
+	   
         }
 
 	seisSHfwi.L2 = obj_sh(&waveSH,&waveSH_PML,&matSH,&fwiSH,&mpiPSV,&seisSH,&seisSHfwi,&acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,1,1,Ws,Wr,hin,DTINV_help,EPS_SCALE,req_send,req_rec);
@@ -474,8 +480,14 @@ for (imod=1;imod<=NXG;imod=imod+IDXMOD){
 	   ii=imod-POS[1]*NX;
 	   jj=jmod-POS[2]*NY;
 
-	   fwiSH.waveconv_u[jj][ii] = (L2 - L2_init) / deltam;
-	   matSH.pu[jj][ii] = matSH.pu[jj][ii] - deltam;					
+	   //fwiSH.waveconv_u[jj][ii] = (L2 - L2_init) / deltam;
+	   //fwiSH.waveconv_rho[jj][ii] = (L2 - L2_init) / deltam;
+	   fwiSH.waveconv_ts[jj][ii] = (L2 - L2_init) / deltam;
+	   
+	   // matSH.pu[jj][ii] = matSH.pu[jj][ii] - deltam;					
+	   // matSH.prho[jj][ii] = matSH.prho[jj][ii] - deltam;
+	   matSH.ptaus[jj][ii] = matSH.ptaus[jj][ii] - deltam;
+	   
         }
 
         count_mod++;
@@ -484,127 +496,34 @@ for (imod=1;imod<=NXG;imod=imod+IDXMOD){
 }
 
 /* FD-based gradient */
-sprintf(jac,"%s_FD_vs.old.%i%i",JACOBIAN,POS[1],POS[2]);
-FP=fopen(jac,"wb");
+//sprintf(jac,"%s_FD_vs.old.%i%i",JACOBIAN,POS[1],POS[2]);
+//sprintf(jac,"%s_FD_rho.old.%i%i",JACOBIAN,POS[1],POS[2]);
+sprintf(jac,"%s_FD_ts.old.%i%i",JACOBIAN,POS[1],POS[2]);
+FP_GRAD=fopen(jac,"wb");
 
 for (i=1;i<=NX;i=i+IDX){   
    for (j=1;j<=NY;j=j+IDY){
-      tmp = fwiSH.waveconv_u[j][i];
-      fwrite(&tmp,sizeof(float),1,FP);
+      //tmp = fwiSH.waveconv_u[j][i];
+      //tmp = fwiSH.waveconv_rho[j][i];  
+      tmp = fwiSH.waveconv_ts[j][i];      
+      fwrite(&tmp,sizeof(float),1,FP_GRAD);
    }
 }
         
-fclose(FP);
+fclose(FP_GRAD);
+
 MPI_Barrier(MPI_COMM_WORLD);
         
 /* merge gradient file */ 
-sprintf(jac,"%s_FD_vs.old",JACOBIAN);
+//sprintf(jac,"%s_FD_vs.old",JACOBIAN);
+//sprintf(jac,"%s_FD_rho.old",JACOBIAN);
+sprintf(jac,"%s_FD_ts.old",JACOBIAN);
 if (MYID==0) mergemod(jac,3);
 
 } /* End of FWI-workflow loop */
 
 /* deallocate memory for SH forward problem */
 dealloc_SH(&waveSH,&waveSH_PML);
-
-/* deallocation of memory */
-free_matrix(fwiSH.Vs0,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.Rho0,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.Taus0,-nd+1,NY+nd,-nd+1,NX+nd);
-
-free_matrix(matSH.prho,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.prho_old,-nd+1,NY+nd,-nd+1,NX+nd);
-
-free_matrix(matSH.pu,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.pu_old,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matSH.puipjp,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matSH.puip,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(matSH.pujp,-nd+1,NY+nd,-nd+1,NX+nd);
-
-free_matrix(fwiSH.ptaus_old,-nd+1,NY+nd,-nd+1,NX+nd);
-
-free_matrix(mpiPSV.bufferlef_to_rig,1,NY,1,fdo3);
-free_matrix(mpiPSV.bufferrig_to_lef,1,NY,1,fdo3);
-free_matrix(mpiPSV.buffertop_to_bot,1,NX,1,fdo3);
-free_matrix(mpiPSV.bufferbot_to_top,1,NX,1,fdo3);
-
-free_vector(hc,0,6);
-
-free_matrix(fwiSH.gradg_rho,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.gradp_rho,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_rho,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_rho_s,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_rho_shot,-nd+1,NY+nd,-nd+1,NX+nd);
-
-free_matrix(fwiSH.gradg_u,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.gradp_u,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_u,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_mu,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_u_shot,-nd+1,NY+nd,-nd+1,NX+nd);
-
-free_matrix(fwiSH.gradg_ts,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.gradp_ts,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_ts,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_ts_s,-nd+1,NY+nd,-nd+1,NX+nd);
-free_matrix(fwiSH.waveconv_ts_shot,-nd+1,NY+nd,-nd+1,NX+nd);
-
-free_vector(fwiSH.forward_prop_sxz,1,NY*NX*NT);
-free_vector(fwiSH.forward_prop_syz,1,NY*NX*NT);
-free_vector(fwiSH.forward_prop_rho_z,1,NY*NX*NT);
-
-free_matrix(fwiSH.forward_prop_rxz,1,NY*NX*NT,1,L);
-free_matrix(fwiSH.forward_prop_ryz,1,NY*NX*NT,1,L);
-
-if (nsrc_loc>0){	
-	free_matrix(acq.signals,1,nsrc_loc,1,NT);
-	free_matrix(acq.srcpos_loc,1,8,1,nsrc_loc);
-	free_matrix(acq.srcpos_loc_back,1,6,1,nsrc_loc);
-}		   
-
- /* free memory for global source positions */
- free_matrix(acq.srcpos,1,8,1,nsrc);
-
- /* free memory for source position definition */
- free_matrix(acq.srcpos1,1,8,1,1);
- 
- /* free memory for abort criterion */
- free_vector(L2_hist,1,1000);		
- free_vector(epst1,1,3);
-
- if((N_STREAMER==0)||(READREC!=2)){
-
-    if (SEISMO) free_imatrix(acq.recpos,1,3,1,ntr_glob);
-
-    if ((ntr>0) && (SEISMO)){
-
-            free_imatrix(acq.recpos_loc,1,3,1,ntr);
-            acq.recpos_loc = NULL;
- 
-            switch (SEISMO){
-            case 1 : /* particle velocities only */
-                    free_matrix(seisSH.sectionvz,1,ntr,1,ns);
-                    seisSH.sectionvz=NULL;
-                    break;
-
-             }
-
-    }
-
-    free_matrix(seisSHfwi.sectionread,1,ntr_glob,1,ns);
-    free_ivector(acq.recswitch,1,ntr);
-    
-    if(QUELLTYPB){
-       free_matrix(seisSHfwi.sectionvzdata,1,ntr,1,ns);
-       free_matrix(seisSHfwi.sectionvzdiff,1,ntr,1,ns);
-       free_matrix(seisSHfwi.sectionvzdiffold,1,ntr,1,ns);
-    }
-
-    if(SEISMO){
-        free_matrix(seisSH.fulldata_vz,1,ntr_glob,1,NT); 
-    }
- 
- }
-
- free_ivector(DTINV_help,1,NT);
  
  /* free memory for viscoelastic modeling variables */
  if (L) {
@@ -648,8 +567,6 @@ if (MYID==0){
 	fprintf(FP," timestep:  \t %5.3f seconds  \n",time_av_timestep);*/
 		
 }
-
-fclose(FP);
 
 
 }

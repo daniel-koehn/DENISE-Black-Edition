@@ -18,7 +18,7 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
         extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
         extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG, L;
-        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, WRITE_STF;
+        extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, WRITE_STF, NTDTINV;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
         extern float C_vs, C_rho, C_taus, *FL;
         extern char MFILE[STRING_SIZE];
@@ -204,9 +204,9 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	for(i=1;i<=NX;i=i+IDX){
 	    for(j=1;j<=NY;j=j+IDY){
 
-                (*fwiSH).waveconv_u_shot[j][i] = -C_vs * (*fwiSH).waveconv_u_shot[j][i];
-		(*fwiSH).waveconv_rho_shot[j][i] = -C_rho * (*fwiSH).waveconv_rho_shot[j][i];
-		(*fwiSH).waveconv_ts_shot[j][i] = -C_taus * (*fwiSH).waveconv_ts_shot[j][i];
+                (*fwiSH).waveconv_u_shot[j][i] = - (*fwiSH).waveconv_u_shot[j][i] / (NTDTINV * nshots * ntr_glob);
+		(*fwiSH).waveconv_rho_shot[j][i] = - (*fwiSH).waveconv_rho_shot[j][i] / (NTDTINV * nshots * ntr_glob);
+		(*fwiSH).waveconv_ts_shot[j][i] = - (*fwiSH).waveconv_ts_shot[j][i] / (NTDTINV * nshots * ntr_glob);
 
 	    }
 	}

@@ -29,7 +29,7 @@ void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float **
 /* extract updated Hessian-gradient product from r_LBFGS vector */
 /* ------------------------------------------------------------ */
 
-if(iter>1000){
+if(iter>1){
 
      /* update gradients */
      h=1;
