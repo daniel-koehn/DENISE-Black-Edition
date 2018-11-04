@@ -190,6 +190,7 @@ DENISE += alloc_fwiSH.c \
 	  alloc_seisSHfwi.c \
 	  alloc_SH.c \
 	  ass_gradSH.c \
+	  apply_inv_hessSH.c \
 	  av_mu_SH.c \
 	  init_grad_coeff.c \
 	  inv_rho_SH.c \
@@ -227,6 +228,7 @@ DENISE += alloc_fwiSH.c \
 	  stf_sh.c \
 	  store_LBFGS_SH.c \
 	  store_PCG_SH.c \
+          store_pseudo_hess_SH.c \
 	  update_s_elastic_PML_SH.c \
 	  update_s_visc_PML_SH.c \
 	  update_v_PML_SH.c \

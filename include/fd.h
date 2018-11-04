@@ -149,6 +149,8 @@ struct fwiSH{
    float   * forward_prop_z, *forward_prop_rho_z, *forward_prop_sxz, *forward_prop_syz;
    float  ** forward_prop_rxz, **forward_prop_ryz, ***Rxz, ***Ryz, ***rxzt, ***ryzt;
    float  ** c1mu, ** c4mu, ** c1ts, ** c4ts, * tausl;
+   float  ** hess_rho2, ** hess_mu2, ** hess_ts2, **hess_vs2, **hess_rho2p;
+   float  ** hess_muts, ** hess_murho, ** hess_tsrho; 
 } fwiSH;
 
 /* SH material parameters */
@@ -540,6 +542,8 @@ void alloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML);
 
 void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter);
 
+void apply_inv_hessSH(struct fwiSH *fwiSH, struct matSH *matSH, int nshots);
+
 void av_mu_SH(float ** u, float ** uip, float ** ujp, float ** rho);
 
 void init_grad_coeff(struct fwiSH *fwiSH, struct matSH *matSH);
@@ -636,6 +640,8 @@ void store_LBFGS_SH(float ** taper_coeff, int nsrc, float ** srcpos, int ** recp
 
 void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
 
+void store_pseudo_hess_SH(struct fwiSH *fwiSH);
+
 void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 	float ** vz, float **  uz, float **  uzx, float **   syz, float **   sxz,
 	float ** ujp, float ** uip, float **rho, float *hc, int infoout,
@@ -669,6 +675,8 @@ void zero_denise_visc_SH(int ny1, int ny2, int nx1, int nx2, float ** vz, float 
 /* ----------------- */
 /* General functions */
 /* ----------------- */
+
+void mat_inv_3x3(float **A, float **Ainv);
 
 void window_cos(float **win, int npad, int nsrc, float it1, float it2, float it3, float it4);
 

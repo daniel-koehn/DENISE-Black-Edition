@@ -402,12 +402,12 @@ for(i=1;i<=ntr;i++){
 			if(LNORM==2){
 
                           if(GRAD_FORM==1){
-			     if(MODE==1){intseis += DT*(section[i][j]-sectiondata[i][j]);}
+			     if(MODE==1 || MODE==3){intseis += DT*(section[i][j]-sectiondata[i][j]);}
 			     if(MODE==2){intseis += DT*(sectiondata[i][j]);}
                           }
 
                           if(GRAD_FORM==2){
-                             if(MODE==1){intseis = (section[i][j]-sectiondata[i][j]);}
+                             if(MODE==1 || MODE==3){intseis = (section[i][j]-sectiondata[i][j]);}
                              if(MODE==2){intseis = sectiondata[i][j];}
                           }
 

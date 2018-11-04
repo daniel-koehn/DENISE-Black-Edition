@@ -97,6 +97,9 @@ if(MYID==0){
    if(EPRECOND==3){
       printf("EPRECOND = %d - Hessian approximation by Plessix & Mulder (2004) \n\n",EPRECOND); 
    }
+   if(EPRECOND==4){
+      printf("EPRECOND = %d - Hessian approximation by Shin et al. (2001) \n\n",EPRECOND); 
+   }
    else printf("EPRECOND = %d - energy preconditioning deactivated \n\n",EPRECOND);
 
    printf("\n\n");

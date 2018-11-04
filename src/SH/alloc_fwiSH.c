@@ -10,7 +10,7 @@
 void alloc_fwiSH(struct fwiSH *fwiSH){
 
         /* global variables */
-	extern int NX, NY, L, FW, FDORDER, NTDTINV, NXNYI;
+	extern int NX, NY, L, FW, FDORDER, NTDTINV, NXNYI, EPRECOND;
 
 	/* local variables */
 	int nd;
@@ -73,6 +73,17 @@ void alloc_fwiSH(struct fwiSH *fwiSH){
 
 	/* tausl */
 	(*fwiSH).tausl =  vector(1,L);
+
+	/* Pseudo Hessian main- and non-diagonal approximations */
+	(*fwiSH).hess_mu2 = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiSH).hess_rho2 = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiSH).hess_ts2 = matrix(-nd+1,NY+nd,-nd+1,NX+nd);	
+	(*fwiSH).hess_vs2 = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiSH).hess_rho2p = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+
+	(*fwiSH).hess_muts = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiSH).hess_murho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*fwiSH).hess_tsrho = matrix(-nd+1,NY+nd,-nd+1,NX+nd);	
 
 }
 

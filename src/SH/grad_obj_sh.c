@@ -44,6 +44,18 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	init_grad((*fwiSH).waveconv_rho);
 	init_grad((*fwiSH).waveconv_u);
 	init_grad((*fwiSH).waveconv_ts);
+	
+	if(EPRECOND==4){
+	   init_grad((*fwiSH).hess_mu2);
+	   init_grad((*fwiSH).hess_rho2);
+	   init_grad((*fwiSH).hess_ts2);
+	   init_grad((*fwiSH).hess_vs2);
+	   init_grad((*fwiSH).hess_rho2p);
+
+	   init_grad((*fwiSH).hess_muts);
+	   init_grad((*fwiSH).hess_murho);
+	   init_grad((*fwiSH).hess_tsrho);	   	   
+	}
 
 	/* calculate FWI gradient weighting coefficients */
 	init_grad_coeff(fwiSH,matSH);
@@ -204,9 +216,9 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	for(i=1;i<=NX;i=i+IDX){
 	    for(j=1;j<=NY;j=j+IDY){
 
-                (*fwiSH).waveconv_u_shot[j][i] = - (*fwiSH).waveconv_u_shot[j][i] / (NTDTINV * nshots * ntr_glob);
-		(*fwiSH).waveconv_rho_shot[j][i] = - (*fwiSH).waveconv_rho_shot[j][i] / (NTDTINV * nshots * ntr_glob);
-		(*fwiSH).waveconv_ts_shot[j][i] = - (*fwiSH).waveconv_ts_shot[j][i] / (NTDTINV * nshots * ntr_glob);
+                (*fwiSH).waveconv_u_shot[j][i] = -(*fwiSH).waveconv_u_shot[j][i] / (NTDTINV * nshots * ntr_glob);
+		(*fwiSH).waveconv_rho_shot[j][i] = -(*fwiSH).waveconv_rho_shot[j][i] / (NTDTINV * nshots * ntr_glob);
+		(*fwiSH).waveconv_ts_shot[j][i] = -(*fwiSH).waveconv_ts_shot[j][i] / (NTDTINV * nshots * ntr_glob);
 
 	    }
 	}
@@ -283,6 +295,12 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	nsrc_loc=0;
 
 	} /* end of loop over shots (forward and backpropagation) */   
+
+	/* Calculate Pseudo-Hessian for Vs-rho-ts parametrization */
+	/* and apply inverse Hessian to gradient */
+	if(EPRECOND==4){
+	   apply_inv_hessSH(fwiSH, matSH, nshots);
+	}
 
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;

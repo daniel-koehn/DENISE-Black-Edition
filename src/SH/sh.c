@@ -3,7 +3,7 @@
  *   for a single shot 
  *
  *   mode = 0 - forward modelling only, STF estimation or FWI gradient calculation
- *   mode = 1 - backpropagation of data residuals
+ *   mode = 1 - adjoint modelling
  *   mode = 2 - evaluation objective function for step length estimation  
  * 
  *   
@@ -29,6 +29,8 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
         /* local variables */
 	int i,j,l,nt,lsamp,lsnap,nsnap, nd, hin1, imat, imat1, imat2, infoout;
         float tmp, tmp1, muss, lamss, P3, P5;
+        float hess_rho, hess_mu, hess_ts;
+	float SUMr, SUMq;
 
         nd = FDORDER/2 + 1;
 
@@ -229,9 +231,49 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 			for (l=1;l<=L;l++){
 			    (*fwiSH).forward_prop_rxz[imat2][l] = (*waveSH).pr[j][i][l] + (*fwiSH).tausl[l] * (*fwiSH).rxzt[j][i][l];
 	 	            (*fwiSH).forward_prop_ryz[imat2][l] = (*waveSH).pq[j][i][l] + (*fwiSH).tausl[l] * (*fwiSH).ryzt[j][i][l];
-			}
+			}			
 
-			imat2++;
+			/* Compute Pseudo-Hessian main diagonal approximation */
+			if(EPRECOND==4){
+
+			   /* Pseudo-Hessian density */
+			   hess_rho = (*waveSH).pvz[j][i] * (*waveSH).pvzp1[j][i];			  
+
+			   /* Pseudo-Hessian Vs and Taus*/
+			   muss = (*matSH).prho[j][i] * (*matSH).pu[j][i] * (*matSH).pu[j][i];
+			   
+			   SUMr=SUMq=0.0;
+                           for (l=1;l<=L;l++){
+			       SUMr += (*fwiSH).Rxz[j][i][l];
+                               SUMq += (*fwiSH).Ryz[j][i][l];
+			   }
+			   
+			   P3 = (((*waveSH).psxz[j][i]-SUMr) * (*waveSH).uz[j][i]) + (((*waveSH).psyz[j][i]-SUMq) * (*waveSH).uzx[j][i]);
+			   P5 = 0.0;  			            
+		           for (l=1;l<=L;l++){
+			       P5 += ((*fwiSH).forward_prop_rxz[imat2][l] * (*fwiSH).Rxz[j][i][l]) + ((*fwiSH).forward_prop_ryz[imat2][l] * (*fwiSH).Ryz[j][i][l]); 
+			   }
+
+			   /* Pseudo-Hessian main-diagonal and non-diagonal elements */
+			   /* ------------------------------------------------------ */
+			   (*fwiSH).hess_rho2[j][i] += hess_rho * hess_rho;			   
+
+		           if(muss>0.0){
+			   
+			      hess_mu = - (*fwiSH).c1mu[j][i] * P3 + (*fwiSH).c4mu[j][i] * P5;
+			      hess_ts = - (*fwiSH).c1ts[j][i] * P3 + (*fwiSH).c4ts[j][i] * P5;
+			   			
+		                (*fwiSH).hess_mu2[j][i] += hess_mu * hess_mu;
+			        (*fwiSH).hess_ts2[j][i] += hess_ts * hess_ts;
+			       (*fwiSH).hess_muts[j][i] += hess_mu * hess_ts;
+			      (*fwiSH).hess_murho[j][i] += hess_mu * hess_rho;
+			      (*fwiSH).hess_tsrho[j][i] += hess_rho * hess_ts; 
+			       
+		           }			   			   			    		 
+
+			 }
+			 
+			 imat2++;			 			 
 		    
 		    }
 		}

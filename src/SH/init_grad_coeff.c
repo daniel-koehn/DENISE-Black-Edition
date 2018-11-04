@@ -39,8 +39,8 @@ void init_grad_coeff(struct fwiSH *fwiSH, struct matSH *matSH){
 	    printf("\n");
 	    printf("Compute gradient coefficients c1mu, c1ts, c4mu, c4ts\n");
 	    printf("----------------------------------------------------\n");
-	    printf("c1mu = %e \t c4mu = %e \n",(*fwiSH).c1mu[1][1],(*fwiSH).c4mu[j][i]);
-	    printf("c1ts = %e \t c4ts = %e \n",(*fwiSH).c1ts[1][1],(*fwiSH).c4ts[j][i]);
+	    printf("c1mu = %e \t c4mu = %e \n",(*fwiSH).c1mu[1][1],(*fwiSH).c4mu[1][1]);
+	    printf("c1ts = %e \t c4ts = %e \n",(*fwiSH).c1ts[1][1],(*fwiSH).c4ts[1][1]);
 	    printf("\n");
 	}
 

@@ -15,7 +15,7 @@ void store_LBFGS_SH(float ** taper_coeff, int nsrc, float ** srcpos, int ** recp
 	extern int NX, NY, IDX, IDY, SPATFILTER;
 	extern int HESSIAN, SWS_TAPER_GRAD_VERT, SWS_TAPER_GRAD_HOR, SWS_TAPER_GRAD_SOURCES, SWS_TAPER_FILE;
 	extern int POS[3], MYID;
-        extern float C_vs, C_rho, C_taus;
+        extern float C_vs, C_rho, C_taus, C_vs_min, C_rho_min, C_taus_min;
 	extern char JACOBIAN[STRING_SIZE];
 	
 	char jac[225], jac1[225];
@@ -96,7 +96,7 @@ if(iter>1){
           y_LBFGS[h] = waveconv_u[j][i] - gradplastiter;
 
 	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = (pu[j][i] / C_vs) - modellastiter;
+          s_LBFGS[h] = ((pu[j][i] - C_vs_min) / C_vs) - modellastiter;
           
           h++;
  
@@ -122,7 +122,7 @@ if(iter>1){
           y_LBFGS[h] = waveconv_rho[j][i] - gradplastiter;
 
     	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = (prho[j][i] / C_rho) - modellastiter;  
+          s_LBFGS[h] = ((prho[j][i] - C_rho_min) / C_rho) - modellastiter;  
           
           h++;
           
@@ -148,7 +148,7 @@ if(iter>1){
           y_LBFGS[h] = waveconv_ts[j][i] - gradplastiter;
 
     	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = (ptaus[j][i] / C_taus) - modellastiter;  
+          s_LBFGS[h] = ((ptaus[j][i] - C_taus_min) / C_taus) - modellastiter;  
           
           h++;
           

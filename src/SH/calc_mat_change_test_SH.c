@@ -14,8 +14,8 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	FILE *FP1;
 	/* extern variables */
 	extern float DH, DT;
-	extern float EPSILON, EPSILON_u, EPSILON_rho, EPSILON_ts, MUN, SCALERHO, SCALEQS;
-	extern float C_vs, C_rho, C_taus;
+	extern float EPSILON, EPSILON_u, EPSILON_rho, EPSILON_ts, MUN;
+	extern float C_vs, C_rho, C_taus, C_vs_min, C_rho_min, C_taus_min;
 	extern int NX, NY, NXG, NYG,  POS[3], MYID, INVMAT1;
 	
 	extern int INV_RHO_ITER, INV_VS_ITER, INV_QS_ITER;
@@ -41,7 +41,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){
 		
-		Zs = u[j][i]/C_vs;     /* normalize Vs */
+		Zs = (u[j][i]-C_vs_min) / C_vs;     /* normalize Vs */
 		
 		if(Zs>umax){umax=Zs;}
 		
@@ -64,7 +64,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){
 		
-		if(rho[j][i]/C_rho>rhomax){rhomax = rho[j][i]/C_rho;}
+		if((rho[j][i]-C_rho_min)/C_rho>rhomax){rhomax = (rho[j][i]-C_rho_min)/C_rho;}
 		
 		if((i*j == 1) || (gradmax_rho == 0.0)) {
 		        gradmax_rho = fabs(waveconv_rho[j][i]);
@@ -84,7 +84,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){
 		
-		if(ts[j][i]/C_taus>tausmax){tausmax=ts[j][i]/C_taus;}
+		if((ts[j][i]-C_taus_min)/C_taus>tausmax){tausmax=(ts[j][i]-C_taus_min)/C_taus;}
 		
 		if((i*j == 1) || (gradmax_ts == 0.0)) {
 		        gradmax_ts = fabs(waveconv_ts[j][i]);
@@ -118,7 +118,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	   MPI_Allreduce(&rhomax,&rhomaxr,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
            MPI_Allreduce(&gradmax_rho,&gradmaxr_rho,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
 	
-    	   EPSILON_rho = eps_scale * (rhomaxr/gradmaxr_rho) * SCALERHO;
+    	   EPSILON_rho = eps_scale * (rhomaxr/gradmaxr_rho);
 	   if (iter<INV_RHO_ITER){EPSILON_rho = 0.0;}
            epsilon1=EPSILON_rho;
 	   MPI_Allreduce(&EPSILON_rho,&epsilon1,1,MPI_FLOAT,MPI_MIN,MPI_COMM_WORLD);
@@ -130,7 +130,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	   MPI_Allreduce(&tausmax,&tausmaxr,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
            MPI_Allreduce(&gradmax_ts,&gradmaxr_ts,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
 	
-    	   EPSILON_ts = eps_scale * (tausmaxr/gradmaxr_ts) * SCALEQS;
+    	   EPSILON_ts = eps_scale * (tausmaxr/gradmaxr_ts);
 	   if (iter<INV_QS_ITER){EPSILON_ts = 0.0;}
            epsilon1=EPSILON_ts;
 	   MPI_Allreduce(&EPSILON_ts,&epsilon1,1,MPI_FLOAT,MPI_MIN,MPI_COMM_WORLD);
@@ -155,18 +155,18 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 		      
 		      testuplow=0;
 		                         
-		        unp1[j][i] = (u[j][i] / C_vs) - EPSILON_u * waveconv_u[j][i];   	
-		      rhonp1[j][i] = (rho[j][i] / C_rho) - EPSILON_rho * waveconv_rho[j][i];
-		       tsnp1[j][i] = (ts[j][i] / C_taus) - EPSILON_ts * waveconv_ts[j][i];
+		        unp1[j][i] = ((u[j][i]-C_vs_min) / C_vs) - EPSILON_u * waveconv_u[j][i];   	
+		      rhonp1[j][i] = ((rho[j][i]-C_rho_min) / C_rho) - EPSILON_rho * waveconv_rho[j][i];
+		       tsnp1[j][i] = ((ts[j][i]-C_taus_min) / C_taus) - EPSILON_ts * waveconv_ts[j][i];
 		      
 			
 		      /* apply bound constraints */      
                       if(INVMAT1==1){
 		      
 		        /* Denormalize updated material parameters */
-		        unp1[j][i] *= C_vs;
-		        rhonp1[j][i] *= C_rho;			  
-		        tsnp1[j][i] *= C_taus;	
+		        unp1[j][i] = C_vs_min + unp1[j][i] * C_vs;
+		        rhonp1[j][i] = C_rho_min + rhonp1[j][i] * C_rho;			  
+		        tsnp1[j][i] = C_taus_min + tsnp1[j][i] * C_taus;	
 		      		  		      		      
 			/* S-wave velocities */
 		        if((unp1[j][i]<VSLOWERLIM)&&(unp1[j][i]>1e-6)){

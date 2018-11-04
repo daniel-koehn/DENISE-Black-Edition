@@ -14,7 +14,7 @@ void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float **
 
 	extern int NX, NY, IDX, IDY;
 	extern int POS[3], MYID;
-        extern float C_vs, C_rho, C_taus;
+        extern float C_vs, C_rho, C_taus, C_vs_min, C_rho_min, C_taus_min;
 	extern char JACOBIAN[STRING_SIZE];
 	
 	char jac[225], jac1[225];
@@ -29,7 +29,7 @@ void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float **
 /* extract updated Hessian-gradient product from r_LBFGS vector */
 /* ------------------------------------------------------------ */
 
-if(iter>1){
+if(iter>1000){
 
      /* update gradients */
      h=1;
@@ -65,21 +65,6 @@ if(iter>1){
      }
 
 }
-
-/* Use negative gradient as search direction in case of LBFGS_RESET==1 */
-/*if(iter==1){
-
-     for (i=1;i<=NX;i=i+IDX){
-        for (j=1;j<=NY;j=j+IDY){
-               
-	      waveconv_u[j][i] = - waveconv_u[j][i];   
-            waveconv_rho[j][i] = - waveconv_rho[j][i];	       
-             waveconv_ts[j][i] = - waveconv_ts[j][i];
-		  
-        }
-     }
-
-}*/
 	
 /* save old models Vs */
 /* ------------------ */
@@ -90,7 +75,7 @@ if(iter>1){
 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
-	       tmp = pu[j][i]/C_vs;
+	       tmp = (pu[j][i] - C_vs_min) / C_vs;
                fwrite(&tmp,sizeof(float),1,FP3);
            }
         }
@@ -147,7 +132,7 @@ if(iter>1){
 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
-	       tmp = prho[j][i]/C_rho;
+	       tmp = (prho[j][i] - C_rho_min) / C_rho;
                fwrite(&tmp,sizeof(float),1,FP3);
            }
         }
@@ -204,7 +189,7 @@ if(iter>1){
 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
-	       tmp = ptaus[j][i]/C_taus;
+	       tmp = (ptaus[j][i] - C_taus_min) / C_taus;
                fwrite(&tmp,sizeof(float),1,FP3);
            }
         }

@@ -27,7 +27,7 @@ extern float LAM_GRAV, GAMMA_GRAV, LAM_GRAV_GRAD, L2_GRAV_IT1;
 /* full waveform inversion */
 extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, EPRECOND, PCG_BETA;
 extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER, INV_MOD_OUT;
-extern float FC_END, PRO, C_vs, C_rho, C_taus;
+extern float FC_END, PRO, C_vs, C_rho, C_taus, C_vs_min, C_rho_min, C_taus_min;
 extern char MISFIT_LOG_FILE[STRING_SIZE], JACOBIAN[STRING_SIZE];
 extern char *FILEINP1;
 
@@ -36,6 +36,7 @@ int ns, nseismograms=0, nt, nd, fdo3, j, i, iter, h, hin, iter_true, SHOTINC, s=
 int buffsize, ntr=0, ntr_loc=0, ntr_glob=0, nsrc=0, nsrc_loc=0, nsrc_glob=0, ishot, nshots=0, itestshot;
 
 float sum, eps_scale, opteps_vp, opteps_vs, opteps_rho, opteps_ts, Vs_max, rho_max, taus_max, Vs_sum, rho_sum, taus_sum;
+float Vs_min, rho_min, taus_min;
 char *buff_addr, ext[10], *fileinp, jac[225], source_signal_file[STRING_SIZE];
 
 double time1, time2, time7, time8, time_av_v_update=0.0, time_av_s_update=0.0, time_av_v_exchange=0.0; 
@@ -469,13 +470,17 @@ if(iter_true==1){
     }
     }
 
-/* ---------------------------------- */
-/* calculate maximum model parameters */
-/* ---------------------------------- */
+/* ---------------------------------------------- */
+/* calculate minimum and maximum model parameters */
+/* ---------------------------------------------- */
 
 	Vs_max = 0.0;
 	rho_max = 0.0;
 	taus_max = 0.0;
+	
+	Vs_min = 1e10;
+	rho_min = 1e10;
+	taus_min = 1e10; 
 	 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
@@ -485,18 +490,52 @@ if(iter_true==1){
 		     Vs_max = matSH.pu[j][i];
 		 }
 		 
+		 /* calculate minimum Vs */
+		 if(matSH.pu[j][i] < Vs_min){
+		     Vs_min = matSH.pu[j][i];
+		 }		 
+		 
 		 /* calculate maximum rho */
 		 if(matSH.prho[j][i] > rho_max){
 		     rho_max = matSH.prho[j][i];
+		 }
+
+		 /* calculate minimum rho */
+		 if(matSH.prho[j][i] < rho_min){
+		     rho_min = matSH.prho[j][i];
 		 }
 
 		 /* calculate maximum taus */
 		 if(matSH.ptaus[j][i] > taus_max){
 		     taus_max = matSH.ptaus[j][i];
 		 }
+
+		 /* calculate minimum taus */
+		 if(matSH.ptaus[j][i] < taus_min){
+		     taus_min = matSH.ptaus[j][i];
+		 }
+
 	
            }
         }
+
+	/* calculate minimum Vs, rho and taus of all CPUs*/
+	
+	Vs_sum = 0.0;
+        MPI_Allreduce(&Vs_min,&Vs_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+        C_vs_min=Vs_sum;
+	
+	rho_sum = 0.0;
+        MPI_Allreduce(&rho_min,&rho_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+        C_rho_min=rho_sum;
+
+	taus_sum = 0.0;
+        MPI_Allreduce(&taus_min,&taus_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+        C_taus_min=taus_sum;
+		
+	if(MYID==0){
+           printf("Vs_min = %e \t rho_min = %e \t taus_min = %e \n ",C_vs_min, C_rho_min, C_taus_min);	
+	}
 		
         /* calculate maximum Vs, rho and taus of all CPUs*/
 	
@@ -516,11 +555,29 @@ if(iter_true==1){
            printf("Vs_max = %e \t rho_max = %e \t taus_max = %e \n ",Vs_max, rho_max, taus_max);	
 	}
 	
+	/* scaling factor for gradients normalized relative to mininum and maximum values*/
+	/*C_vs = Vs_max - C_vs_min;
+	C_rho = rho_max - C_rho_min;
+	C_taus = taus_max - C_taus_min;*/
+	
+	/* scaling factor for gradients normalized relative to maximum values*/
 	C_vs = Vs_max;
 	C_rho = rho_max;
 	C_taus = taus_max;
+	
+	C_vs_min = 0.0;
+	C_rho_min = 0.0;
+	C_taus_min = 0.0;
 
-
+	/* scaling factor for gradients not normalized */
+	/*C_vs = 1.0;
+	C_rho = 1.0;
+	C_taus = 1.0;
+	
+	C_vs_min = 0.0;
+	C_rho_min = 0.0;
+	C_taus_min = 0.0;*/
+			       	
 }
 
 /* Open Log File for L2 norm */
@@ -660,10 +717,29 @@ if((IDXI>1)||(IDYI>1)){
 		
    }
 
-/* apply smoothness constraints to gradients */
+/* Apply diagonal elements of inverse Pseudo-Hessian to gradients */
+/*if(EPRECOND==4){
+   for (i=1;i<=NX;i=i+IDX){
+       for (j=1;j<=NY;j=j+IDY){
+
+             fwiSH.waveconv_u[j][i] = fwiSH.ihess_vs2[j][i] * fwiSH.waveconv_u[j][i];
+	   fwiSH.waveconv_rho[j][i] = fwiSH.ihess_rho2[j][i] * fwiSH.waveconv_rho[j][i];
+	    fwiSH.waveconv_ts[j][i] = fwiSH.ihess_ts2[j][i] * fwiSH.waveconv_ts[j][i];
+    
+       }
+   }
+}*/
+
+/* apply smoothness constraints to gradients and Hessian */
 smooth_grad(fwiSH.waveconv_u, matSH.pu);
 smooth_grad(fwiSH.waveconv_rho, matSH.pu);
 smooth_grad(fwiSH.waveconv_ts, matSH.pu);
+
+/*if(EPRECOND==4){
+    smooth_grad(fwiSH.ihess_vs2, matSH.pu);
+    smooth_grad(fwiSH.ihess_rho2, matSH.pu);
+    smooth_grad(fwiSH.ihess_ts2, matSH.pu);
+}*/
 
 /* Preconditioning of gradients after shot summation and smoothing */
 precond_SH(&fwiSH,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
@@ -709,6 +785,11 @@ if(GRAD_METHOD==2){
     extract_LBFGS_SH(iter, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, fwiSH.gradp_rho, fwiSH.waveconv_ts, fwiSH.gradp_ts, matSH.pu, matSH.prho, matSH.ptaus, r_LBFGS);
 
 }
+
+/* Write Pseudo-Hessian approximations */
+/*if(EPRECOND==4){
+   store_pseudo_hess_SH(&fwiSH);
+}*/
 
 opteps_vs=0.0;
 opteps_rho=0.0;
@@ -904,6 +985,18 @@ free_vector(fwiSH.forward_prop_rho_z,1,NY*NX*NT);
 
 free_matrix(fwiSH.forward_prop_rxz,1,NY*NX*NT,1,L);
 free_matrix(fwiSH.forward_prop_ryz,1,NY*NX*NT,1,L);
+
+if(EPRECOND==4){
+   free_matrix(fwiSH.hess_mu2,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_rho2,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_ts2,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_vs2,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_rho2p,-nd+1,NY+nd,-nd+1,NX+nd);
+   
+   free_matrix(fwiSH.hess_muts,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_murho,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_tsrho,-nd+1,NY+nd,-nd+1,NX+nd);   
+}
 
 if (nsrc_loc>0){	
 	free_matrix(acq.signals,1,nsrc_loc,1,NT);

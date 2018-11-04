@@ -34,6 +34,7 @@ extern char *FILEINP1;
 /* local variables */
 int ns, nseismograms=0, nt, nd, fdo3, j, i, iter, h, hin, iter_true, SHOTINC, s=0, imod, jmod, jj, ii, count_mod;
 int buffsize, ntr=0, ntr_loc=0, ntr_glob=0, nsrc=0, nsrc_loc=0, nsrc_glob=0, ishot, nshots=0, itestshot, IDXMOD, IDYMOD;
+int FD_GRAD_MAT;
 
 float sum, eps_scale, opteps_vp, opteps_vs, opteps_rho, opteps_ts, Vs_max, rho_max, taus_max, Vs_sum, rho_sum, taus_sum, deltam;
 char *buff_addr, ext[10], *fileinp, source_signal_file[STRING_SIZE];
@@ -228,6 +229,12 @@ mem_fwiPSV(nseismograms,ntr,ns,fdo3,nd,buffsize,ntr_glob);
 /* GRAD_FORM = 2 - stress-velocity gradients for symmetrized impedance matrix */
 GRAD_FORM = 2;
 
+/* Calculate FD-based gradient for model parameter class FD_GRAD_MAT */
+/* FD_GRAD_MAT = 1 - S-wave velocity */
+/* FD_GRAD_MAT = 2 - density */
+/* FD_GRAD_MAT = 3 - tau_s = 2/Qs */
+FD_GRAD_MAT = 2;
+
 /* allocate memory for SH forward problem */
 alloc_SH(&waveSH,&waveSH_PML);
 
@@ -403,9 +410,11 @@ if (L) prepare_update_s_visc_SH(matSH.etajm, matSH.etaip, matSH.peta, matSH.fipj
            printf("Vs_max = %e \t rho_max = %e \t taus_max = %e \n ",Vs_max, rho_max, taus_max);	
 	}
 
+if(INV_STF){
+
 	if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
-	for (ishot=1;ishot<=1;ishot+=1){			  
+	for (ishot=1;ishot<=nshots;ishot+=1){			  
 
 	    for (nt=1;nt<=8;nt++) acq.srcpos1[nt][1]=acq.srcpos[nt][ishot]; 
 
@@ -435,7 +444,9 @@ if (L) prepare_update_s_visc_SH(matSH.etajm, matSH.etaip, matSH.peta, matSH.fipj
 	        stf_sh(&waveSH,&waveSH_PML,&matSH,&fwiSH,&mpiPSV,&seisSH,&seisSHfwi,&acq,hc,ishot,nshots,nsrc_loc,nsrc,ns,ntr,ntr_glob,iter,Ws,Wr,hin,DTINV_help,req_send,req_rec);
 	    }
 
-      }
+        }
+}
+
 
 /* ===========================================================================================================================================*/
 /* =============================================== Evaluate objective function for initial model==============================================*/
@@ -444,14 +455,16 @@ if (L) prepare_update_s_visc_SH(matSH.etajm, matSH.etaip, matSH.peta, matSH.fipj
 seisSHfwi.L2 = obj_sh(&waveSH,&waveSH_PML,&matSH,&fwiSH,&mpiPSV,&seisSH,&seisSHfwi,&acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,1,1,Ws,Wr,hin,DTINV_help,EPS_SCALE,req_send,req_rec);
 L2_init = seisSHfwi.L2;
 
+printf("L2 = %e \t L2_init = %e \n", L2, L2_init);
+
 /* ===========================================================================================================================================*/
 /* ==================== Evaluate objective function after perturbation of individual model parameters on FD grid =============================*/
 /* ===========================================================================================================================================*/
 
 /* loop over FD grid points */
 count_mod = 1;
-IDXMOD=3;
-IDYMOD=3;
+IDXMOD=1;
+IDYMOD=1;
 for (imod=1;imod<=NXG;imod=imod+IDXMOD){
     for (jmod=1;jmod<=NYG;jmod=jmod+IDYMOD){
 
@@ -460,16 +473,23 @@ for (imod=1;imod<=NXG;imod=imod+IDXMOD){
 	/* Perturbate model parameter on the global grid in the correct sub-domain */
 	if ((POS[1]==((imod-1)/NX)) && (POS[2]==((jmod-1)/NY))){
 	   ii=imod-POS[1]*NX;
-	   jj=jmod-POS[2]*NY;
+	   jj=jmod-POS[2]*NY;	   	  
 
-	   //deltam = EPS_SCALE * fwiSH.Vs0[jj][ii];
-	   //deltam = EPS_SCALE * fwiSH.Rho0[jj][ii];
-	   deltam = EPS_SCALE * fwiSH.Taus0[jj][ii];
+	   if(FD_GRAD_MAT==1){
+	      deltam = EPS_SCALE * fwiSH.Vs0[jj][ii];
+	      matSH.pu[jj][ii] = matSH.pu[jj][ii] - deltam;
+	   } 	
 	   
-	   //matSH.pu[jj][ii] = matSH.pu[jj][ii] + deltam;
-	   //matSH.prho[jj][ii] = matSH.prho[jj][ii] + deltam;
-	   matSH.ptaus[jj][ii] = matSH.ptaus[jj][ii] + deltam;
-	   
+	   if(FD_GRAD_MAT==2){
+	      deltam = EPS_SCALE * fwiSH.Rho0[jj][ii];
+	      matSH.prho[jj][ii] = matSH.prho[jj][ii] - deltam;
+	   }
+
+	   if(FD_GRAD_MAT==3){
+	      deltam = EPS_SCALE * fwiSH.Taus0[jj][ii];
+	      matSH.ptaus[jj][ii] = matSH.ptaus[jj][ii] - deltam;
+	   }
+	   	   
         }
 
 	seisSHfwi.L2 = obj_sh(&waveSH,&waveSH_PML,&matSH,&fwiSH,&mpiPSV,&seisSH,&seisSHfwi,&acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,1,1,Ws,Wr,hin,DTINV_help,EPS_SCALE,req_send,req_rec);
@@ -480,13 +500,20 @@ for (imod=1;imod<=NXG;imod=imod+IDXMOD){
 	   ii=imod-POS[1]*NX;
 	   jj=jmod-POS[2]*NY;
 
-	   //fwiSH.waveconv_u[jj][ii] = (L2 - L2_init) / deltam;
-	   //fwiSH.waveconv_rho[jj][ii] = (L2 - L2_init) / deltam;
-	   fwiSH.waveconv_ts[jj][ii] = (L2 - L2_init) / deltam;
+	   if(FD_GRAD_MAT==1){
+	      fwiSH.waveconv_u[jj][ii] = (L2 - L2_init) / deltam;
+	      matSH.pu[jj][ii] = matSH.pu[jj][ii] + deltam;
+	   }
+
+	   if(FD_GRAD_MAT==2){
+	      fwiSH.waveconv_rho[jj][ii] = (L2 - L2_init) / deltam;
+	      matSH.prho[jj][ii] = matSH.prho[jj][ii] + deltam;
+	   }
 	   
-	   // matSH.pu[jj][ii] = matSH.pu[jj][ii] - deltam;					
-	   // matSH.prho[jj][ii] = matSH.prho[jj][ii] - deltam;
-	   matSH.ptaus[jj][ii] = matSH.ptaus[jj][ii] - deltam;
+	   if(FD_GRAD_MAT==3){
+	      fwiSH.waveconv_ts[jj][ii] = (L2 - L2_init) / deltam;
+	      matSH.ptaus[jj][ii] = matSH.ptaus[jj][ii] + deltam;
+	   }
 	   
         }
 
@@ -496,16 +523,17 @@ for (imod=1;imod<=NXG;imod=imod+IDXMOD){
 }
 
 /* FD-based gradient */
-//sprintf(jac,"%s_FD_vs.old.%i%i",JACOBIAN,POS[1],POS[2]);
-//sprintf(jac,"%s_FD_rho.old.%i%i",JACOBIAN,POS[1],POS[2]);
-sprintf(jac,"%s_FD_ts.old.%i%i",JACOBIAN,POS[1],POS[2]);
+if(FD_GRAD_MAT==1){sprintf(jac,"%s_FD_vs.old.%i%i",JACOBIAN,POS[1],POS[2]);}
+if(FD_GRAD_MAT==2){sprintf(jac,"%s_FD_rho.old.%i%i",JACOBIAN,POS[1],POS[2]);}
+if(FD_GRAD_MAT==3){sprintf(jac,"%s_FD_ts.old.%i%i",JACOBIAN,POS[1],POS[2]);}
+
 FP_GRAD=fopen(jac,"wb");
 
 for (i=1;i<=NX;i=i+IDX){   
    for (j=1;j<=NY;j=j+IDY){
-      //tmp = fwiSH.waveconv_u[j][i];
-      //tmp = fwiSH.waveconv_rho[j][i];  
-      tmp = fwiSH.waveconv_ts[j][i];      
+      if(FD_GRAD_MAT==1){tmp = fwiSH.waveconv_u[j][i];}
+      if(FD_GRAD_MAT==2){tmp = fwiSH.waveconv_rho[j][i];}  
+      if(FD_GRAD_MAT==3){tmp = fwiSH.waveconv_ts[j][i];}
       fwrite(&tmp,sizeof(float),1,FP_GRAD);
    }
 }
@@ -515,9 +543,9 @@ fclose(FP_GRAD);
 MPI_Barrier(MPI_COMM_WORLD);
         
 /* merge gradient file */ 
-//sprintf(jac,"%s_FD_vs.old",JACOBIAN);
-//sprintf(jac,"%s_FD_rho.old",JACOBIAN);
-sprintf(jac,"%s_FD_ts.old",JACOBIAN);
+if(FD_GRAD_MAT==1){sprintf(jac,"%s_FD_vs.old",JACOBIAN);}
+if(FD_GRAD_MAT==2){sprintf(jac,"%s_FD_rho.old",JACOBIAN);}
+if(FD_GRAD_MAT==3){sprintf(jac,"%s_FD_ts.old",JACOBIAN);}
 if (MYID==0) mergemod(jac,3);
 
 } /* End of FWI-workflow loop */
