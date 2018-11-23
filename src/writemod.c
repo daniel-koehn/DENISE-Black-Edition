@@ -20,7 +20,7 @@ void writemod(char modfile[STRING_SIZE], float ** array, int format){
 	char file[STRING_SIZE];
 
 	fprintf(FP,"\n\n PE %d is writing model to \n",MYID);
-	sprintf(file,"%s.%i%i",modfile,POS[1],POS[2]);
+	sprintf(file,"%s.%i.%i",modfile,POS[1],POS[2]);
 	fprintf(FP,"\t%s\n\n", file);
 	fpmod=fopen(file,"w");
 	for (i=1;i<=NX;i+=IDX)

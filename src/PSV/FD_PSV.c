@@ -231,6 +231,7 @@ if(SNAP){
 
 for (ishot=ishot1;ishot<=ishot2;ishot+=SHOTINC){
 /*for (ishot=1;ishot<=1;ishot+=1){*/
+/*if(ishot!=10 && ishot!=11 && ishot!=12 && ishot!=13 && ishot!=14 && ishot!=29){*/
 
 if((N_STREAMER>0)||(READREC==2)){
 
@@ -347,6 +348,7 @@ if((N_STREAMER>0)||(READREC==2)){
 
 nsrc_loc=0;
 
+//} /* exclude shots */
 } /* end of loop over shots */
 
 /* deallocate memory for PSV forward problem */

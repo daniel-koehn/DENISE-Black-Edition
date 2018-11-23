@@ -25,7 +25,7 @@ void store_pseudo_hess_SH(struct fwiSH *fwiSH){
 
 	/* Save main diagonal Hessian rho-rho */
 	/* ---------------------------------- */
-        sprintf(jac,"%s_hess_rho-rho.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac,"%s_hess_rho-rho.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP1=fopen(jac,"wb");
 	
 	for (i=1;i<=NX;i=i+IDX){   
@@ -44,7 +44,7 @@ void store_pseudo_hess_SH(struct fwiSH *fwiSH){
 	
 	/* Save main diagonal Hessian vs-vs */
 	/* ---------------------------------- */
-        sprintf(jac,"%s_hess_vs-vs.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac,"%s_hess_vs-vs.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP1=fopen(jac,"wb");
 	
 	for (i=1;i<=NX;i=i+IDX){   
@@ -63,7 +63,7 @@ void store_pseudo_hess_SH(struct fwiSH *fwiSH){
 	
 	/* Save main diagonal Hessian ts-ts   */
 	/* -------------------------------- */
-        sprintf(jac,"%s_hess_ts-ts.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac,"%s_hess_ts-ts.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP1=fopen(jac,"wb");
 	
 	for (i=1;i<=NX;i=i+IDX){   

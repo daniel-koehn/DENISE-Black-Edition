@@ -53,6 +53,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	for (ishot=1;ishot<=nshots;ishot+=SHOTINC){
 	/*for (ishot=1;ishot<=1;ishot+=1){*/
+	/*if(ishot!=10 && ishot!=11 && ishot!=12 && ishot!=13 && ishot!=14 && ishot!=16 && ishot!=29){*/	
 
 	/*initialize gradient matrices for each shot with zeros*/
 	init_grad((*fwiPSV).waveconv_shot);
@@ -191,6 +192,8 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	   /* assemble PSV gradients for each shot */
 	   ass_gradPSV(fwiPSV,matPSV,iter);
 
+
+
 	if((EPRECOND==1)||(EPRECOND==3)){
 	  /* calculate energy weights */
 	  eprecond1(We,Ws,Wr);
@@ -290,6 +293,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	nsrc_loc=0;
 
+	//} /* excluded shots */
 	} /* end of loop over shots (forward and backpropagation) */   
 
 	/* calculate L2 norm of all CPUs*/

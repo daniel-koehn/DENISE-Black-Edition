@@ -22,7 +22,7 @@ void RTM_AC_out(struct fwiPSV *fwiPSV){
 	
 	/* output of P-image */
         /* ----------------- */
-	sprintf(jac,"%s_P_image.%i%i",JACOBIAN,POS[1],POS[2]);
+	sprintf(jac,"%s_P_image.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP=fopen(jac,"wb");
 
 	for (i=1;i<=NX;i=i+IDX){

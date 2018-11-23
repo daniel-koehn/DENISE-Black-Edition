@@ -441,14 +441,14 @@ for(i=1;i<=ntr;i++){
                           tmp = abs_synthetics*abs_synthetics*abs_synthetics*abs_data;
                           tmp1 = abs_synthetics*abs_data;
 
-                          sectiondiff[i][invtime]=((intseis_synthetics*data_mult_synthetics)/(tmp+EPS_LNORM)) - (intseis_data/(tmp1+EPS_LNORM));
+                          sectiondiff[i][invtime]=((intseis_synthetics*data_mult_synthetics)/(tmp+EPS_LNORM)) - (intseis_data/(tmp1+EPS_LNORM));			  
 
 			}
 
                         if((LNORM==5)&&(swstestshot==1)){
 
                           tmp = abs_data*abs_synthetics;
-                          L2-=(intseis_data*intseis_synthetics)/(tmp+EPS_LNORM);
+			  L2-=(intseis_data*intseis_synthetics)/(tmp+EPS_LNORM);
 
 	                }
 			

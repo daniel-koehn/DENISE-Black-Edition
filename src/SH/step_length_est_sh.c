@@ -72,7 +72,7 @@ float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, s
 
 	  /* model gravity data */
 	  /* save current density model */
-	  sprintf(jac_grav,"%s_tmp.rho.%i%i",JACOBIAN,POS[1],POS[2]);
+	  sprintf(jac_grav,"%s_tmp.rho.%i.%i",JACOBIAN,POS[1],POS[2]);
 	  FP_GRAV=fopen(jac_grav,"wb");
 
 	  for (i=1;i<=NX;i=i+IDX){

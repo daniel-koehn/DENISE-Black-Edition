@@ -62,7 +62,7 @@ void precond_PSV(struct fwiPSV *fwiPSV, struct acq *acq, int nsrc, int ntr_glob,
 
 
 	/* output of the seismic gradient for rho after taper  */
-	/*sprintf(jac,"%s_seis.%i%i",JACOBIAN,POS[1],POS[2]);
+	/*sprintf(jac,"%s_seis.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP_GRAV=fopen(jac,"wb");       
 
 	for (i=1;i<=NX;i=i+IDX){

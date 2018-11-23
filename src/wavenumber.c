@@ -30,7 +30,7 @@ void  wavenumber(float ** grad){
         zeropad=SPAT_FILT_SIZE;
 	                    
 	/* temporarily save gradient for wavenumber filtering */
-        sprintf(jac,"%s_wavenumber.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac,"%s_wavenumber.old.%i.%i",JACOBIAN,POS[1],POS[2]);
         FP3=fopen(jac,"wb");
                         
         for (i=1;i<=NX;i=i+IDX){
@@ -233,7 +233,7 @@ if(MYID==0){    /* read the global model on node 0 and apply wavenumber damping 
 
         /* clean up temporary files*/
         MPI_Barrier(MPI_COMM_WORLD);
-        sprintf(jac,"%s_wavenumber.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac,"%s_wavenumber.old.%i.%i",JACOBIAN,POS[1],POS[2]);
         remove(jac);
                                 
 

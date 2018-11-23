@@ -95,19 +95,19 @@ void model_elastic_TTI(float  **  rho, float **  c11, float **  c13, float **  c
         /* clean up temporary files */
         MPI_Barrier(MPI_COMM_WORLD);
 
-        sprintf(filename,"%s.denise.c11.%i%i",MFILE,POS[1],POS[2]);
+        sprintf(filename,"%s.denise.c11.%i.%i",MFILE,POS[1],POS[2]);
         remove(filename);
 
-        sprintf(filename,"%s.denise.c13.%i%i",MFILE,POS[1],POS[2]);
+        sprintf(filename,"%s.denise.c13.%i.%i",MFILE,POS[1],POS[2]);
         remove(filename);
 
-        sprintf(filename,"%s.denise.c33.%i%i",MFILE,POS[1],POS[2]);
+        sprintf(filename,"%s.denise.c33.%i.%i",MFILE,POS[1],POS[2]);
         remove(filename);
 
-        sprintf(filename,"%s.denise.c44.%i%i",MFILE,POS[1],POS[2]);
+        sprintf(filename,"%s.denise.c44.%i.%i",MFILE,POS[1],POS[2]);
         remove(filename);
 
-        sprintf(filename,"%s.denise.theta.%i%i",MFILE,POS[1],POS[2]);
+        sprintf(filename,"%s.denise.theta.%i.%i",MFILE,POS[1],POS[2]);
         remove(filename);
 
 }

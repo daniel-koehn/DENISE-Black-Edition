@@ -26,7 +26,7 @@ void model_it_out_SH(float  **  rho, float **  pu, float **  ptaus, int nstage, 
                                                                                                         
 	if (MYID==0) mergemod(modfile,3);
 	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_vs_stage_%d_it_%d.bin.%i%i",INV_MODELFILE,nstage,iter,POS[1],POS[2]);
+	sprintf(modfile,"%s_vs_stage_%d_it_%d.bin.%i.%i",INV_MODELFILE,nstage,iter,POS[1],POS[2]);
 	remove(modfile);                                                                                                                        
                                                                                                                                 
 	sprintf(modfile,"%s_rho_stage_%d_it_%d.bin",INV_MODELFILE,nstage,iter);
@@ -35,7 +35,7 @@ void model_it_out_SH(float  **  rho, float **  pu, float **  ptaus, int nstage, 
                                                                                                                                                                         
 	if (MYID==0) mergemod(modfile,3);
 	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_rho_stage_%d_it_%d.bin.%i%i",INV_MODELFILE,nstage,iter,POS[1],POS[2]);
+	sprintf(modfile,"%s_rho_stage_%d_it_%d.bin.%i.%i",INV_MODELFILE,nstage,iter,POS[1],POS[2]);
 	remove(modfile);
 
 	sprintf(modfile,"%s_taus_stage_%d_it_%d.bin",INV_MODELFILE,nstage,iter);
@@ -44,7 +44,7 @@ void model_it_out_SH(float  **  rho, float **  pu, float **  ptaus, int nstage, 
                                                                                                                                                                         
 	if (MYID==0) mergemod(modfile,3);
 	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_taus_stage_%d_it_%d.bin.%i%i",INV_MODELFILE,nstage,iter,POS[1],POS[2]);
+	sprintf(modfile,"%s_taus_stage_%d_it_%d.bin.%i.%i",INV_MODELFILE,nstage,iter,POS[1],POS[2]);
 	remove(modfile);
 
 }

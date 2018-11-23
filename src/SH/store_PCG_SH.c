@@ -63,7 +63,7 @@ void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, f
 
 	/* save Vs gradient */
 	/* ---------------- */
-        sprintf(jac1,"%s_p_u.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac1,"%s_p_u.old.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP3=fopen(jac1,"wb");
 	
 	for (i=1;i<=NX;i=i+IDX){   
@@ -82,7 +82,7 @@ void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, f
 
 	/* save density gradient */
 	/* --------------------- */
-        sprintf(jac1,"%s_p_rho.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac1,"%s_p_rho.old.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP3=fopen(jac1,"wb");
 	
 	for (i=1;i<=NX;i=i+IDX){   
@@ -101,7 +101,7 @@ void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, f
 
 	/* save Taus gradient */
 	/* ------------------ */
-        sprintf(jac1,"%s_p_taus.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac1,"%s_p_taus.old.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP3=fopen(jac1,"wb");
 	
 	for (i=1;i<=NX;i=i+IDX){   

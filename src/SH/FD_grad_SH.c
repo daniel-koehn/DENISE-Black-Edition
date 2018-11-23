@@ -523,9 +523,9 @@ for (imod=1;imod<=NXG;imod=imod+IDXMOD){
 }
 
 /* FD-based gradient */
-if(FD_GRAD_MAT==1){sprintf(jac,"%s_FD_vs.old.%i%i",JACOBIAN,POS[1],POS[2]);}
-if(FD_GRAD_MAT==2){sprintf(jac,"%s_FD_rho.old.%i%i",JACOBIAN,POS[1],POS[2]);}
-if(FD_GRAD_MAT==3){sprintf(jac,"%s_FD_ts.old.%i%i",JACOBIAN,POS[1],POS[2]);}
+if(FD_GRAD_MAT==1){sprintf(jac,"%s_FD_vs.old.%i.%i",JACOBIAN,POS[1],POS[2]);}
+if(FD_GRAD_MAT==2){sprintf(jac,"%s_FD_rho.old.%i.%i",JACOBIAN,POS[1],POS[2]);}
+if(FD_GRAD_MAT==3){sprintf(jac,"%s_FD_ts.old.%i.%i",JACOBIAN,POS[1],POS[2]);}
 
 FP_GRAD=fopen(jac,"wb");
 

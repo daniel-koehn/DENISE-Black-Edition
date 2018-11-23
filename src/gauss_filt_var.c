@@ -32,7 +32,7 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
 	FILE *model, *FP1;
 	
 	/* temporarily save gradient for Gaussian filtering */
-        sprintf(jac_tmp,"%s_gauss.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac_tmp,"%s_gauss.old.%i.%i",JACOBIAN,POS[1],POS[2]);
         FP1=fopen(jac_tmp,"wb");
                         
         for (i=1;i<=NX;i=i+IDX){
@@ -50,7 +50,7 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
         if (MYID==0) mergemod(jac_tmp,3);
 
 	/* temporarily save velocity model for Gaussian filtering */
-        sprintf(modfile,"%s_velmod.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(modfile,"%s_velmod.old.%i.%i",JACOBIAN,POS[1],POS[2]);
         FP1=fopen(modfile,"wb");
                         
         for (i=1;i<=NX;i=i+IDX){
@@ -259,7 +259,7 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
 
         /* clean up temporary files*/
         MPI_Barrier(MPI_COMM_WORLD);
-        sprintf(jac_tmp,"%s_gauss.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac_tmp,"%s_gauss.old.%i.%i",JACOBIAN,POS[1],POS[2]);
         remove(jac_tmp);
 
 }
