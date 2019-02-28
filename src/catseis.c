@@ -12,7 +12,7 @@
 
 void	catseis(float **data, float **fulldata, int *recswitch, int ntr_glob, MPI_Comm newcomm_nodentr) {
 
-	extern int	NT, MYID;
+	extern int	NT, MYID_SHOT;
 	
 	int		i, j, k;
 	float		**fulldata2;

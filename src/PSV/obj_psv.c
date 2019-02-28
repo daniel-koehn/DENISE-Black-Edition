@@ -16,7 +16,9 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
         /* global variables */
 	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, QUELLTYP, ORDER_SPIKE;
         extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB;
+		extern int COLOR, NSHOT1, NSHOT2, NSHOTS, NCOLORS;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
+	extern MPI_Comm SHOT_COMM;
 
         /* local variables */
         float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
@@ -43,12 +45,16 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 
 		if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
-		for (ishot=TESTSHOT_START;ishot<=TESTSHOT_END;ishot=ishot+TESTSHOT_INCR){		
+		//NSHOT1 = NSHOTS/NCOLORS*COLOR + 1;
+		//NSHOT2 = min(NSHOT1 + NSHOTS/NCOLORS, NSHOTS);
+
+		for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1)
+		{		
 
 		if(MYID==0){
-		   printf("\n=================================================================================================\n");
+		   //printf("\n=================================================================================================\n");
 		   printf("\n *****  Starting simulation (test-forward model) no. %d for shot %d of %d (rel. step length %.8f) \n",itest,ishot,nshots,eps_scale);
-		   printf("\n=================================================================================================\n\n");
+		   //printf("\n=================================================================================================\n\n");
 		}
 		  
 		if((N_STREAMER>0)||(READREC==2)){
@@ -90,7 +96,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 				(*acq).srcpos_loc = splitsrc((*acq).srcpos,&nsrc_loc, nsrc);
 			}
 
-		MPI_Barrier(MPI_COMM_WORLD);
+		MPI_Barrier(SHOT_COMM);
 
 		/*==================================================================================
 		           Starting simulation (forward model)

@@ -14,7 +14,7 @@ void gauss_filt(float ** waveconv)
 
         extern float DH, WD_DAMP, FC_END, C_vs;
 	extern int FREE_SURF, NX, NY, NXG, NYG, IDX, IDY;
-	extern int NPROCX, NPROCY, MYID, POS[3];
+	extern int NPROCX, NPROCY, MYID, MYID_SHOT, POS[3];
 	extern char JACOBIAN[STRING_SIZE];
 	extern FILE *FP;
 	extern int FILT_SIZE_GRAD;

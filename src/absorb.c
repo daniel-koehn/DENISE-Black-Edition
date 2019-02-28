@@ -19,7 +19,7 @@ void absorb(float ** absorb_coeff)
 
 	extern float DH, FW, DAMPING;
 	extern int FREE_SURF, NX, NY, BOUNDARY;
-	extern int NPROCX, NPROCY, MYID, POS[3];
+	extern int NPROCX, NPROCY, MYID, MYID_SHOT, POS[3];
 	extern FILE *FP;
 	
 	/* local variables */

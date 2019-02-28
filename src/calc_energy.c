@@ -8,7 +8,7 @@ double calc_energy(float **sectiondata, int ntr, int ns, float energy, int ntr_g
 
 /* declaration of variables */
 extern float DT;
-extern int MYID;
+extern int MYID, MYID_SHOT;
 extern int TRKILL;
 extern char TRKILL_FILE[STRING_SIZE];
 int i, j;

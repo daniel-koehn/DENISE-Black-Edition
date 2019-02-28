@@ -12,7 +12,7 @@
 #include "fd.h"
 float calc_opt_step(float *  L2t, float * epst, int sws){
 
-extern int NX, NY, IDX, IDY, MYID;
+extern int NX, NY, IDX, IDY, MYID, MYID_SHOT;
 extern float EPSILON, EPSILON_u, EPSILON_rho;
 int i, j, n;
 float opteps, H1, H2, critmult;

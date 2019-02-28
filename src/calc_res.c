@@ -8,7 +8,7 @@ double calc_res(float **sectiondata, float **section, float **sectiondiff, float
 
 /* declaration of variables */
 extern float DT, DH, OFFSETC, FC, FC_START, C_vp, C_rho;
-extern int REC1, REC2, MYID, ORDER, COMP_WEIGHT;
+extern int REC1, REC2, MYID, MYID_SHOT, ORDER, COMP_WEIGHT;
 extern int TRKILL, GRAD_FORM, ENV, N_ORDER;
 extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, MODE, OFFSET_MUTE;

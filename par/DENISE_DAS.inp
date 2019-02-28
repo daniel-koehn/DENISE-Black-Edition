@@ -6,14 +6,16 @@
 #
 # ------------------ DENISE Mode ---------------------------------
 # Operation mode:
-(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 0 
+(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 1 
 #
 # ---------------- DENISE Physics -----------------------------
 (2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
 number_of_processors_in_x-direction_(NPROCX) = 4
-number_of_processors_in_y-direction_(NPROCY) = 6
+number_of_processors_in_y-direction_(NPROCY) = 2
+#
+#total number of processes should be dividable by (NPROCX x NPROCY)
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
