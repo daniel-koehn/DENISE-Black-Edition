@@ -24,7 +24,7 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 	float  dhi, dthalbe;	
 	extern float DT, DH;
 	extern int MYID, FDORDER, FW, L, GRAD_FORM;
-        extern int FREE_SURF, BOUNDARY;
+        extern int FREE_SURF, BOUNDARY, ADJ_SIGN;
 	extern int NPROCX, NPROCY, POS[3];
 	extern FILE *FP;
 	double time1, time2;
@@ -113,13 +113,13 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			
 			/* and now the components of the stress tensor are
 			   completely updated */
-			sxz[j][i]+=(dthalbe*sumr);
-			syz[j][i]+=(dthalbe*sumq);
+			sxz[j][i]+=ADJ_SIGN*(dthalbe*sumr);
+			syz[j][i]+=ADJ_SIGN*(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((mode==0)&&(GRAD_FORM==2)){
-			  uz[j][i] = vzy;
-			  uzx[j][i] = vzx;
+			if(mode==0){
+			  uz[j][i] = sxz[j][i]/DT;
+			  uzx[j][i] = syz[j][i]/DT;
 			}			
 
 		    }
@@ -196,13 +196,13 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			
 			/* and now the components of the stress tensor are
 			   completely updated */
-			sxz[j][i]+=(dthalbe*sumr);
-			syz[j][i]+=(dthalbe*sumq);
+			sxz[j][i]+=ADJ_SIGN*(dthalbe*sumr);
+			syz[j][i]+=ADJ_SIGN*(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((mode==0)&&(GRAD_FORM==2)){
-			  uz[j][i] = vzy;
-			  uzx[j][i] = vzx;
+			if(mode==0){
+			  uz[j][i] = sxz[j][i]/DT;
+			  uzx[j][i] = syz[j][i]/DT;
 			}			
 
 		    }
@@ -279,13 +279,13 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			
 			/* and now the components of the stress tensor are
 			   completely updated */
-			sxz[j][i]+=(dthalbe*sumr);
-			syz[j][i]+=(dthalbe*sumq);
+			sxz[j][i]+=ADJ_SIGN*(dthalbe*sumr);
+			syz[j][i]+=ADJ_SIGN*(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((mode==0)&&(GRAD_FORM==2)){
-			  uz[j][i] = vzy;
-			  uzx[j][i] = vzx;
+			if(mode==0){
+			  uz[j][i] = sxz[j][i]/DT;
+			  uzx[j][i] = syz[j][i]/DT;
 			}			
 
 		    }
@@ -368,13 +368,13 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			
 			/* and now the components of the stress tensor are
 			   completely updated */
-			sxz[j][i]+=(dthalbe*sumr);
-			syz[j][i]+=(dthalbe*sumq);
+			sxz[j][i]+=ADJ_SIGN*(dthalbe*sumr);
+			syz[j][i]+=ADJ_SIGN*(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((mode==0)&&(GRAD_FORM==2)){
-			  uz[j][i] = vzy;
-			  uzx[j][i] = vzx;
+			if(mode==0){
+			  uz[j][i] = sxz[j][i]/DT;
+			  uzx[j][i] = syz[j][i]/DT;
 			}			
 
 		    }
@@ -460,14 +460,14 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			
 			/* and now the components of the stress tensor are
 			   completely updated */
-			sxz[j][i]+=(dthalbe*sumr);
-			syz[j][i]+=(dthalbe*sumq);
+			sxz[j][i]+=ADJ_SIGN*(dthalbe*sumr);
+			syz[j][i]+=ADJ_SIGN*(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((mode==0)&&(GRAD_FORM==2)){
-			  uz[j][i] = vzy;
-			  uzx[j][i] = vzx;
-			}			
+			if(mode==0){
+			  uz[j][i] = sxz[j][i]/DT;
+			  uzx[j][i] = syz[j][i]/DT;
+			}		
 
 		    }
 		}
@@ -554,13 +554,13 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			
 			/* and now the components of the stress tensor are
 			   completely updated */
-			sxz[j][i]+=(dthalbe*sumr);
-			syz[j][i]+=(dthalbe*sumq);
+			sxz[j][i]+=ADJ_SIGN*(dthalbe*sumr);
+			syz[j][i]+=ADJ_SIGN*(dthalbe*sumq);
 
 			/* save forward wavefield for gradient calculation */
-			if((mode==0)&&(GRAD_FORM==2)){
-			  uz[j][i] = vzy;
-			  uzx[j][i] = vzx;
+			if(mode==0){
+			  uz[j][i] = sxz[j][i]/DT;
+			  uzx[j][i] = syz[j][i]/DT;
 			}			
 
 		    }

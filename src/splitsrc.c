@@ -25,7 +25,7 @@ float **splitsrc(float **srcpos,int *nsrc_loc, int nsrc)
 			i++;
 			srcpos_dummy[1][i] = (float)(((iround(srcpos[1][j]/DH)-1)%IENDX)+1);
 			srcpos_dummy[2][i] = (float)(((iround(srcpos[2][j]/DH)-1)%IENDY)+1);
-			srcpos_dummy[3][i] = 0.0;
+			srcpos_dummy[3][i] = j;
 			srcpos_dummy[4][i] = srcpos[4][j];
 			srcpos_dummy[5][i] = srcpos[5][j];
 			srcpos_dummy[6][i] = srcpos[6][j];
@@ -60,8 +60,8 @@ float **splitsrc(float **srcpos,int *nsrc_loc, int nsrc)
 		printf(" %3d\t%4.0f\t%4.0f\t%4.0f\t%6.2f\t%6.2f\t%6.2f\n",
 		    MYID,srcpos_local[1][j],srcpos_local[2][j],srcpos_local[3][j],
 				   srcpos_local[4][j],srcpos_local[5][j],srcpos_local[6][j]);
-
         */
+        
         *nsrc_loc=i;
 	return srcpos_local;
 

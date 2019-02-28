@@ -183,27 +183,45 @@ DENISE += ac.c \
 	  zero_denise_acoustic_AC.c
 
 # add SH source files
-DENISE += alloc_matSH.c \
+DENISE += alloc_fwiSH.c \
+	  alloc_matSH.c \
 	  alloc_seisSH.c \
 	  alloc_seisSHfull.c \
+	  alloc_seisSHfwi.c \
 	  alloc_SH.c \
+	  ass_gradSH.c \
 	  av_mu_SH.c \
+	  calc_mat_change_test_SH.c \
+	  calc_res_SH.c \
 	  checkfd_elast_SH.c \
 	  checkfd_visc_SH.c \
 	  dealloc_SH.c \
+	  eprecond_SH.c \
 	  exchange_s_SH.c \
 	  exchange_v_SH.c \
+	  extract_PCG_SH.c \
 	  FD_SH.c \
+	  FWI_SH.c \
+	  grad_obj_sh.c \
 	  matcopy_elastic_SH.c \
 	  matcopy_SH.c \
 	  mem_SH.c \
+	  model_freq_out_SH.c \
+	  model_it_out_SH.c \
+	  obj_sh.c \
 	  outseis_SHfor.c \
+	  outseis_SHres.c \
 	  physics_SH.c \
+	  precond_SH.c \
 	  prepare_update_s_visc_SH.c \
 	  readmod_elastic_SH.c \
 	  readmod_visc_SH.c \
+	  RTM_SH_out_shot.c \
 	  saveseis_glob_SH.c \
 	  sh.c \
+          step_length_est_sh.c \
+	  stf_sh.c \
+	  store_PCG_SH.c \
 	  update_s_elastic_PML_SH.c \
 	  update_s_visc_PML_SH.c \
 	  update_v_PML_SH.c \

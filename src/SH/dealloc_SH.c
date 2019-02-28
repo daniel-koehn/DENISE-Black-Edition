@@ -2,7 +2,7 @@
  * Deallocate memory for SH problem 
  *
  * Daniel Koehn
- * Kiel, 09/12/2017
+ * Kiel, 22/12/2017
  */
 
 #include "fd.h"
@@ -20,7 +20,7 @@ void dealloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML){
         /* deallocate memory */
 
         /* PML variables */
-        if(FW>0){
+               if(FW>0){
 
 		free_vector((*waveSH_PML).d_x,1,2*FW);
 		free_vector((*waveSH_PML).K_x,1,2*FW);
@@ -71,7 +71,7 @@ void dealloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML){
 		free_f3tensor((*waveSH).pr,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
 		free_f3tensor((*waveSH).pp,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
 		free_f3tensor((*waveSH).pq,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
-        }	
+	} 
 
 }
 
