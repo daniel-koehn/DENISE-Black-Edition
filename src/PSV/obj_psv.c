@@ -52,9 +52,9 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 		{		
 
 		if(MYID==0){
-		   printf("\n=================================================================================================\n");
+		   //printf("\n=================================================================================================\n");
 		   printf("\n *****  Starting simulation (test-forward model) no. %d for shot %d of %d (rel. step length %.8f) \n",itest,ishot,nshots,eps_scale);
-		   printf("\n=================================================================================================\n\n");
+		   //printf("\n=================================================================================================\n\n");
 		}
 		  
 		if((N_STREAMER>0)||(READREC==2)){

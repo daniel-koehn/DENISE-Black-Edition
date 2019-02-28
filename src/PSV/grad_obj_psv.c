@@ -61,7 +61,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
     NSHOT1 = (1 + (NSHOTS-1) / NCOLORS) * COLOR + 1;
     NSHOT2 = min(NSHOT1 + (NSHOTS-1) / NCOLORS, NSHOTS);
 
-	printf("I'm at grad_obj_psv line 63, MYID = %d, NSHOT1 = %d,  NSHOT2 = %d", MYID, NSHOT1, NSHOT2);
+	//printf("I'm at grad_obj_psv line 63, MYID = %d, NSHOT1 = %d,  NSHOT2 = %d", MYID, NSHOT1, NSHOT2);
 	MPI_Barrier(MPI_COMM_WORLD);
 	for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1)
 	{
@@ -175,7 +175,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 		/* solve forward problem */
 		psv(wavePSV, wavePSV_PML, matPSV, fwiPSV, mpiPSV, seisPSV, seisPSVfwi, acq, hc, ishot, nshots, nsrc_loc, ns, ntr, Ws, Wr, hin, DTINV_help, 0, req_send, req_rec);
-		printf("I solved forward problem for ishot=%d; \n",ishot);
+		//printf("I solved forward problem for ishot=%d; \n",ishot);
 		/* ===============================================
 	   Calculate objective function and data residuals
 	   =============================================== */
@@ -188,7 +188,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 		if (ntr > 0)
 		{
 			calc_res_PSV(seisPSV, seisPSVfwi, (*acq).recswitch, (*acq).recpos, (*acq).recpos_loc, ntr_glob, ntr, nsrc_glob, (*acq).srcpos, ishot, ns, iter, swstestshot);
-			printf("I calculated residues PSV for ishot=%d; \n",ishot);
+			//printf("I calculated residues PSV for ishot=%d; \n",ishot);
 		}
 		
 
@@ -219,12 +219,12 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 		/* solve adjoint problem */
 		psv(wavePSV, wavePSV_PML, matPSV, fwiPSV, mpiPSV, seisPSV, seisPSVfwi, acq, hc, ishot, nshots, ntr, ns, ntr, Ws, Wr, hin, DTINV_help, 1, req_send, req_rec);
-		printf("I solved adjoint problem \n");
+		//printf("I solved adjoint problem \n");
 		/* assemble PSV gradients for each shot */
 		ass_gradPSV(fwiPSV, matPSV, iter);
 		MPI_Barrier(SHOT_COMM);
-		printf("I assembled gradients \n");
-		printf("ishot=%d; \n",ishot);
+		//printf("I assembled gradients \n");
+		//printf("ishot=%d; \n",ishot);
 		//printf("after SHOT tapering ishot=%d; \n",ishot);
 		if ((EPRECOND == 1) || (EPRECOND == 3))
 		{
@@ -256,11 +256,11 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 			taper_grad_shot((*fwiPSV).waveconv_shot, taper_coeff, (*acq).srcpos, nsrc, (*acq).recpos, ntr_glob, ishot);
 			taper_grad_shot((*fwiPSV).waveconv_rho_shot, taper_coeff, (*acq).srcpos, nsrc, (*acq).recpos, ntr_glob, ishot);
 			taper_grad_shot((*fwiPSV).waveconv_u_shot, taper_coeff, (*acq).srcpos, nsrc, (*acq).recpos, ntr_glob, ishot);
-			printf("SHOT tapering applied applied ishot=%d; \n",ishot);
+			//printf("SHOT tapering applied applied ishot=%d; \n",ishot);
 		} /* end of SWS_TAPER_CIRCULAR_PER_SHOT == 1 */
-		printf("after SHOT tapering ishot=%d; \n",ishot);
+		//printf("after SHOT tapering ishot=%d; \n",ishot);
 		
-		// loop for stacking the gradients
+		// loop for stacking the gradients in groups of shots (for single COLOR)
 		for (i = 1; i <= NX; i = i + IDX)
 		{
 			for (j = 1; j <= NY; j = j + IDY)
