@@ -32,6 +32,7 @@ void FWI_PSV()
   extern float FC_END, PRO, C_vp, C_vs, C_rho;
   extern char MISFIT_LOG_FILE[STRING_SIZE], JACOBIAN[STRING_SIZE];
   extern char *FILEINP1;
+  extern MPI_Comm SHOT_COMM;
 
   /* local variables */
   int ns, nseismograms = 0, nt, nd, fdo3, j, i, iter, h, hin, iter_true, SHOTINC, s = 0;
@@ -447,9 +448,9 @@ void FWI_PSV()
       if (MYID == 0)
       {
         time2 = MPI_Wtime();
-        fprintf(FP, "\n\n\n ------------------------------------------------------------------\n");
-        fprintf(FP, "\n\n\n                   TDFWI ITERATION %d \t of %d \n", iter, ITERMAX);
-        fprintf(FP, "\n\n\n ------------------------------------------------------------------\n");
+        //fprintf(FP, "\n\n\n ------------------------------------------------------------------\n");
+        fprintf(FP, "\n                   TDFWI ITERATION %d \t of %d \n", iter, ITERMAX);
+        //fprintf(FP, "\n\n\n ------------------------------------------------------------------\n");
       }
 
       /* For the calculation of the material parameters between gridpoints
@@ -524,7 +525,7 @@ void FWI_PSV()
           for (j = 1; j <= NY; j = j + IDY)
           {
 
-            /* calculate average Vp, Vs */
+            /* calculate average Vp, Vs in subdomains */
             Vp_avg += matPSV.ppi[j][i];
             Vs_avg += matPSV.pu[j][i];
 
@@ -535,15 +536,15 @@ void FWI_PSV()
 
         /* calculate average Vp, Vs and rho of all CPUs*/
         Vp_sum = 0.0;
-        MPI_Allreduce(&Vp_avg, &Vp_sum, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&Vp_avg, &Vp_sum, 1, MPI_FLOAT, MPI_SUM, SHOT_COMM);
         Vp_avg = Vp_sum;
 
         Vs_sum = 0.0;
-        MPI_Allreduce(&Vs_avg, &Vs_sum, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&Vs_avg, &Vs_sum, 1, MPI_FLOAT, MPI_SUM, SHOT_COMM);
         Vs_avg = Vs_sum;
 
         rho_sum = 0.0;
-        MPI_Allreduce(&rho_avg, &rho_sum, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&rho_avg, &rho_sum, 1, MPI_FLOAT, MPI_SUM, SHOT_COMM);
         rho_avg = rho_sum;
 
         Vp_avg /= NXG * NYG;
@@ -581,13 +582,14 @@ void FWI_PSV()
       L2sum = grad_obj_psv(&wavePSV, &wavePSV_PML, &matPSV, &fwiPSV, &mpiPSV, &seisPSV, &seisPSVfwi, &acq, hc, iter, nsrc, ns, ntr, ntr_glob,
                            nsrc_glob, nsrc_loc, ntr_loc, nstage, We, Ws, Wr, taper_coeff, hin, DTINV_help, req_send, req_rec);
 
-      MPI_Barrier(MPI_COMM_WORLD);
-      printf("I'm done with gradient MYID = %d, POS[1]=%d, POS[2]=%d\n", MYID, POS[1], POS[2]);
-      MPI_Barrier(MPI_COMM_WORLD);
-      if (COLOR==0)
-      {
-        RTM_PSV_out(&fwiPSV);
-      }
+      // RTM output for debugging
+      //MPI_Barrier(MPI_COMM_WORLD);
+      //printf("I'm done with gradient MYID = %d, POS[1]=%d, POS[2]=%d\n", MYID, POS[1], POS[2]);
+      //MPI_Barrier(MPI_COMM_WORLD);
+      //if (COLOR==0)
+      //{
+      //  RTM_PSV_out(&fwiPSV);
+      //}
       MPI_Barrier(MPI_COMM_WORLD);
       
       L2t[1] = L2sum;
