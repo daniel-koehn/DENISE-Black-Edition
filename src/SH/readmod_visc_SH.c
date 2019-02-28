@@ -106,13 +106,13 @@ void readmod_visc_SH(float  **  rho, float **  u, float ** taus, float * eta){
 	
 	/* each PE writes his model to disk */
 	
-	sprintf(filename,"%s.fdveps.mu",MFILE);
+	sprintf(filename,"%s.denise.mu",MFILE);
         writemod(filename,u,3);
 	MPI_Barrier(MPI_COMM_WORLD);
 	                           
 	if (MYID==0) mergemod(filename,3);
 	
-	sprintf(filename,"%s.fdveps.rho",MFILE);
+	sprintf(filename,"%s.denise.rho",MFILE);
 	writemod(filename,rho,3);
 	MPI_Barrier(MPI_COMM_WORLD);
 	                        

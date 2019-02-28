@@ -35,7 +35,7 @@ int check_id, cfgt_id, cfgt, jumpid;
 float DH1;
 
 /* TDFWI Code DENISE_elastic*/
-int PHYSICS, MODE, INV_MOD_OUT;
+int PHYSICS, MODE, INV_MOD_OUT, ADJ_SIGN;
 char JACOBIAN[STRING_SIZE], DATA_DIR[STRING_SIZE];
 int TAPER, TAPERLENGTH;
 int GRADT1, GRADT2, GRADT3, GRADT4;

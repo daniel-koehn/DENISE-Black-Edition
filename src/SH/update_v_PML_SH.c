@@ -24,7 +24,7 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 	extern float DT, DH;
 	double time1, time2;
 	extern int MYID, QUELLTYP, QUELLTYPB, FDORDER;
-        extern int FDORDER, GRAD_FORM;
+        extern int FDORDER, GRAD_FORM, ADJ_SIGN;
         extern int FREE_SURF, BOUNDARY, FW;
         extern int NPROCX, NPROCY, POS[3];
 	extern FILE *FP;	      
@@ -34,7 +34,6 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 		fprintf(FP,"\n **Message from update_v (printed by PE %d):\n",MYID);
 		fprintf(FP," Updating particle velocities ...");
 	}
-
 
 	switch (FDORDER){
 	case 2:
@@ -85,32 +84,17 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 					syz_y = syz_y / K_y[h1] + psi_syz_y[h1][i]; 
 		            			   
 
-        			}                       
-                           
-                                if(GRAD_FORM==1){
-
-                              		if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);                  
-					}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] += DT*vz[j][i];                                 		
-                           		}
-				}
+        			}                                                  
 
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
                                  		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
-                                 	}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] = vz[j][i]; 
-                                 	} 
+                                 	}
 
                            	}
                            
-                           vz[j][i] += DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
 
       
 			}
@@ -167,32 +151,17 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 					syz_y = syz_y / K_y[h1] + psi_syz_y[h1][i]; 
 		            			   
 
-        			}                       
-                           
-                                if(GRAD_FORM==1){
-
-                              		if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);                  
-					}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] += DT*vz[j][i];                                 		
-                           		}
-				}
+        			}                                                  
 
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
                                  		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
-                                 	}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] = vz[j][i]; 
-                                 	} 
+                                 	}
 
                            	}
                            
-                           vz[j][i] += DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
 
       
 			}
@@ -252,33 +221,17 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 					syz_y = syz_y / K_y[h1] + psi_syz_y[h1][i]; 
 		            			   
 
-        			}                       
-                           
-                                if(GRAD_FORM==1){
-
-                              		if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);                  
-					}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] += DT*vz[j][i];                                 		
-                           		}
-
-				}
+        			}                                                  
 
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
                                  		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
-                                 	}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] = vz[j][i]; 
-                                 	} 
+                                 	}
 
                            	}
                            
-                           vz[j][i] += DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
 
       
 			}
@@ -342,32 +295,16 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 		            			   
 
         			}                       
-                           
-                                if(GRAD_FORM==1){
-
-                              		if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);                  
-					}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] += DT*vz[j][i];                                 		
-                           		}
-
-				}
 
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
                                  		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
-                                 	}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] = vz[j][i]; 
                                  	} 
 
                            	}
                            
-                           vz[j][i] += DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
 
       
 			}
@@ -433,32 +370,16 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 		            			   
 
         			}                       
-                           
-                                if(GRAD_FORM==1){
-
-                              		if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);                  
-					}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] += DT*vz[j][i];                                 		
-                           		}
-
-				}
 
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
                                  		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
-                                 	}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] = vz[j][i]; 
-                                 	} 
+                                 	}
 
                            	}
                            
-                           vz[j][i] += DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
 
       
 			}
@@ -526,32 +447,16 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 		            			   
 
         			}                       
-                           
-                                if(GRAD_FORM==1){
-
-                              		if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);                  
-					}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] += DT*vz[j][i];                                 		
-                           		}
-
-				}
 
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
                                  		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
-                                 	}   
-
-                              		if(sw==1){
-                                 		vzp1[j][i] = vz[j][i]; 
-                                 	} 
+                                 	}
 
                            	}
                            
-                           vz[j][i] += DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
 
       
 			}
