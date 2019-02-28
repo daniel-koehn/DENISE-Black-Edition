@@ -12,7 +12,7 @@
 void checkfd_acoustic(FILE *fp, float ** prho, float ** ppi, float *hc){
 
 	extern float DH, DT, TS;
-        extern int NX, NY, MYID, INVMAT1, FW;
+        extern int NX, NY, MYID, MYID_SHOT, INVMAT1, FW;
 
 	/* local variables */
 

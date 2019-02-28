@@ -14,7 +14,7 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	extern  char REC_FILE[STRING_SIZE];
 	extern float DH, REFREC[4], FW;
 	extern int READREC, NX;
-	extern int MYID, N_STREAMER;
+	extern int MYID_SHOT, N_STREAMER;
 	extern float REC_INCR_X, REC_INCR_Y;
 
 	int **recpos1, **recpos, nxrec=0, nyrec=0, nzrec=0;
@@ -25,7 +25,7 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	
 	FILE *fpr;
 
-	if (MYID==0)
+	if (MYID_SHOT==0)
 	{
 
      	     if (READREC){ /* read receiver positions from file */
@@ -65,7 +65,7 @@ int **receiver(FILE *fp, int *ntr, int ishot){
      			recpos1[3][itr]=iround((0.0+REFREC[3])/DH);
      		}
      		fclose(fpr);
-     		fprintf(fp," Message from function receiver (written by PE %d):\n",MYID);/***/
+     		fprintf(fp," Message from function receiver (written by PE %d):\n",MYID_SHOT);/***/
      		fprintf(fp," Number of receiver positions found: %i\n",*ntr);
      
      		/* check if more than one receiver is located
@@ -109,12 +109,12 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Bcast(ntr,1,MPI_INT,0,MPI_COMM_WORLD);
-	if (MYID!=0) recpos=imatrix(1,3,1,*ntr);
+	if (MYID_SHOT!=0) recpos=imatrix(1,3,1,*ntr);
 	MPI_Bcast(&recpos[1][1],(*ntr)*3,MPI_INT,0,MPI_COMM_WORLD);
 
-/*	if (MYID==0)
+/*	if (MYID_SHOT==0)
 	{
-		fprintf(fp,"\n **Message from function receiver (written by PE %d):\n",MYID);
+		fprintf(fp,"\n **Message from function receiver (written by PE %d):\n",MYID_SHOT);
 		fprintf(fp," Number of receiver positions found: %i\n",*ntr);
 		fprintf(fp," Receiver positions (in gridpoints) in the global model-system:\n");
 		fprintf(fp," x  \ty \n");

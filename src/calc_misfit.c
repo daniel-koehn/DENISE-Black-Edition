@@ -8,7 +8,7 @@ double calc_misfit(float **sectiondiff, int ntr, int ns, int LNORM, float L2, in
 
 /* declaration of variables */
 extern float DT;
-extern int MYID;
+extern int MYID, MYID_SHOT;
 extern int TRKILL;
 extern char TRKILL_FILE[STRING_SIZE];
 int i,j;

@@ -16,7 +16,8 @@ void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct ma
 
         /* global variables */
         extern int QUELLART, ORDER, ORDER_SPIKE, TIME_FILT, RUN_MULTIPLE_SHOTS;
-        extern float FC_SPIKE_1, FC_SPIKE_2;
+        extern MPI_Comm SHOT_COMM;
+		extern float FC_SPIKE_1, FC_SPIKE_2;
         extern float FC, FC_START;
 
         /* local variables */
@@ -41,7 +42,7 @@ void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct ma
         /* forward problem */
         psv(wavePSV,wavePSV_PML,matPSV,fwiPSV,mpiPSV,seisPSV,seisPSVfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);	
 
-        catseis((*seisPSV).sectionvy, (*seisPSV).fulldata_vy, (*acq).recswitch, ntr_glob, MPI_COMM_WORLD);	   
+        catseis((*seisPSV).sectionvy, (*seisPSV).fulldata_vy, (*acq).recswitch, ntr_glob, SHOT_COMM);	   
 
 	/* estimate STF */	
 	   if (nsrc_loc>0){

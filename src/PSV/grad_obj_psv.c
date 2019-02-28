@@ -22,10 +22,12 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
 	extern float C_vp, C_vs, C_rho;
 	extern char MFILE[STRING_SIZE];
+	extern int NSHOT1, NSHOT2, NSHOTS, COLOR, NCOLORS;
+	extern MPI_Comm SHOT_COMM, DOMAIN_COMM;
 
 	/* local variables */
 	int i, j, nshots, ishot, nt, lsnap, itestshot, swstestshot;
-	float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
+	float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp, tmp_dg;
 	char source_signal_file[STRING_SIZE];
 
 	FILE *FP;
@@ -55,17 +57,16 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	else
 		nshots = 1;
 
-	// adding shot parallelization
-	// we divide shots into groups of size <= NPROCSHOT
-	// for each
-	/*
-	NSHOT1 = NSHOTS/NRPOCSHOT*COLOR + 1;
-	NSHOT2 = min(NSHOT1 + NSHOTS/NRPOCSHOT, NSHOTS);*/
+	// dividing shots into NCOLORS groups
+    NSHOT1 = (1 + (NSHOTS-1) / NCOLORS) * COLOR + 1;
+    NSHOT2 = min(NSHOT1 + (NSHOTS-1) / NCOLORS, NSHOTS);
 
-	for (ishot = 1; ishot <= nshots; ishot += SHOTINC)
+	//printf("I'm at grad_obj_psv line 63, MYID = %d, NSHOT1 = %d,  NSHOT2 = %d", MYID, NSHOT1, NSHOT2);
+	MPI_Barrier(MPI_COMM_WORLD);
+	for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1)
 	{
 		/*for (ishot=1;ishot<=1;ishot+=1){*/
-
+		printf("ISHOT = %d", ishot);
 		/*initialize gradient matrices for each shot with zeros*/
 		init_grad((*fwiPSV).waveconv_shot);
 		init_grad((*fwiPSV).waveconv_u_shot);
@@ -121,7 +122,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 			(*acq).srcpos_loc = splitsrc((*acq).srcpos, &nsrc_loc, nsrc);
 		}
 
-		MPI_Barrier(MPI_COMM_WORLD);
+		MPI_Barrier(SHOT_COMM);
 
 		/*==================================================================================
 		        Estimate source time function by Wiener deconvolution
@@ -169,12 +170,12 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 				output_source_signal(fopen(source_signal_file, "w"), (*acq).signals, NT, 1);
 			}
 
-			MPI_Barrier(MPI_COMM_WORLD);
+			MPI_Barrier(SHOT_COMM);
 		}
 
 		/* solve forward problem */
 		psv(wavePSV, wavePSV_PML, matPSV, fwiPSV, mpiPSV, seisPSV, seisPSVfwi, acq, hc, ishot, nshots, nsrc_loc, ns, ntr, Ws, Wr, hin, DTINV_help, 0, req_send, req_rec);
-
+		//printf("I solved forward problem for ishot=%d; \n",ishot);
 		/* ===============================================
 	   Calculate objective function and data residuals
 	   =============================================== */
@@ -187,7 +188,9 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 		if (ntr > 0)
 		{
 			calc_res_PSV(seisPSV, seisPSVfwi, (*acq).recswitch, (*acq).recpos, (*acq).recpos_loc, ntr_glob, ntr, nsrc_glob, (*acq).srcpos, ishot, ns, iter, swstestshot);
+			//printf("I calculated residues PSV for ishot=%d; \n",ishot);
 		}
+		
 
 		if ((ishot == itestshot) && (ishot <= TESTSHOT_END))
 		{
@@ -216,15 +219,19 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 		/* solve adjoint problem */
 		psv(wavePSV, wavePSV_PML, matPSV, fwiPSV, mpiPSV, seisPSV, seisPSVfwi, acq, hc, ishot, nshots, ntr, ns, ntr, Ws, Wr, hin, DTINV_help, 1, req_send, req_rec);
-
+		//printf("I solved adjoint problem \n");
 		/* assemble PSV gradients for each shot */
 		ass_gradPSV(fwiPSV, matPSV, iter);
-
+		MPI_Barrier(SHOT_COMM);
+		//printf("I assembled gradients \n");
+		//printf("ishot=%d; \n",ishot);
+		//printf("after SHOT tapering ishot=%d; \n",ishot);
 		if ((EPRECOND == 1) || (EPRECOND == 3))
 		{
 			/* calculate energy weights */
+			
 			eprecond1(We, Ws, Wr);
-
+			//printf("eprecond1(We, Ws, Wr) calculated; \n");
 			/* scale gradient with energy weights*/
 			for (i = 1; i <= NX; i = i + IDX)
 			{
@@ -241,7 +248,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 				}
 			}
 		}
-
+		//printf("eprecond1(We, Ws, Wr) applied; \n");
 		if (SWS_TAPER_CIRCULAR_PER_SHOT)
 		{ /* applying a circular taper at the source position to the gradient of each shot */
 
@@ -249,9 +256,11 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 			taper_grad_shot((*fwiPSV).waveconv_shot, taper_coeff, (*acq).srcpos, nsrc, (*acq).recpos, ntr_glob, ishot);
 			taper_grad_shot((*fwiPSV).waveconv_rho_shot, taper_coeff, (*acq).srcpos, nsrc, (*acq).recpos, ntr_glob, ishot);
 			taper_grad_shot((*fwiPSV).waveconv_u_shot, taper_coeff, (*acq).srcpos, nsrc, (*acq).recpos, ntr_glob, ishot);
-
+			//printf("SHOT tapering applied applied ishot=%d; \n",ishot);
 		} /* end of SWS_TAPER_CIRCULAR_PER_SHOT == 1 */
-
+		//printf("after SHOT tapering ishot=%d; \n",ishot);
+		
+		// loop for stacking the gradients in groups of shots (for single COLOR)
 		for (i = 1; i <= NX; i = i + IDX)
 		{
 			for (j = 1; j <= NY; j = j + IDY)
@@ -336,6 +345,24 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
 	} /* end of loop over shots (forward and backpropagation) */
 
+	/* stack gradient over colors */
+
+	// loop for stacking the gradients
+		for (i = 1; i <= NX; i = i + IDX)
+		{
+			for (j = 1; j <= NY; j = j + IDY)
+			{
+				// gathering gradients within subdomains
+				tmp_dg = (*fwiPSV).waveconv[j][i];
+				MPI_Allreduce(&tmp_dg, &((*fwiPSV).waveconv[j][i]), 1, MPI_FLOAT, MPI_SUM, DOMAIN_COMM);
+				//(*fwiPSV).waveconv[j][i] += (*fwiPSV).waveconv_shot[j][i];
+				tmp_dg = (*fwiPSV).waveconv_rho[j][i];
+				MPI_Allreduce(&tmp_dg, &((*fwiPSV).waveconv_rho[j][i]), 1, MPI_FLOAT, MPI_SUM, DOMAIN_COMM);
+				tmp_dg = (*fwiPSV).waveconv_u[j][i];
+				MPI_Allreduce(&tmp_dg, &((*fwiPSV).waveconv_u[j][i]), 1, MPI_FLOAT, MPI_SUM, DOMAIN_COMM);
+			}
+		}
+	
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
 	L2_tmp = (*seisPSVfwi).L2;
@@ -351,7 +378,7 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 		printf("energy_sum: %e\n\n", energy_all_shots);
 
 	}*/
-
+	MPI_Barrier(MPI_COMM_WORLD);
 	if (LNORM == 2)
 	{
 		L2sum = L2sum / energy_all_shots;
@@ -360,6 +387,6 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	{
 		L2sum = L2sum;
 	}
-
+	MPI_Barrier(MPI_COMM_WORLD);
 	return L2sum;
 }
