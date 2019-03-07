@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --partition=batch
 #SBATCH --job-name="DENISE"
-#SBATCH --res=HACKATHON_TEAMS
+# SBATCH --res=HACKATHON_TEAMS
 #SBATCH --gres=gpu:p100:1
 #SBATCH --nodes=1
 #SBATCH --tasks=36
-#SBATCH --time=00:30:00
+#SBATCH --time=00:01:00
 #SBATCH --err=JOB.%j.err
 #SBATCH --output=JOB.%j.out
 #SBATCH --exclusive

@@ -29,12 +29,12 @@ max_relative_error = 1
 #-------------------- 2-D Grid -----------------------------------
 number_of_gridpoints_in_x-direction_(NX) = 4000
 number_of_gridpoints_in_y-direction_(NY) = 1392
-distance_between_gridpoints(in_m)_(DH) = 2.5
+distance_between_gridpoints(in_m)_(DH) = 2.5 
 #
 # Note that y denotes the vertical direction !
 #
 #-------------------Time Stepping -------------------------------
-time_of_wave_propagation_(in_sec)_(TIME) = 1.0
+time_of_wave_propagation_(in_sec)_(TIME) = 5.0
 timestep_(in_seconds)_(DT) = 2.5e-4
 #
 #--------------------Source---------------------------------------

@@ -63,7 +63,7 @@ void psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV
 
         }
 
-#pragma acc data 
+#pragma acc data copyin(POS[0:3])
 {
 			    
 	/* initialize PSV wavefields with zero */
