@@ -15,9 +15,10 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 
         extern float DH;
 	extern int FREE_SURF, NX, NY, NXG, NYG;
-	extern int NPROCX, NPROCY, MYID, POS[3];
+	extern int NPROCX, NPROCY, MYID_SHOT, POS[3];
 	extern FILE *FP;
-	
+	extern MPI_Comm SHOT_COMM;
+
 	/* local variables */
 	int i, j, h, ifw, ii, jj, n, xb, yb, xe, ye, taperlength,taperlength2, VTON, SRTON;
 	int ijc, iy, ix, iii, jjj, xx, yy, srctaper_gridpt, i1, j1;
@@ -55,7 +56,7 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
         for (iy=1;iy<=NYG;iy++)
                 for (ix=1;ix<=NXG;ix++)  msum[iy][ix] = 1.0;
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(SHOT_COMM);
 
         /*****************************/
         /* Taper at source positions */
@@ -189,17 +190,17 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 	n=ishot;
 		i1 = iround(srcpos[1][n]/DH);
 		j1 = iround(srcpos[2][n]/DH);
-		fprintf(FP,"\n Shot %d (printed by PE %d):\n",n,MYID);
-		fprintf(FP,"\n i1: %d (printed by PE %d):\n",i1,MYID);
-		fprintf(FP,"\n j1: %d (printed by PE %d):\n",j1,MYID);
+		fprintf(FP,"\n Shot %d (printed by PE %d):\n",n,MYID_SHOT);
+		fprintf(FP,"\n i1: %d (printed by PE %d):\n",i1,MYID_SHOT);
+		fprintf(FP,"\n j1: %d (printed by PE %d):\n",j1,MYID_SHOT);
 		
 		for (i=i1-FILTSIZE;i<=i1+FILTSIZE;i++){
 		   for (j=j1-FILTSIZE;j<=j1+FILTSIZE;j++){
 		       if ((POS[1]==((i-1)/NX)) && (POS[2]==((j-1)/NY))){
 			     ii = i-POS[1]*NX;
 			     jj = j-POS[2]*NY;
-			     /*printf("\n ii: %d (printed by PE %d):\n",ii,MYID);
-			     printf("\n jj: %d (printed by PE %d):\n",jj,MYID);*/
+			     /*printf("\n ii: %d (printed by PE %d):\n",ii,MYID_SHOT);
+			     printf("\n jj: %d (printed by PE %d):\n",jj,MYID_SHOT);*/
 			     /*waveconvtmp[jj][ii] = 1*waveconv[jj][ii]
 				       		+ 8*(waveconv[jj-1][ii] + waveconv[jj+1][ii] + waveconv[jj][ii-1] + waveconv[jj][ii+1])
 						+ 4*(waveconv[jj-1][ii-1] + waveconv[jj-1][ii+1] + waveconv[jj+1][ii+1] + waveconv[jj+1][ii-1]);
@@ -260,11 +261,11 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
 
  
 		
-	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Barrier(SHOT_COMM);
         sprintf(modfile,"taper_coeff_%i.bin",ishot);
         writemod(modfile,taper_coeff,3); 
-        MPI_Barrier(MPI_COMM_WORLD);
-        if (MYID==0) mergemod(modfile,3); 
+        MPI_Barrier(SHOT_COMM);
+        if (MYID_SHOT==0) mergemod(modfile,3); 
 	
 
 

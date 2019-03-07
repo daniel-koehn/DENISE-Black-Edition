@@ -8,7 +8,7 @@
 float **splitsrc_back(int **recpos,int *nsrc_loc, int nsrc)
 {
 
-	extern int IENDX, IENDY, POS[3], MYID, REC1, REC2;
+	extern int IENDX, IENDY, POS[3], MYID_SHOT, REC1, REC2;
 	extern float DH;
 
 	int a,b,i=0,j,k,found=0;
@@ -46,15 +46,15 @@ float **splitsrc_back(int **recpos,int *nsrc_loc, int nsrc)
 
 	printf("\n **Message from splitsrc:\n");
 	printf(" Splitting of receiver positions from global to local grids finished.\n");
-	printf(" MYID= %d \t \t no. of sources= %d\n",MYID,i);
+	printf(" MYID_SHOT= %d \t \t no. of sources= %d\n",MYID_SHOT,i);
 	
 
 	printf("\n **Message from splitsrc:\n");
 	printf(" Table of local source positions (in gridpoints), time-shift, centre frequency and amplitude:\n");
-	printf(" MYID\t  x\t  y\t  z\t  tshift  fc\t  amp\n");
+	printf(" MYID_SHOT\t  x\t  y\t  z\t  tshift  fc\t  amp\n");
 
 	for (j=1;j<=i;j++)
-	    printf(" %3d\t%4.0f\t%4.0f\t%4.0f\t%6.2f\t%6.2f\t%6.2f\n",MYID,srcpos_local[1][j],srcpos_local[2][j],srcpos_local[3][j],srcpos_local[4][j],srcpos_local[5][j],srcpos_local[6][j]);
+	    printf(" %3d\t%4.0f\t%4.0f\t%4.0f\t%6.2f\t%6.2f\t%6.2f\n",MYID_SHOT,srcpos_local[1][j],srcpos_local[2][j],srcpos_local[3][j],srcpos_local[4][j],srcpos_local[5][j],srcpos_local[6][j]);
 
         
         *nsrc_loc=i;

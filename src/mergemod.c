@@ -12,7 +12,7 @@ void mergemod(char modfile[STRING_SIZE], int format){
 
 
 
-	extern int  NYG, MYID, NPROCX, NPROCY;
+	extern int  NYG, MYID, MYID_SHOT, NPROCX, NPROCY;
 	extern int NX, NY, NPROC, IDX, IDY;
 	extern FILE *FP;
 

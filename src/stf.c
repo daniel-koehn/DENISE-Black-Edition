@@ -14,7 +14,7 @@ void stf(float **sectionvy_obs, float **sectionvy, int ntr_glob, int ishot, int 
 
 	/* declaration of global variables */
 	extern float DT, DH, OFFSETC, EPS_STF, OFFSETC_STF;
-	extern int SEIS_FORMAT, MYID, NT, NORMALIZE, TIMEWIN, INV_STF;
+	extern int SEIS_FORMAT, MYID_SHOT, NT, NORMALIZE, TIMEWIN, INV_STF;
 	extern char  SEIS_FILE_VY[STRING_SIZE], PARA[STRING_SIZE], DATA_DIR[STRING_SIZE];
 	extern int TRKILL, OFFSET_MUTE;
 	extern char TRKILL_FILE[STRING_SIZE], SIGNAL_FILE[STRING_SIZE];

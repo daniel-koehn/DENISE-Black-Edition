@@ -241,3 +241,5 @@ clean:
 	find . -name "*.o" -exec rm {} \; 
 	find . -name "*.c%" -exec rm {} \;
 	find . -name "*.bck" -exec rm {} \;
+	rm $(EXEC)/denise 
+

@@ -2,8 +2,10 @@
 void eprecond1(float ** We, float ** Ws, float ** Wr){
   
 	extern int NX, NY, IDX, IDY, DTINV, EPRECOND;
-        extern int POS[3], NXG;
-        extern float DH;
+  extern int POS[3], NXG;
+	extern float DH;
+	extern MPI_Comm SHOT_COMM;
+
 	int i, j, k, l, ii, jj;
 	float maxWetmp, maxWe, EPSILON_WE, x, y, xmin, xmax;
         	
@@ -55,7 +57,7 @@ void eprecond1(float ** We, float ** Ws, float ** Wr){
 	}
                                                                                                                                                                                                              
 	/* estimate maximum of We */
-	MPI_Allreduce(&maxWetmp,&maxWe,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+	MPI_Allreduce(&maxWetmp,&maxWe,1,MPI_FLOAT,MPI_MAX,SHOT_COMM);
 	
 	/* regularize energy weighting to avoid divison by zero */
 	for (i=1;i<=NX;i=i+IDX){
