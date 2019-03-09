@@ -10,7 +10,7 @@
 #include "fd.h"
 
 /* subroutine prototypes */
-void cumsum(float *vec, float *cumsum, int n);
+void cumsum(float *vec, float *cumsum2, int n);
 float maximumpos(float *a, int n);
 
 void stalta(float **sectionp, int ntr, int nst, float *picked_times, int ishot)
@@ -227,13 +227,13 @@ void stalta(float **sectionp, int ntr, int nst, float *picked_times, int ishot)
 /*                              SUBROUTINES                               */
 /*========================================================================*/
 
-void cumsum(float *vec, float *cumsum, int n)
+void cumsum(float *vec, float *cumsum2, int n)
 {
 	int i;
 	
-        cumsum[1] = vec[1];
+        cumsum2[1] = vec[1];
 	for (i=2;i<=n;i++){
-	    cumsum[i] = cumsum[i-1] + vec[i];
+	    cumsum2[i] = cumsum2[i-1] + vec[i];
         }
 
 }

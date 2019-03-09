@@ -11,12 +11,13 @@ void outseis_SHfor(struct seisSH *seisSH, int *recswitch, int  **recpos, int  **
 		
         /* global variables */
 	extern int SEISMO, MYID, MODE;	
-	
+	extern MPI_Comm SHOT_COMM;
+
         /* local variables */
 
 	if ((SEISMO==1)&&(MODE==0)){
 		
-		catseis((*seisSH).sectionvz, (*seisSH).fulldata_vz, recswitch, ntr_glob, MPI_COMM_WORLD);
+		catseis((*seisSH).sectionvz, (*seisSH).fulldata_vz, recswitch, ntr_glob, SHOT_COMM);
 	
 		if (MYID==0){
 		   saveseis_glob_SH(FP,(*seisSH).fulldata_vz,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,iter);

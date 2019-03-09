@@ -58,6 +58,7 @@
 
 int main(int argc, char **argv){
 char * fileinp;
+FILE *fpsrc;
 
 /* Initialize MPI environment */
 MPI_Init(&argc,&argv);
@@ -84,8 +85,26 @@ if(FP==NULL) {
 
 /* read input file *.inp */
 read_par(FP);
+ 
+/* Init shot parallelization*/
+COLOR = MYID / (NPROCX * NPROCY);
+MPI_Comm_split(MPI_COMM_WORLD, COLOR, MYID, &SHOT_COMM);
+MPI_Comm_rank(SHOT_COMM, &MYID_SHOT);
+
+/* Init subdomain communication*/
+MPI_Comm_split(MPI_COMM_WORLD, MYID_SHOT, MYID, &DOMAIN_COMM);
+
+
+NCOLORS = NP / (NPROCX * NPROCY);
+printf("....MYID.......%d.. %d.. COLOR......shotcome\n", MYID, COLOR);
+printf("...........%d.. %d........shotcome\n", NP, NCOLORS);
+
+printf("...........%d.. %d........NX NY\n", NPROCX, NPROCY);
 
 MPI_Barrier(MPI_COMM_WORLD);
+
+sources(&NSHOTS);
+printf("The number of shots %d", NSHOTS);
 
 /* check if parameters for PHYSICS and MODE are correct */
 check_mode_phys();
@@ -125,6 +144,7 @@ if(PHYSICS==5){
   physics_SH();
 }
 
+MPI_Comm_free(&SHOT_COMM);
 
 MPI_Finalize();
 return 0;	

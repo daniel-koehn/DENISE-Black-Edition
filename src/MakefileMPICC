@@ -22,29 +22,22 @@ EXEC= ../bin
 # CC=cc
 
 # On Linux NEC-cluster with Intel-MPI
-CC=mpiicc
-LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
-CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict
-SFLAGS=-L./../libcseife -L$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/lib
-IFLAGS=-I./../libcseife -I$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/include -I./../include
+# CC=mpiicc
+# LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
+# CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict
+# SFLAGS=-L./../libcseife -L$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/lib
+# IFLAGS=-I./../libcseife -I$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/include -I./../include
 
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
-# CC=mpicc -Minfo=all -ta=multicore #tesla:cc60,managed
-# LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-# CFLAGS=-O3 -w -D_FORTIFY_SOURCE=0
-# SFLAGS=-L./../libcseife -L/scratch/dragon/amd/kazeiv/gpuhackathon2018/fftw_sw/fftw-3.3.7/lib/
-# IFLAGS=-I./../libcseife -I./../include -I/scratch/dragon/amd/kazeiv/gpuhackathon2018/fftw_sw/fftw-3.3.7/include/
-
-# On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
-# CC=mpicc
-# LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-# CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0
-# SFLAGS=-L./../libcseife
-# IFLAGS=-I./../libcseife -I./../include
+CC=mpicc
+LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0
+SFLAGS=-L./../libcseife
+IFLAGS=-I./../libcseife -I./../include
 
 # On HLRN system
 #CC=mpcc
-#LFLAGS=-lm
+#LFLAGS=-lm  
 
 # ALTIX
 #CC=icc
@@ -197,10 +190,7 @@ DENISE += alloc_fwiSH.c \
 	  alloc_seisSHfwi.c \
 	  alloc_SH.c \
 	  ass_gradSH.c \
-	  apply_inv_hessSH.c \
 	  av_mu_SH.c \
-	  init_grad_coeff.c \
-	  inv_rho_SH.c \
 	  calc_mat_change_test_SH.c \
 	  calc_res_SH.c \
 	  checkfd_elast_SH.c \
@@ -209,10 +199,8 @@ DENISE += alloc_fwiSH.c \
 	  eprecond_SH.c \
 	  exchange_s_SH.c \
 	  exchange_v_SH.c \
-	  extract_LBFGS_SH.c \
 	  extract_PCG_SH.c \
 	  FD_SH.c \
-	  FD_grad_SH.c \
 	  FWI_SH.c \
 	  grad_obj_sh.c \
 	  matcopy_elastic_SH.c \
@@ -233,9 +221,7 @@ DENISE += alloc_fwiSH.c \
 	  sh.c \
           step_length_est_sh.c \
 	  stf_sh.c \
-	  store_LBFGS_SH.c \
 	  store_PCG_SH.c \
-          store_pseudo_hess_SH.c \
 	  update_s_elastic_PML_SH.c \
 	  update_s_visc_PML_SH.c \
 	  update_v_PML_SH.c \
@@ -255,5 +241,3 @@ clean:
 	find . -name "*.o" -exec rm {} \; 
 	find . -name "*.c%" -exec rm {} \;
 	find . -name "*.bck" -exec rm {} \;
-	rm $(EXEC)/denise 
-

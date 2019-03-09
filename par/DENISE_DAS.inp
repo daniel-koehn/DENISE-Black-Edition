@@ -2,7 +2,7 @@
 #      PARAMETER FILE FOR DENISE BLACK-EDITION
 #-----------------------------------------------------------------
 # description:
-# description/name of the model: Marmousi-II
+# description/name of the model: DAS_Aramco
 #
 # ------------------ DENISE Mode ---------------------------------
 # Operation mode:
@@ -12,8 +12,10 @@
 (2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 1
-number_of_processors_in_y-direction_(NPROCY) = 1
+number_of_processors_in_x-direction_(NPROCX) = 4
+number_of_processors_in_y-direction_(NPROCY) = 2
+#
+#total number of processes should be dividable by (NPROCX x NPROCY)
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
@@ -27,15 +29,15 @@ FD_ORDER = 8
 #         4 =                 E = 3.0 %
 max_relative_error = 1
 #-------------------- 2-D Grid -----------------------------------
-number_of_gridpoints_in_x-direction_(NX) = 4000
-number_of_gridpoints_in_y-direction_(NY) = 1392
-distance_between_gridpoints(in_m)_(DH) = 2.5 
+number_of_gridpoints_in_x-direction_(NX) = 500
+number_of_gridpoints_in_y-direction_(NY) = 174
+distance_between_gridpoints(in_m)_(DH) = 20.0
 #
 # Note that y denotes the vertical direction !
 #
 #-------------------Time Stepping -------------------------------
-time_of_wave_propagation_(in_sec)_(TIME) = 5.0
-timestep_(in_seconds)_(DT) = 2.5e-4
+time_of_wave_propagation_(in_sec)_(TIME) = 6.0
+timestep_(in_seconds)_(DT) = 2.0e-3
 #
 #--------------------Source---------------------------------------
 # Shape_of_source-signal:
@@ -43,7 +45,7 @@ timestep_(in_seconds)_(DT) = 2.5e-4
 SIGNAL_FILE = ./wavelet/wavelet_plexiglas
 duration_of_Klauder_wavelet_(in_seconds)_(TS) = 8.0
 read_source_positions_from_SOURCE_FILE_(yes=1)_(SRCREC) = 1
-SOURCE_FILE = ./source/source_OBC_VSP.dat 
+SOURCE_FILE = ./source/source_3.dat
 run_multiple_shots_defined_in_SOURCE_FILE_(yes=1)_(RUN_MULTIPLE_SHOTS) = 1
 corner_frequency_of_highpass_filtered_spike_(FC_SPIKE_1) = -5.0
 corner_frequency_of_lowpass_filtered_spike_(FC_SPIKE_2) = 15.0
@@ -53,6 +55,7 @@ write_source_wavelet_(yes=1)_(WRITE_STF) = 1
 #
 #--------------------- Model -------------------------------------
 read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
+#MFILE = start/marmousi_II_marine 
 MFILE = start/marmousi_II_start_1D
 write_model_files_(yes=1)_(WRITEMOD) = 1
 #
@@ -129,6 +132,9 @@ info_of_processing_element_zero_to_stdout_(yes=1/no=0)_(LOG) = 1
 # DENISE_elastic specific parameters
 number_of_TDFWI_iterations_(ITERMAX) = 600
 output_of_jacobian_(JACOBIAN) = jacobian/jacobian_Test
+#
+# input DATA path goes here
+#
 seismograms_of_measured_data_(DATA_DIR) = su/MARMOUSI_spike/DENISE_MARMOUSI
 cosine_taper_(yes=1/no=0)_(TAPER) = 0
 taper_length_(in_rec_numbers)_(TAPERLENGTH) = 4
@@ -136,8 +142,9 @@ gradient_taper_geometry_(GRADT1,GRADT2,GRADT3,GRADT4) = 21, 25, 490, 500
 type_of_material_parameters_to_invert_(Vp,Vs,rho=1/Zp,Zs,rho=2/lam,mu,rho=3)_(INVMAT1) = 1
 adjoint_source_type_(x-y_components=1/y_comp=2/x_comp=3/p_comp=4/x-p_comp=5/y-p_comp=6/x-y-p_comp=7)_(QUELLTYPB) = 1
 #
+#the last TESTSHOT_END is included
 #
-testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR) = 25, 75, 10
+testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR) = 1, 3, 1
 #
 #
 # ----- Definition of gradient taper geometry ----- #
@@ -168,8 +175,6 @@ upper_limit_for_vs/mu_(VSUPPERLIM) = 4000.0
 lower_limit_for_vs/mu_(VSLOWERLIM) = 0.0
 upper_limit_for_rho_(RHOUPPERLIM) = 3000.0
 lower_limit_for_rho_(RHOLOWERLIM) = 1000.0
-upper_limit_for_qs_(QSUPPERLIM) = 100.0
-lower_limit_for_qs_(QSLOWERLIM) = 10.0
 #
 #
 # ----- Optimization-Method ------ #

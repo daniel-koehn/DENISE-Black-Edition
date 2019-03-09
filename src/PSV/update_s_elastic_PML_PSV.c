@@ -333,8 +333,28 @@ void update_s_elastic_PML_PSV(int nx1, int nx2, int ny1, int ny2,
 		break;
 
 	case 8:
+/*#pragma acc enter data \
+copyin(rho[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(uipjp[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(uxy[ny1:ny2-ny1+1][nx1:nx2-nx1+1],ux[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(vy[ny1-4:ny2-ny1+8][nx1-3:nx2-nx1+8],vx[ny1-3:ny2-ny1+8][nx1-4:nx2-nx1+8])\
+copyin(uy[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(u[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(hc[1:4],a_x_half[nx1:nx2-nx1+1])\
+copyin(pi[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(psi_vyx[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(b_x_half[nx1:nx2-nx1+1],a_y[ny1:ny2-ny1+1])\
+copyin(psi_vxx[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(b_y[ny1:ny2-ny1+1],K_x_half[nx1:nx2-nx1+1],K_y[ny1:ny2-ny1+1],POS[1:2],a_y_half[ny1:ny2-ny1+1],a_x[nx1:nx2-nx1+1])\
+copyin(psi_vxy[ny1:ny2-ny1+1][nx1:nx2-nx1+1])\
+copyin(b_x[nx1:nx2-nx1+1],K_x[nx1:nx2-nx1+1],K_y_half[ny1:ny2-ny1+1],b_y_half[ny1:ny2-ny1+1])\
+copyin(psi_vyy[ny1:ny2-ny1+1][nx1:nx2-nx1+1])*/
 
+
+#pragma acc parallel private(i,j)
+#pragma acc loop independent gang 
     for (j=ny1;j<=ny2;j++){
+#pragma acc loop independent vector 
 	for (i=nx1;i<=nx2;i++){
 
 			vxx = (  hc[1]*(vx[j][i]  -vx[j][i-1])
@@ -436,6 +456,23 @@ void update_s_elastic_PML_PSV(int nx1, int nx2, int ny1, int ny2,
 				syy[j][i] += g*(vxx+vyy)+(2.0*f*vyy);
 
    }}
+
+/*
+#pragma exit data                                   \
+copyout(sxy[ny1:ny2-ny1+1][nx1:nx2-nx1+1])          \
+copyout(sxx[ny1:ny2-ny1+1][nx1:nx2-nx1+1])          \
+copyout(syy[ny1:ny2-ny1+1][nx1:nx2-nx1+1])          \
+copyout(psi_vyx[ny1:ny2-ny1+1][nx1:nx2-nx1+1])      \
+copyout(psi_vxx[ny1:ny2-ny1+1][nx1:nx2-nx1+1])      \
+copyout(psi_vxy[ny1:ny2-ny1+1][nx1:nx2-nx1+1])      \
+*/
+/*copyout(K_y_half[ny1:ny2-ny1+1])
+copyout(b_y_half[ny1:ny2-ny1+1]) \ 
+copyout(psi_vyy[ny1:ny2-ny1+1][nx1:nx2-nx1+1])
+copyout(b_y[ny1:ny2-ny1+1],K_x_half[nx1:nx2-nx1+1],K_y[ny1:ny2-ny1+1],a_y_half[ny1:ny2-ny1+1],a_x[nx1:nx2-nx1+1]) 
+copyout(b_x_half[nx1:nx2-nx1+1],a_y[ny1:ny2-ny1+1]) \
+copyout(b_x[nx1:nx2-nx1+1],K_x[nx1:nx2-nx1+1]) */
+
 		break;
 
 	case 10:

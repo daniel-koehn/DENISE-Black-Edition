@@ -13,7 +13,7 @@
 void extract_LBFGS_AC( int iter, float ** waveconv, float ** gradp, float ** waveconv_rho, float ** gradp_rho, float **ppi, float ** prho, float * r_LBFGS){
 
 	extern int NX, NY, IDX, IDY;
-	extern int POS[3], MYID;
+	extern int POS[3], MYID, MYID_SHOT;
         extern float C_vp, C_rho;
 	extern char JACOBIAN[STRING_SIZE];
 	

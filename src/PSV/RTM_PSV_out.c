@@ -13,7 +13,8 @@ void RTM_PSV_out(struct fwiPSV *fwiPSV){
 	extern int NX, NY, IDX, IDY;
 	extern int POS[3], MYID;
 	extern char JACOBIAN[STRING_SIZE];
-	
+	extern MPI_Comm SHOT_COMM;
+
         /* local variables */
 	char jac[STRING_SIZE], jac1[STRING_SIZE];
 	int i, j;
@@ -22,9 +23,16 @@ void RTM_PSV_out(struct fwiPSV *fwiPSV){
 	
 	/* output of P-image */
         /* ----------------- */
+	
+	MPI_Barrier(SHOT_COMM);
+	
+	//printf("I'm ouputing gradient file P_image POS[1]=%d, POS[2]=%d \n", POS[1],POS[2]);
+	//#if 0
+	MPI_Barrier(SHOT_COMM);
 	sprintf(jac,"%s_P_image.%i.%i",JACOBIAN,POS[1],POS[2]);
+	printf("jac file = %s \n",jac);
 	FP=fopen(jac,"wb");
-
+	MPI_Barrier(SHOT_COMM);
 	for (i=1;i<=NX;i=i+IDX){
 	   for (j=1;j<=NY;j=j+IDY){
                 tmp = (*fwiPSV).waveconv[j][i];
@@ -34,14 +42,15 @@ void RTM_PSV_out(struct fwiPSV *fwiPSV){
 
 	fclose(FP);
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Barrier(SHOT_COMM);
 
 	/* merge P-image file */ 
 	sprintf(jac1,"%s_P_image",JACOBIAN);
 	if (MYID==0) mergemod(jac1,3);
 
+	printf("I'm ouputing gradient file P_image%s \n",JACOBIAN);
         /* clean up temporary files*/
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(SHOT_COMM);
         remove(jac);
 
 	/* output of S-image */
@@ -58,15 +67,15 @@ void RTM_PSV_out(struct fwiPSV *fwiPSV){
 
 	fclose(FP);
 
-	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Barrier(SHOT_COMM);
 
 	/* merge S-image file */ 
 	sprintf(jac1,"%s_S_image",JACOBIAN);
 	if (MYID==0) mergemod(jac1,3);
 
         /* clean up temporary files*/
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(SHOT_COMM);
         remove(jac);
 
-
+//#endif
 }

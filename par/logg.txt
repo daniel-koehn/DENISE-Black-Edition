@@ -1,0 +1,3 @@
+==51770== NVPROF is profiling process 51770, command: ../bin/denise DENISE_marm_OBC.inp FWI_workflow_marmousi.inp
+==51770== Warning: Some profiling data are not recorded. Make sure cudaProfilerStop() or cuProfilerStop() is called before application exit to flush profile data.
+==51770== Generated result file: /scratch/dragon/amd/kazeiv/gpuhackathon2018/DENISE-Black-Edition/par/resultNV.nvprof
