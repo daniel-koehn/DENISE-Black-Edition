@@ -33,7 +33,7 @@ void gauss_filt(float ** waveconv)
 	char modfile[STRING_SIZE];
 
 	/* temporarily save gradient for Gaussian filtering */
-        sprintf(jac_tmp,"%s_gauss.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac_tmp,"%s_gauss.old.%i.%i",JACOBIAN,POS[1],POS[2]);
         FP1=fopen(jac_tmp,"wb");
                         
         for (i=1;i<=NX;i=i+IDX){
@@ -213,7 +213,7 @@ void gauss_filt(float ** waveconv)
 
         /* clean up temporary files*/
         MPI_Barrier(MPI_COMM_WORLD);
-        sprintf(jac_tmp,"%s_gauss.old.%i%i",JACOBIAN,POS[1],POS[2]);
+        sprintf(jac_tmp,"%s_gauss.old.%i.%i",JACOBIAN,POS[1],POS[2]);
         remove(jac_tmp);
 
 }

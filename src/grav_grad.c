@@ -152,7 +152,7 @@ void grav_grad(int ngrav, float **gravpos, float **grad_grav, float *gz_res){
 	}
 
         /* output of the gravity gradients */
-	sprintf(jac,"%s_grav.%i%i",JACOBIAN,POS[1],POS[2]);
+	sprintf(jac,"%s_grav.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP=fopen(jac,"wb");
 
 	for (i=1;i<=NX;i=i+IDX){

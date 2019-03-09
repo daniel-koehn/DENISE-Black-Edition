@@ -75,10 +75,10 @@ if(iter>1){
    /* load old models and gradients - rho and store them in the LBFGS vectors */
    /* ------------------------------------------------------------------------ */
 
-   sprintf(jac,"%s_p_rho.old.%i%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac,"%s_p_rho.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP6=fopen(jac,"rb");
    
-   sprintf(jac1,"%s_p_mrho.old.%i%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac1,"%s_p_mrho.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP7=fopen(jac1,"rb");
 
    /*iter1 = iter-itershift;*/ /* shift iter counter by 1 because L-BFGS method starts at iter > 1 */
@@ -105,10 +105,10 @@ if(iter>1){
 
    /* load old models and gradients - Vp and store them in the LBFGS vectors */
    /* ----------------------------------------------------------------------- */
-   sprintf(jac,"%s_p.old.%i%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac,"%s_p.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP6=fopen(jac,"rb");
 
-   sprintf(jac1,"%s_p_vp.old.%i%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac1,"%s_p_vp.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP7=fopen(jac1,"rb");
    
      for (i=1;i<=NX;i=i+IDX){

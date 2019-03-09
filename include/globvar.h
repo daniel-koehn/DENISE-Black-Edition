@@ -9,7 +9,7 @@
    uppercase letters are used */
 
 float XS, YS, DH, TIME, DT, TS, DAMPING;
-float TSNAP1, TSNAP2, TSNAPINC, *FL, TAU;
+float TSNAP1, TSNAP2, TSNAPINC, *FL, TAU, ALPHA_VISC;
 float ANGLE;
 float REFREC[4] = {0.0, 0.0, 0.0, 0.0}, FPML;
 int SEISMO, NDT, NSRC = 1, SEIS_FORMAT, FREE_SURF, READMOD, READREC, SRCREC, FW = 0;
@@ -43,7 +43,7 @@ int ITERMAX, REC1, REC2, INVMAT1, QUELLTYPB;
 int HESSIAN, GRAD_METHOD, NLBFGS, PCG_BETA;
 float FC_HESS_START, FC_HESS_INC;
 int MODEL_FILTER, FILT_SIZE;
-float EPSILON, MUN, EPSILON_u, EPSILON_rho;
+float EPSILON, MUN, EPSILON_u, EPSILON_rho, EPSILON_ts;
 
 int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR;
 int SWS_TAPER_GRAD_VERT, SWS_TAPER_GRAD_HOR, SWS_TAPER_GRAD_SOURCES, SWS_TAPER_CIRCULAR_PER_SHOT, SRTSHAPE, FILTSIZE;
@@ -51,12 +51,13 @@ int SWS_TAPER_FILE;
 float SRTRADIUS, EXP_TAPER_GRAD_HOR;
 
 int SPATFILTER, SPAT_FILT_SIZE, SPAT_FILT_1, SPAT_FILT_ITER;
-int INV_RHO_ITER, INV_VS_ITER, INV_VP_ITER;
+int INV_RHO_ITER, INV_VS_ITER, INV_VP_ITER, INV_QS_ITER;
 int MIN_ITER, GRAD_FORM, IDXI, IDYI, NTDTINV, NXNYI;
 
 char INV_MODELFILE[STRING_SIZE];
 
 float VPUPPERLIM, VPLOWERLIM, VSUPPERLIM, VSLOWERLIM, RHOUPPERLIM, RHOLOWERLIM;
+float QSUPPERLIM, QSLOWERLIM;
 
 float npower, k_max_PML;
 
@@ -106,8 +107,8 @@ int RTMOD;
 float OFFSETC;
 int OFFSET_MUTE;
 
-/* scale density update */
-float SCALERHO;
+/* scale density and Qs update */
+float SCALERHO, SCALEQS;
 
 /* corner frequencies for spike wavelet */
 float FC_SPIKE_1, FC_SPIKE_2;
@@ -126,7 +127,8 @@ int N_STREAMER;
 float REC_INCR_X, REC_INCR_Y;
 
 /* global average model parameters */
-float C_vp, C_vs, C_rho;
+float C_vp, C_vs, C_rho, C_taus;
+float C_vs_min, C_rho_min, C_taus_min;
 
 /* Component weighting for QUELLTYPB = 5, 6, 7 */
 float COMP_WEIGHT;

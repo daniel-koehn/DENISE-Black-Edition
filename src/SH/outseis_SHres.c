@@ -17,7 +17,6 @@ void outseis_SHres(struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, int *recs
         if(QUELLTYPB){
    
            catseis((*seisSHfwi).sectionvzdiff, (*seisSH).fulldata_vz, recswitch, ntr_glob, MPI_COMM_WORLD);
-
       
            if (MYID==0){
 	   	saveseis_glob_SH(FP,(*seisSH).fulldata_vz,recpos,recpos_loc,ntr_glob,srcpos,ishot,ns,nstage); 

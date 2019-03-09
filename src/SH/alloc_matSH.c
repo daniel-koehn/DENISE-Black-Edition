@@ -19,6 +19,7 @@ void alloc_matSH(struct matSH *matSH){
 
 	/* memory allocation for static (model) arrays */
 	(*matSH).prho =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
+	(*matSH).prhoi = matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*matSH).puip =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*matSH).pujp =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);
 	(*matSH).pu   =  matrix(-nd+1,NY+nd,-nd+1,NX+nd);

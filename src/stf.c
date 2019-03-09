@@ -120,7 +120,7 @@ void stf(float **sectionvy_obs, float **sectionvy, int ntr_glob, int ishot, int 
              /* calculate absolute offset */
              offset = sqrt(((xs-xr)*(xs-xr))+((ys-yr)*(ys-yr)));
 
-             printf("offset = %f \n",offset);
+             /*printf("offset = %f \n",offset);*/
 
              /* mute far-offset data*/
              if((OFFSET_MUTE==1)&&(offset>=OFFSETC)){

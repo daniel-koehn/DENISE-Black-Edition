@@ -1,21 +1,21 @@
 /*------------------------------------------------------------------------
  * Store gradients and model parameters for 
  * Limited Memory - Broyden-Fletcher-Goldfarb-Shanno (l-BFGS)
- * optimization (Nocedal and Wright, 2006) in case of the PSV problem
+ * optimization (Nocedal and Wright, 2006) in case of the SH problem
  * 
  * Daniel Koehn
- * Kiel, 25.07.2016
+ * Kiel, 14.10.2018
  *
  * ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void store_LBFGS_PSV(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv, float ** gradp, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float **ppi, float ** pu, float ** prho, int nxnyi, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec){
+void store_LBFGS_SH(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float ** waveconv_ts, float ** gradp_ts, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float ** pu, float ** prho, float **ptaus, int nxnyi, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec){
 
 	extern int NX, NY, IDX, IDY, SPATFILTER;
 	extern int HESSIAN, SWS_TAPER_GRAD_VERT, SWS_TAPER_GRAD_HOR, SWS_TAPER_GRAD_SOURCES, SWS_TAPER_FILE;
 	extern int POS[3], MYID;
-        extern float C_vp, C_vs, C_rho;
+        extern float C_vs, C_rho, C_taus, C_vs_min, C_rho_min, C_taus_min;
 	extern char JACOBIAN[STRING_SIZE];
 	
 	char jac[225], jac1[225];
@@ -30,57 +30,42 @@ void store_LBFGS_PSV(float ** taper_coeff, int nsrc, float ** srcpos, int ** rec
 	
         itershift = 1;
 
-/* ===================================================================================================================================================== */
-/* ===================================================== GRADIENT Vp/Zp/lambda ========================================================================= */
-/* ===================================================================================================================================================== */
+/* =========================================================================================================================================== */
+/* ===================================================== GRADIENT Vs ========================================================================= */
+/* =========================================================================================================================================== */
 	
-/* Normalization of the gradient   */
-/* ------------------------------- */
+/* Store Vs-gradient */
+/* ----------------- */  
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
-      waveconv[j][i] = C_vp * waveconv[j][i];
-   }
-}
-  
-for (i=1;i<=NX;i=i+IDX){
-   for (j=1;j<=NY;j=j+IDY){
-	  gradp[j][i] = waveconv[j][i];
-   }
-}
-
-/* ===================================================================================================================================================== */
-/* ===================================================== GRADIENT Vs/Zs/mu ============================================================================= */
-/* ===================================================================================================================================================== */
-	
-/* Normalization of the gradient   */
-/* ------------------------------- */
-for (i=1;i<=NX;i=i+IDX){
-   for (j=1;j<=NY;j=j+IDY){
-      waveconv_u[j][i] = C_vs * waveconv_u[j][i];
-   }
-}
-  
-for (i=1;i<=NX;i=i+IDX){
-   for (j=1;j<=NY;j=j+IDY){
+       waveconv_u[j][i] = C_vs * waveconv_u[j][i];
 	  gradp_u[j][i] = waveconv_u[j][i];
    }
 }
 
-/* ===================================================================================================================================================== */
-/* ===================================================== GRADIENT rho ================================================================================== */
-/* ===================================================================================================================================================== */
-
-/* Normalization of the gradient   */
-/* ------------------------------- */
+/* ================================================================================================================================================ */
+/* ===================================================== GRADIENT Rho ============================================================================= */
+/* ================================================================================================================================================ */
+	
+/* Store Rho-gradient */
+/* ------------------ */
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
-      waveconv_rho[j][i] = C_rho * waveconv_rho[j][i];
+       waveconv_rho[j][i] = C_rho * waveconv_rho[j][i];
+	  gradp_rho[j][i] = waveconv_rho[j][i];
    }
 }
 
+/* ===================================================================================================================================================== */
+/* ===================================================== GRADIENT Taus ================================================================================= */
+/* ===================================================================================================================================================== */
+
+/* Store Taus-gradient */
+/* ------------------- */
 for (i=1;i<=NX;i=i+IDX){
    for (j=1;j<=NY;j=j+IDY){
-	  gradp_rho[j][i] = waveconv_rho[j][i];
+       waveconv_ts[j][i] = C_taus * waveconv_ts[j][i];
+	  gradp_ts[j][i] = waveconv_ts[j][i];
    }
 }
 
@@ -90,13 +75,13 @@ for (i=1;i<=NX;i=i+IDX){
 
 if(iter>1){
 
-   /* load old models and gradients - rho and store them in the LBFGS vectors */
+   /* load old models and gradients - Vs and store them in the LBFGS vectors */
    /* ------------------------------------------------------------------------ */
 
-   sprintf(jac,"%s_p_rho.old.%i.%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac,"%s_p_u.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP6=fopen(jac,"rb");
    
-   sprintf(jac1,"%s_p_mrho.old.%i.%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac1,"%s_p_vs.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP7=fopen(jac1,"rb");
 
    /*iter1 = iter-itershift;*/ /* shift iter counter by 1 because L-BFGS method starts at iter > 1 */
@@ -108,10 +93,10 @@ if(iter>1){
    	  
           /* calculate and save y, s at iteration step iter */
           fread(&gradplastiter,sizeof(float),1,FP6);
-          y_LBFGS[h] = waveconv_rho[j][i]-gradplastiter;
+          y_LBFGS[h] = waveconv_u[j][i] - gradplastiter;
 
 	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = prho[j][i]-modellastiter;
+          s_LBFGS[h] = ((pu[j][i] - C_vs_min) / C_vs) - modellastiter;
           
           h++;
  
@@ -121,12 +106,12 @@ if(iter>1){
      fclose(FP6);
      fclose(FP7);
    
-   /* load old models and gradients - Vs and store them in the LBFGS vectors */
+   /* load old models and gradients - Rho and store them in the LBFGS vectors */
    /* ----------------------------------------------------------------------- */
-   sprintf(jac,"%s_p_u.old.%i.%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac,"%s_p_rho.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP6=fopen(jac,"rb");
 
-   sprintf(jac1,"%s_p_vs.old.%i.%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac1,"%s_p_mrho.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP7=fopen(jac1,"rb");
    
      for (i=1;i<=NX;i=i+IDX){
@@ -134,10 +119,10 @@ if(iter>1){
    	  
           /* calculate and save y, s at iteration step iter */
           fread(&gradplastiter,sizeof(float),1,FP6);
-          y_LBFGS[h] = waveconv_u[j][i]-gradplastiter;
+          y_LBFGS[h] = waveconv_rho[j][i] - gradplastiter;
 
     	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = pu[j][i]-modellastiter;  
+          s_LBFGS[h] = ((prho[j][i] - C_rho_min) / C_rho) - modellastiter;  
           
           h++;
           
@@ -147,12 +132,12 @@ if(iter>1){
      fclose(FP6);
      fclose(FP7);
 
-   /* load old models and gradients - Vp and store them in the LBFGS vectors */
-   /* ----------------------------------------------------------------------- */
-   sprintf(jac,"%s_p.old.%i.%i",JACOBIAN,POS[1],POS[2]);
+   /* load old models and gradients - Taus and store them in the LBFGS vectors */
+   /* ------------------------------------------------------------------------ */
+   sprintf(jac,"%s_p_ts.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP6=fopen(jac,"rb");
 
-   sprintf(jac1,"%s_p_vp.old.%i.%i",JACOBIAN,POS[1],POS[2]);
+   sprintf(jac1,"%s_p_mts.old.%i.%i",JACOBIAN,POS[1],POS[2]);
    FP7=fopen(jac1,"rb");
    
      for (i=1;i<=NX;i=i+IDX){
@@ -160,10 +145,10 @@ if(iter>1){
    	  
           /* calculate and save y, s at iteration step iter */
           fread(&gradplastiter,sizeof(float),1,FP6);
-          y_LBFGS[h] = waveconv[j][i]-gradplastiter;
+          y_LBFGS[h] = waveconv_ts[j][i] - gradplastiter;
 
     	  fread(&modellastiter,sizeof(float),1,FP7);
-          s_LBFGS[h] = ppi[j][i]-modellastiter;  
+          s_LBFGS[h] = ((ptaus[j][i] - C_taus_min) / C_taus) - modellastiter;  
           
           h++;
           
@@ -179,7 +164,7 @@ if(iter>1){
      for (i=1;i<=NX;i=i+IDX){
          for (j=1;j<=NY;j=j+IDY){
                              
-	     q_LBFGS[h] = waveconv_rho[j][i];
+	     q_LBFGS[h] = waveconv_u[j][i];
 	     h++;
                                                                  
          }
@@ -188,7 +173,7 @@ if(iter>1){
      for (i=1;i<=NX;i=i+IDX){
          for (j=1;j<=NY;j=j+IDY){
           
-	     q_LBFGS[h] = waveconv_u[j][i];
+	     q_LBFGS[h] = waveconv_rho[j][i];
 	     h++;	   
 	      
          }
@@ -197,7 +182,7 @@ if(iter>1){
      for (i=1;i<=NX;i=i+IDX){
          for (j=1;j<=NY;j=j+IDY){
           
-	     q_LBFGS[h] = waveconv[j][i];
+	     q_LBFGS[h] = waveconv_ts[j][i];
 	     h++;	   
 	      
          }

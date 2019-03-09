@@ -45,13 +45,14 @@ float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, s
         /* store current SH models */
         copy_mat((*matSH).prho,(*fwiSH).prho_old);
         copy_mat((*matSH).pu,(*fwiSH).pu_old);
+        copy_mat((*matSH).ptaus,(*fwiSH).ptaus_old);
 
 	while((step2!=1)||(*step1!=1)){
 
 	for (itest=itests;itest<=iteste;itest++){ /* calculate 3 L2 values */
 
         /* update material parameters for test step eps_scale */
-	tmp=calc_mat_change_test_SH((*fwiSH).waveconv_rho,(*fwiSH).waveconv_u,(*fwiSH).prho_old,(*matSH).prho,(*fwiSH).pu_old,(*matSH).pu,iter,1,eps_scale,1);
+	tmp=calc_mat_change_test_SH((*fwiSH).waveconv_rho,(*fwiSH).waveconv_u,(*fwiSH).waveconv_ts,(*fwiSH).prho_old,(*matSH).prho,(*fwiSH).pu_old,(*matSH).pu,(*fwiSH).ptaus_old,(*matSH).ptaus,iter,1,eps_scale,1);
 
         (*seisSHfwi).L2 = obj_sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,itest,iter,Ws,Wr,hin,DTINV_help,eps_scale,req_send,req_rec);
         L2t[itest] = (*seisSHfwi).L2;
@@ -71,7 +72,7 @@ float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, s
 
 	  /* model gravity data */
 	  /* save current density model */
-	  sprintf(jac_grav,"%s_tmp.rho.%i%i",JACOBIAN,POS[1],POS[2]);
+	  sprintf(jac_grav,"%s_tmp.rho.%i.%i",JACOBIAN,POS[1],POS[2]);
 	  FP_GRAV=fopen(jac_grav,"wb");
 
 	  for (i=1;i<=NX;i=i+IDX){

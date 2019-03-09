@@ -141,17 +141,21 @@ struct waveAC_PML{
 
 /* SH FWI variables */
 struct fwiSH{
-   float  **  prho_old, **pu_old;
-   float  ** Vs0, ** Rho0;
-   float  ** waveconv_mu, **waveconv_rho, **waveconv_rho_s, **waveconv_u;
-   float  ** waveconv_u_shot, **waveconv_rho_shot;
-   float  ** gradg_rho, ** gradp_rho, ** gradg_u, ** gradp_u;
-   float  * forward_prop_z, *forward_prop_rho_z, *forward_prop_sxz, *forward_prop_syz;
+   float  **  prho_old, **pu_old, **ptaus_old;
+   float  ** Vs0, ** Rho0, ** Taus0;
+   float  ** waveconv_mu, **waveconv_rho, **waveconv_ts, **waveconv_rho_s, **waveconv_u,  **waveconv_ts_s;
+   float  ** waveconv_u_shot, **waveconv_rho_shot, **waveconv_ts_shot;
+   float  ** gradg_rho, ** gradp_rho, ** gradg_u, ** gradp_u, ** gradg_ts, ** gradp_ts;
+   float   * forward_prop_z, *forward_prop_rho_z, *forward_prop_sxz, *forward_prop_syz;
+   float  ** forward_prop_rxz, **forward_prop_ryz, ***Rxz, ***Ryz, ***rxzt, ***ryzt;
+   float  ** c1mu, ** c4mu, ** c1ts, ** c4ts, * tausl;
+   float  ** hess_rho2, ** hess_mu2, ** hess_ts2, **hess_vs2, **hess_rho2p;
+   float  ** hess_muts, ** hess_murho, ** hess_tsrho; 
 } fwiSH;
 
 /* SH material parameters */
 struct matSH{
-   float  **prho, **puip, **pujp, **pu, **puipjp;
+   float  **prho, **prhoi, **puip, **pujp, **pu, **puipjp;
    float **ptaus, *etaip, *etajm, *peta, **ptausipjp, **fipjp, ***dip, *bip, *bjm;
    float *cip, *cjm, ***d, ***e, **f, **g;
 } matSH;
@@ -538,9 +542,17 @@ void alloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML);
 
 void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter);
 
+void apply_inv_hessSH(struct fwiSH *fwiSH, struct matSH *matSH, int nshots);
+
 void av_mu_SH(float ** u, float ** uip, float ** ujp, float ** rho);
 
-float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  u, float **  unp1, int iter, int epstest, float eps_scale, int itest);
+void init_grad_coeff(struct fwiSH *fwiSH, struct matSH *matSH);
+
+void inv_rho_SH(float ** rho, float ** rhoi);
+
+float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, float  **  waveconv_ts, float  **  rho, 
+			      float  **  rhonp1, float **  u, float **  unp1, float **  ts, float **  tsp1, int iter, 
+			      int epstest, float eps_scale, int itest);
 
 void calc_res_SH(struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, int *recswitch, int  **recpos, int  **recpos_loc, int ntr_glob,  int ntr, int nsrc_glob, float ** srcpos, int ishot, int ns, int iter, int swstestshot);
 
@@ -560,9 +572,13 @@ void exchange_v_SH(float ** vz, float ** bufferlef_to_rig, float ** bufferrig_to
 		   float ** buffertop_to_bot, float ** bufferbot_to_top,
 	           MPI_Request * req_send, MPI_Request * req_rec);
 
-void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho);
+void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float ** waveconv_ts, float ** gradp_ts, float ** pu, float ** prho,  float ** ptaus, float * r_LBFGS);
+
+void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
 
 void FD_SH();
+
+void FD_grad_SH();
 
 void FWI_SH();
 
@@ -577,9 +593,9 @@ void matcopy_SH(float ** rho, float ** u, float ** taus);
 
 void mem_SH(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize);
 
-void model_freq_out_SH(float  **  rho, float **  pu, int iter, float freq);
+void model_freq_out_SH(float  **  rho, float **  pu, float ** ptaus, int iter, float freq);
 
-void model_it_out_SH(float  **  rho, float **  pu, int nstage, int iter, float freq);
+void model_it_out_SH(float  **  rho, float **  pu, float **  ptaus, int nstage, int iter, float freq);
 
 float obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
@@ -618,7 +634,13 @@ void stf_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *
              struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, int nsrc, int ns, int ntr, int ntr_glob, int iter, float **Ws, 
              float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
 
-void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho);
+void store_LBFGS_SH(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, 
+                    float ** gradp_rho, float ** waveconv_ts, float ** gradp_ts, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float ** pu, float ** prho, float **ptaus, 
+		    int nxnyi, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
+
+void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
+
+void store_pseudo_hess_SH(struct fwiSH *fwiSH);
 
 void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 	float ** vz, float **  uz, float **  uzx, float **   syz, float **   sxz,
@@ -634,11 +656,11 @@ void update_s_visc_PML_SH(int nx1, int nx2, int ny1, int ny2,
 	float *cip, float *cjm, float ***d, float ***e, float ***dip, 
         float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, float * b_x_half,
         float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, float * b_y_half,
-        float ** psi_vzx, float ** psi_vzy, int mode);
+        float ** psi_vzx, float ** psi_vzy, struct fwiSH *fwiSH, int mode);
 
 void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 	float **  vz, float **  vzp1, float **  vzm1, float **  utty,float ** sxz, float ** syz,
-	float  **rho, float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff,
+	float  **rho, float **rhoi, float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff,
 	float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, 
 	float * b_x_half, float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, 
 	float * b_y_half, float ** psi_sxz_x, float ** psi_syz_y);
@@ -648,11 +670,13 @@ void zero_denise_elast_SH(int ny1, int ny2, int nx1, int nx2, float ** vz, float
 
 void zero_denise_visc_SH(int ny1, int ny2, int nx1, int nx2, float ** vz, float ** sxz, float ** syz, float ** vzm1, 
 			 float ** vzp1, float ** psi_sxz_x, float ** psi_syz_y, float ** psi_vzx,  float ** psi_vzy, 
-                         float ***pr, float ***pp, float ***pq);
+                         float ***pr, float ***pp, float ***pq, float ***Rxz, float ***Ryz);
 
 /* ----------------- */
 /* General functions */
 /* ----------------- */
+
+void mat_inv_3x3(float **A, float **Ainv);
 
 void window_cos(float **win, int npad, int nsrc, float it1, float it2, float it3, float it4);
 
@@ -726,6 +750,8 @@ void eprecond1(float ** We, float ** Ws, float ** Wr);
 void extend_mod(float  **rho_grav, float  **rho_grav_ext, int nxgrav, int nygrav);
 
 void gauss_filt(float ** waveconv);
+
+void gauss_filt_var(float ** waveconv, float ** vel_mod);
 
 void grav_grad(int ngrav, float **gravpos, float **grad_grav, float *gz_res);
 
@@ -825,6 +851,8 @@ void saveseis_glob(FILE *fp, float **sectionvx, float **sectionvy,float **sectio
 float **sectioncurl, float **sectiondiv, int  **recpos, int  **recpos_loc, 
 int ntr, float ** srcpos_loc, int nsrc,int ns, int iter);
 
+void scale_grad(float ** A, float a, float ** B, int n, int m);
+
 void snap(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **sxx,
 	float **syy, float **u, float **pi, float *hc);
 
@@ -881,7 +909,7 @@ void zero_PCG(float * PCG_old, float * PCG_new, float * PCG_dir, int PCG_vec);
 		 
 void FLnode(float  **  rho, float **  pi, float **  u, float **  taus, float **  taup, float *  eta);
 
-void smooth_grad(float ** waveconv);
+void smooth_grad(float ** waveconv, float ** vel_mod);
 
 void  smooth2(float ** grad);
 

@@ -13,6 +13,15 @@ void av_rho(float **rho, float **rip, float **rjp){
 	       
 			rjp[j][i] = 1.0/(0.5*(rho[j][i]+rho[j+1][i])); 	
 			rip[j][i] = 1.0/(0.5*(rho[j][i]+rho[j][i+1])); 	
+
+			if((rho[j][i]<1e-4)&&(rho[j+1][i]<1e-4)){
+			   rjp[j][i] = 0.0;
+			}
+
+			if((rho[j][i]<1e-4)&&(rho[j][i+1]<1e-4)){
+			   rip[j][i] = 0.0;
+			}	
+	
 	
 		}
 	}

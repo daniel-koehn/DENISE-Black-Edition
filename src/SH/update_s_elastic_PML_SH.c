@@ -88,8 +88,8 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 
 			/* save forward wavefield for gradient calculation */
 			if(mode==0){
-			  uz[j][i] = sxz[j][i]/DT;
-			  uzx[j][i] = syz[j][i]/DT;
+			  uz[j][i] = vzx/DT;
+			  uzx[j][i] = vzy/DT;
 			}
 			
 		    }
@@ -147,8 +147,8 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 
 			/* save forward wavefield for gradient calculation */
 			if(mode==0){
-			  uz[j][i] = sxz[j][i]/DT;
-			  uzx[j][i] = syz[j][i]/DT;
+			  uz[j][i] = vzx/DT;
+			  uzx[j][i] = vzy/DT;
 			}
 
 		    }
@@ -206,8 +206,8 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 
 			/* save forward wavefield for gradient calculation */
 			if(mode==0){
-			  uz[j][i] = sxz[j][i]/DT;
-			  uzx[j][i] = syz[j][i]/DT;
+			  uz[j][i] = vzx/DT;
+			  uzx[j][i] = vzy/DT;
 			}
 
 		    }
@@ -271,8 +271,8 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 
 			/* save forward wavefield for gradient calculation */
 			if(mode==0){
-			  uz[j][i] = sxz[j][i]/DT;
-			  uzx[j][i] = syz[j][i]/DT;
+			  uz[j][i] = vzx/DT;
+			  uzx[j][i] = vzy/DT;
 			}
 
 		    }
@@ -339,8 +339,8 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 
 			/* save forward wavefield for gradient calculation */
 			if(mode==0){
-			  uz[j][i] = sxz[j][i]/DT;
-			  uzx[j][i] = syz[j][i]/DT;
+			  uz[j][i] = vzx/DT;
+			  uzx[j][i] = vzy/DT;
 			}
 
 		    }
@@ -409,8 +409,8 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 
 			/* save forward wavefield for gradient calculation */
 			if(mode==0){
-			  uz[j][i] = sxz[j][i]/DT;
-			  uzx[j][i] = syz[j][i]/DT;
+			  uz[j][i] = vzx/DT;
+			  uzx[j][i] = vzy/DT;
 			}
 
 		    }

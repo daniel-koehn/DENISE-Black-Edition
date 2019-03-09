@@ -496,7 +496,6 @@ void FWI_PSV()
 
             if (INVMAT1 == 2)
             {
-
               fwiPSV.Vp0[j][i] = sqrt((matPSV.ppi[j][i] + 2.0 * matPSV.pu[j][i]) * matPSV.prho[j][i]);
               fwiPSV.Vs0[j][i] = sqrt(matPSV.pu[j][i] * matPSV.prho[j][i]);
               fwiPSV.Rho0[j][i] = matPSV.prho[j][i];
@@ -555,7 +554,7 @@ void FWI_PSV()
         {
           printf("Vp_avg = %.0f \t Vs_avg = %.0f \t rho_avg = %.0f \n ", Vp_avg, Vs_avg, rho_avg);
         }
-
+        
         C_vp = Vp_avg;
         C_vs = Vs_avg;
         C_rho = rho_avg;

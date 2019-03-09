@@ -7,7 +7,7 @@
 
 #include "fd.h"
 
-void smooth_grad(float ** waveconv){
+void smooth_grad(float ** waveconv, float ** vel_mod){
 
 	extern int SPATFILTER;
 		
@@ -25,6 +25,10 @@ void smooth_grad(float ** waveconv){
 
 	if(SPATFILTER==3){
 	  gauss_filt(waveconv);
+	}
+
+	if(SPATFILTER==4){
+	  gauss_filt_var(waveconv,vel_mod);
 	}
 
 

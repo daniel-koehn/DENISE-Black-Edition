@@ -26,14 +26,11 @@ void RTM_PSV_out(struct fwiPSV *fwiPSV){
 	
 	MPI_Barrier(SHOT_COMM);
 	
-	printf("I'm ouputing gradient file P_image POS[1]=%d, POS[2]=%d \n", POS[1],POS[2]);
+	//printf("I'm ouputing gradient file P_image POS[1]=%d, POS[2]=%d \n", POS[1],POS[2]);
 	//#if 0
 	MPI_Barrier(SHOT_COMM);
-	sprintf(jac,"%s_P_image.%i%i",JACOBIAN,POS[1],POS[2]);
+	sprintf(jac,"%s_P_image.%i.%i",JACOBIAN,POS[1],POS[2]);
 	printf("jac file = %s \n",jac);
-
-
-	
 	FP=fopen(jac,"wb");
 	MPI_Barrier(SHOT_COMM);
 	for (i=1;i<=NX;i=i+IDX){
@@ -58,7 +55,7 @@ void RTM_PSV_out(struct fwiPSV *fwiPSV){
 
 	/* output of S-image */
         /* ----------------- */
-	sprintf(jac,"%s_S_image.%i%i",JACOBIAN,POS[1],POS[2]);
+	sprintf(jac,"%s_S_image.%i.%i",JACOBIAN,POS[1],POS[2]);
 	FP=fopen(jac,"wb");
 
 	for (i=1;i<=NX;i=i+IDX){

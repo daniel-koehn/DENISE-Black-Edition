@@ -1,14 +1,14 @@
 /*------------------------------------------------------------------------
  * Module for extraction of Preconditioned Conjugate Gradient Method (PCG)
- * for the material parameters vs, rho and mu, rho respectively
+ * for the material parameters vs, rho, taus and mu, rho, taus respectively
  * 
  * Daniel Koehn
- * Kiel, 22.12.2017
+ * Kiel, 13.08.2018
  * ----------------------------------------------------------------------*/
 
 #include "fd.h"
 
-void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho){
+void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts){
 
 	extern int NX, NY, IDX, IDY;
 	int i, j, h;	
@@ -37,6 +37,20 @@ void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho)
 	   for (j=1;j<=NY;j=j+IDY){
 
 		 waveconv_rho[j][i] = PCG_old[h];
+
+                 h++;
+	   }
+	}
+
+	/* ============================================================================================================================================================== */
+	/* ===================================================== GRADIENT taus ========================================================================================== */
+	/* ============================================================================================================================================================== */
+
+	/* store gradient */
+	for (i=1;i<=NX;i=i+IDX){
+	   for (j=1;j<=NY;j=j+IDY){
+
+		 waveconv_ts[j][i] = PCG_old[h];
 
                  h++;
 	   }

@@ -26,7 +26,7 @@ void model_freq_out_PSV(float ** ppi, float  **  rho, float **  pu, int iter, fl
                                                                                                         
 	if (MYID==0) mergemod(modfile,3);
 	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_vp_stage_%d.bin.%i%i",INV_MODELFILE,iter,POS[1],POS[2]);
+	sprintf(modfile,"%s_vp_stage_%d.bin.%i.%i",INV_MODELFILE,iter,POS[1],POS[2]);
 	remove(modfile);                                                                                                                        
                           
 	sprintf(modfile,"%s_vs_stage_%d.bin",INV_MODELFILE,iter);
@@ -35,7 +35,7 @@ void model_freq_out_PSV(float ** ppi, float  **  rho, float **  pu, int iter, fl
                                                                                                         
 	if (MYID==0) mergemod(modfile,3);
 	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_vs_stage_%d.bin.%i%i",INV_MODELFILE,iter,POS[1],POS[2]);
+	sprintf(modfile,"%s_vs_stage_%d.bin.%i.%i",INV_MODELFILE,iter,POS[1],POS[2]);
 	remove(modfile);                                                                                                                        
                                                                                                                                 
 	sprintf(modfile,"%s_rho_stage_%d.bin",INV_MODELFILE,iter);
@@ -44,7 +44,7 @@ void model_freq_out_PSV(float ** ppi, float  **  rho, float **  pu, int iter, fl
                                                                                                                                                                         
 	if (MYID==0) mergemod(modfile,3);
 	MPI_Barrier(MPI_COMM_WORLD); 
-	sprintf(modfile,"%s_rho_stage_%d.bin.%i%i",INV_MODELFILE,iter,POS[1],POS[2]);
+	sprintf(modfile,"%s_rho_stage_%d.bin.%i.%i",INV_MODELFILE,iter,POS[1],POS[2]);
 	remove(modfile);
 
 }

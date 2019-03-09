@@ -168,6 +168,8 @@ upper_limit_for_vs/mu_(VSUPPERLIM) = 4000.0
 lower_limit_for_vs/mu_(VSLOWERLIM) = 0.0
 upper_limit_for_rho_(RHOUPPERLIM) = 3000.0
 lower_limit_for_rho_(RHOLOWERLIM) = 1000.0
+upper_limit_for_qs_(QSUPPERLIM) = 100.0
+lower_limit_for_qs_(QSLOWERLIM) = 10.0
 #
 #
 # ----- Optimization-Method ------ #

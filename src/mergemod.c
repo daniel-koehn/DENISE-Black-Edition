@@ -35,7 +35,7 @@ void mergemod(char modfile[STRING_SIZE], int format){
 	fprintf(FP," Opening model files: %s.??? ",modfile);
 	for (ip=0;ip<=NPROCX-1; ip++)
   	for (jp=0;jp<=NPROCY-1; jp++){
-      		sprintf(file,"%s.%i%i",modfile,ip,jp);
+      		sprintf(file,"%s.%i.%i",modfile,ip,jp);
       		fp[jp][ip]=fopen(file,"r");
       		if (fp[jp][ip]==NULL) err("merge: can't read model file !"); 
       	}

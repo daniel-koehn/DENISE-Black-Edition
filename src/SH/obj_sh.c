@@ -36,6 +36,7 @@ float obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH 
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	av_mu_SH((*matSH).pu, (*matSH).puip, (*matSH).pujp, (*matSH).prho);
+	inv_rho_SH((*matSH).prho, (*matSH).prhoi);
 
 	/* Preparing memory variables for update_s (viscoelastic) */
 	if (L) prepare_update_s_visc_SH((*matSH).etajm, (*matSH).etaip, (*matSH).peta, (*matSH).fipjp, (*matSH).pujp, (*matSH).puip, 
@@ -125,7 +126,7 @@ float obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH 
 		   =============================================== */
 		if (ntr > 0){
 		    calc_res_SH(seisSH,seisSHfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,1);
-		}
+		}				
 		
 	   if((N_STREAMER>0)||(READREC==2)){
 

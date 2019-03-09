@@ -279,6 +279,7 @@ void FD_PSV()
         for (ishot = NSHOT1; ishot <= NSHOT2; ishot += SHOTINC)
         {
                 /*for (ishot=1;ishot<=1;ishot+=1){*/
+                /*if(ishot!=10 && ishot!=11 && ishot!=12 && ishot!=13 && ishot!=14 && ishot!=29){*/
 
                 if ((N_STREAMER > 0) || (READREC == 2))
                 {
@@ -402,7 +403,7 @@ void FD_PSV()
                 }
 
                 nsrc_loc = 0;
-
+        //} /* exclude shots */
         } /* end of loop over shots */
         MPI_Barrier(MPI_COMM_WORLD);
         printf("Loop over shots halas \n");
@@ -530,7 +531,7 @@ void FD_PSV()
                 free_f3tensor(matPSV.d, -nd + 1, NY + nd, -nd + 1, NX + nd, 1, L);
                 free_f3tensor(matPSV.e, -nd + 1, NY + nd, -nd + 1, NX + nd, 1, L);
         }
-
+  
         /* de-allocate buffer for messages */
         MPI_Buffer_detach(buff_addr, &buffsize);
 
@@ -548,11 +549,11 @@ void FD_PSV()
                 time_av_s_exchange = time_av_s_exchange / (double)NT;
                 time_av_timestep = time_av_timestep / (double)NT;
                 /* fprintf(FP," Average times for \n");
-	fprintf(FP," velocity update:  \t %5.3f seconds  \n",time_av_v_update);
-	fprintf(FP," stress update:  \t %5.3f seconds  \n",time_av_s_update);
-	fprintf(FP," velocity exchange:  \t %5.3f seconds  \n",time_av_v_exchange);
-	fprintf(FP," stress exchange:  \t %5.3f seconds  \n",time_av_s_exchange);
-	fprintf(FP," timestep:  \t %5.3f seconds  \n",time_av_timestep);*/
+	              fprintf(FP," velocity update:  \t %5.3f seconds  \n",time_av_v_update);
+	              fprintf(FP," stress update:  \t %5.3f seconds  \n",time_av_s_update);
+	              fprintf(FP," velocity exchange:  \t %5.3f seconds  \n",time_av_v_exchange);
+	              fprintf(FP," stress exchange:  \t %5.3f seconds  \n",time_av_s_exchange);
+	              fprintf(FP," timestep:  \t %5.3f seconds  \n",time_av_timestep);*/
         }
 
         fclose(FP);

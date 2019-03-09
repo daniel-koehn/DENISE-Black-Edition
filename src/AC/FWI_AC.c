@@ -546,7 +546,7 @@ if(GRAVITY==2){
 
   /* model gravity data */
   /* save current density model */
-  sprintf(jac_grav,"%s_tmp.rho.%i%i",JACOBIAN,POS[1],POS[2]);
+  sprintf(jac_grav,"%s_tmp.rho.%i.%i",JACOBIAN,POS[1],POS[2]);
   FP_GRAV=fopen(jac_grav,"wb");
 
   for (i=1;i<=NX;i=i+IDX){
@@ -651,8 +651,8 @@ if((IDXI>1)||(IDYI>1)){
    }
 
 /* apply smoothness constraints to gradients */
-smooth_grad(fwiPSV.waveconv);
-smooth_grad(fwiPSV.waveconv_rho);
+smooth_grad(fwiPSV.waveconv, matAC.ppi);
+smooth_grad(fwiPSV.waveconv_rho, matAC.ppi);
 
 /* Preconditioning of gradients after shot summation and smoothing */
 precond_AC(&fwiPSV,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);

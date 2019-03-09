@@ -3,12 +3,12 @@
  *   for a single shot 
  *
  *   mode = 0 - forward modelling only, STF estimation or FWI gradient calculation
- *   mode = 1 - backpropagation of data residuals
+ *   mode = 1 - adjoint modelling
  *   mode = 2 - evaluation objective function for step length estimation  
  * 
  *   
  *   D. Koehn
- *   Kiel, 28.12.2015
+ *   Kiel, 13.08.2018
  *
  *  --------------------------------------------------------------------------*/
 
@@ -27,8 +27,10 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	extern FILE *FP;
 
         /* local variables */
-	int i,j,nt,lsamp,lsnap,nsnap, nd, hin1, imat, imat1, imat2, infoout;
-        float tmp, tmp1, muss, lamss;
+	int i,j,l,nt,lsamp,lsnap,nsnap, nd, hin1, imat, imat1, imat2, infoout;
+        float tmp, tmp1, muss, lamss, P3, P5;
+        float hess_rho, hess_mu, hess_ts;
+	float SUMr, SUMq;
 
         nd = FDORDER/2 + 1;
 
@@ -61,21 +63,22 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 
 		}
 
-        }
-			    
+        }	                                                        	
+		    
 	/* initialize SH wavefields with zero */
 	if (L){
 
                 zero_denise_visc_SH(-nd+1,NY+nd,-nd+1,NX+nd, (*waveSH).pvz, (*waveSH).psxz, (*waveSH).psyz, (*waveSH).pvzm1, (*waveSH).pvzp1, 
 				   (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y, (*waveSH_PML).psi_vzx,  (*waveSH_PML).psi_vzy, 
-                                   (*waveSH).pr, (*waveSH).pp, (*waveSH).pq);
+                                   (*waveSH).pr, (*waveSH).pp, (*waveSH).pq, (*fwiSH).Rxz, (*fwiSH).Ryz);
 
 	}else{	
 
                 zero_denise_elast_SH(-nd+1,NY+nd,-nd+1,NX+nd, (*waveSH).pvz, (*waveSH).psxz, (*waveSH).psyz, (*waveSH).pvzm1, (*waveSH).pvzp1, 
 				   (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y, (*waveSH_PML).psi_vzx,  (*waveSH_PML).psi_vzy);
 	
-	}                                                         
+	}
+	                                                        
 	     
 	/*----------------------  loop over timesteps (forward model) ------------------*/
 
@@ -99,8 +102,7 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
         if(mode==1){
 	   hin=1;
 	   hin1=1;
-	   ADJ_SIGN=1;
-	   // ADJ_SIGN=-1;
+	   ADJ_SIGN=-1;
         }
 
 	for (nt=1;nt<=NT;nt++){     
@@ -119,13 +121,13 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 
 	      /* update of particle velocities */
               if(mode==0 || mode==2){
-		update_v_PML_SH(1, NX, 1, NY, nt, (*waveSH).pvz, (*waveSH).pvzp1, (*waveSH).pvzm1, (*waveSH).uttz, (*waveSH).psxz, (*waveSH).psyz, (*matSH).prho, (*acq).srcpos_loc, (*acq).signals, nsrc_loc, 
+		update_v_PML_SH(1, NX, 1, NY, nt, (*waveSH).pvz, (*waveSH).pvzp1, (*waveSH).pvzm1, (*waveSH).uttz, (*waveSH).psxz, (*waveSH).psyz, (*matSH).prho, (*matSH).prhoi, (*acq).srcpos_loc, (*acq).signals, nsrc_loc, 
 			       (*waveSH_PML).absorb_coeff,hc, infoout, 0, (*waveSH_PML).K_x, (*waveSH_PML).a_x, (*waveSH_PML).b_x, (*waveSH_PML).K_x_half, (*waveSH_PML).a_x_half, (*waveSH_PML).b_x_half, (*waveSH_PML).K_y, 
 			       (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half, (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y);
               }
 
               if(mode==1){
-		update_v_PML_SH(1, NX, 1, NY, nt, (*waveSH).pvz, (*waveSH).pvzp1, (*waveSH).pvzm1, (*waveSH).uttz, (*waveSH).psxz, (*waveSH).psyz, (*matSH).prho, (*acq).srcpos_loc_back, (*seisSHfwi).sectionvzdiff, nsrc_loc, 
+		update_v_PML_SH(1, NX, 1, NY, nt, (*waveSH).pvz, (*waveSH).pvzp1, (*waveSH).pvzm1, (*waveSH).uttz, (*waveSH).psxz, (*waveSH).psyz, (*matSH).prho, (*matSH).prhoi, (*acq).srcpos_loc_back, (*seisSHfwi).sectionvzdiff, ntr, 
 			       (*waveSH_PML).absorb_coeff,hc, infoout, 1, (*waveSH_PML).K_x, (*waveSH_PML).a_x, (*waveSH_PML).b_x, (*waveSH_PML).K_x_half, (*waveSH_PML).a_x_half, (*waveSH_PML).b_x_half, (*waveSH_PML).K_y, 
 			       (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half, (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y);
               }
@@ -151,7 +153,7 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 				    (*waveSH).pr, (*waveSH).pp, (*waveSH).pq, (*matSH).fipjp, (*matSH).f, (*matSH).g, (*matSH).bip, (*matSH).bjm, (*matSH).cip, (*matSH).cjm, (*matSH).d, 
 			            (*matSH).e, (*matSH).dip, (*waveSH_PML).K_x, (*waveSH_PML).a_x, (*waveSH_PML).b_x, (*waveSH_PML).K_x_half, (*waveSH_PML).a_x_half, (*waveSH_PML).b_x_half,
         			    (*waveSH_PML).K_y, (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half,
-        			    (*waveSH_PML).psi_vzx, (*waveSH_PML).psi_vzy, mode);
+        			    (*waveSH_PML).psi_vzx, (*waveSH_PML).psi_vzy, fwiSH, mode);
 
 	    else
 
@@ -209,31 +211,69 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	      time8=MPI_Wtime();
 		  time_av_timestep+=(time8-time3);
 	      if (infoout)  fprintf(FP," total real time for timestep %d : %4.2f s.\n",nt,time8-time3);
-	      } */  		
+	      } */ 
 
-	if((nt==hin1)&&(mode==0)&&(MODE>0)){
+	if((nt==hin1)&&(mode==0)&&(MODE==1||MODE==2)){
 
 	  /* store forward wavefields for time-domain inversion and RTM */
-          /* ---------------------------------------------------------- */
-	    
-		/* store forward wavefield for density gradient */
-		for (i=1;i<=NX;i=i+IDXI){
-		    for (j=1;j<=NY;j=j+IDYI){
-			 (*fwiSH).forward_prop_rho_z[imat1] = (*waveSH).pvzp1[j][i];
-		         imat1++;                                   
-		    }
-		}   
+          /* ---------------------------------------------------------- */	    
 	    
 		for (i=1;i<=NX;i=i+IDXI){ 
 		    for (j=1;j<=NY;j=j+IDYI){
-		    
-			/* store forward wavefield for Vs gradient */
-		        if(GRAD_FORM==2){
-	 	          (*fwiSH).forward_prop_sxz[imat2]=(*waveSH).uz[j][i];
-	 	          (*fwiSH).forward_prop_syz[imat2]=(*waveSH).uzx[j][i];
-		        }
 
-			imat2++;
+			/* store forward wavefield for density gradient */
+		        (*fwiSH).forward_prop_rho_z[imat2] = (*waveSH).pvzp1[j][i];
+
+			/* store forward wavefield for mu and Taus gradient */
+	 	        (*fwiSH).forward_prop_sxz[imat2] = (*waveSH).uz[j][i];
+	 	        (*fwiSH).forward_prop_syz[imat2] = (*waveSH).uzx[j][i];
+
+			for (l=1;l<=L;l++){
+			    (*fwiSH).forward_prop_rxz[imat2][l] = (*waveSH).pr[j][i][l] + (*fwiSH).tausl[l] * (*fwiSH).rxzt[j][i][l];
+	 	            (*fwiSH).forward_prop_ryz[imat2][l] = (*waveSH).pq[j][i][l] + (*fwiSH).tausl[l] * (*fwiSH).ryzt[j][i][l];
+			}			
+
+			/* Compute Pseudo-Hessian main diagonal approximation */
+			if(EPRECOND==4){
+
+			   /* Pseudo-Hessian density */
+			   hess_rho = (*waveSH).pvz[j][i] * (*waveSH).pvzp1[j][i];			  
+
+			   /* Pseudo-Hessian Vs and Taus*/
+			   muss = (*matSH).prho[j][i] * (*matSH).pu[j][i] * (*matSH).pu[j][i];
+			   
+			   SUMr=SUMq=0.0;
+                           for (l=1;l<=L;l++){
+			       SUMr += (*fwiSH).Rxz[j][i][l];
+                               SUMq += (*fwiSH).Ryz[j][i][l];
+			   }
+			   
+			   P3 = (((*waveSH).psxz[j][i]-SUMr) * (*waveSH).uz[j][i]) + (((*waveSH).psyz[j][i]-SUMq) * (*waveSH).uzx[j][i]);
+			   P5 = 0.0;  			            
+		           for (l=1;l<=L;l++){
+			       P5 += ((*fwiSH).forward_prop_rxz[imat2][l] * (*fwiSH).Rxz[j][i][l]) + ((*fwiSH).forward_prop_ryz[imat2][l] * (*fwiSH).Ryz[j][i][l]); 
+			   }
+
+			   /* Pseudo-Hessian main-diagonal and non-diagonal elements */
+			   /* ------------------------------------------------------ */
+			   (*fwiSH).hess_rho2[j][i] += hess_rho * hess_rho;			   
+
+		           if(muss>0.0){
+			   
+			      hess_mu = - (*fwiSH).c1mu[j][i] * P3 + (*fwiSH).c4mu[j][i] * P5;
+			      hess_ts = - (*fwiSH).c1ts[j][i] * P3 + (*fwiSH).c4ts[j][i] * P5;
+			   			
+		                (*fwiSH).hess_mu2[j][i] += hess_mu * hess_mu;
+			        (*fwiSH).hess_ts2[j][i] += hess_ts * hess_ts;
+			       (*fwiSH).hess_muts[j][i] += hess_mu * hess_ts;
+			      (*fwiSH).hess_murho[j][i] += hess_mu * hess_rho;
+			      (*fwiSH).hess_tsrho[j][i] += hess_rho * hess_ts; 
+			       
+		           }			   			   			    		 
+
+			 }
+			 
+			 imat2++;			 			 
 		    
 		    }
 		}
@@ -260,7 +300,7 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 		                                   
 			   	(*fwiSH).waveconv_rho_shot[j][i] += (*waveSH).pvz[j][i] * (*fwiSH).forward_prop_rho_z[imat];
 			
-				/* Vs-gradient without data integration (stress-velocity in non-conservative form) */
+				/* Vs/Taus-gradient (symmetrized stress-velocity formulation) according to Fabien-Ouellet et al. (2017) */
 		                if(GRAD_FORM==2){			
 
 		           	    if(INVMAT1==1){
@@ -269,10 +309,19 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	           
 		           	    if(INVMAT1==3){
 		               	        muss = (*matSH).pu[j][i];
-				    } 			                
+				    }
+
+				    /* correlate forward and adjoint wavefields */
+				    P3 = ((*fwiSH).forward_prop_sxz[imat] * (*waveSH).uz[j][i]) + ((*fwiSH).forward_prop_syz[imat] * (*waveSH).uzx[j][i]);
+				    
+				    P5 = 0.0;  			            
+				    for (l=1;l<=L;l++){
+					P5 += ((*fwiSH).forward_prop_rxz[imat][l] * (*fwiSH).Rxz[j][i][l]) + ((*fwiSH).forward_prop_ryz[imat][l] * (*fwiSH).Ryz[j][i][l]); 
+				    }    
 
 				    if(muss>0.0){			
-				        (*fwiSH).waveconv_u_shot[j][i] += ((*fwiSH).forward_prop_sxz[imat] * (*waveSH).psxz[j][i]) + ((*fwiSH).forward_prop_syz[imat] * (*waveSH).psyz[j][i]);			  
+				         (*fwiSH).waveconv_u_shot[j][i] += - (*fwiSH).c1mu[j][i] * P3 + (*fwiSH).c4mu[j][i] * P5;
+			  		(*fwiSH).waveconv_ts_shot[j][i] += - (*fwiSH).c1ts[j][i] * P3 + (*fwiSH).c4ts[j][i] * P5;
 				    } 		                  
 		                }			
 						                                                                                                     

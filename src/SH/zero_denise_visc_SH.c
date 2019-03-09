@@ -11,12 +11,12 @@
 
 void zero_denise_visc_SH(int ny1, int ny2, int nx1, int nx2, float ** vz, float ** sxz, float ** syz, float ** vzm1, 
 			 float ** vzp1, float ** psi_sxz_x, float ** psi_syz_y, float ** psi_vzx,  float ** psi_vzy, 
-                         float ***pr, float ***pp, float ***pq){
+                         float ***pr, float ***pp, float ***pq, float ***Rxz, float ***Ryz){
 
 
 
 	register int i, j, k, l;
-	extern int FW, NX, NY, L;
+	extern int FW, NX, NY, L, MODE;
 
 	
 		for (j=ny1;j<=ny2;j++){
@@ -56,8 +56,13 @@ void zero_denise_visc_SH(int ny1, int ny2, int nx1, int nx2, float ** vz, float 
 					pr[j][i][l] = 0.0;
 					pp[j][i][l] = 0.0;
 					pq[j][i][l] = 0.0;
+
+					if(MODE==1 || MODE==2){
+					  Rxz[j][i][l] = 0.0;
+					  Ryz[j][i][l] = 0.0;
+					}
 				}
 			}
-		}
+		}		
 					            
 }

@@ -28,7 +28,7 @@ float Qmod, Qtrue, Q1, Q2, Q3;
 float ** Q_mod=NULL, ** Q_true=NULL, **dQ=NULL; 
 
 /* EPS_LNORM=1e1; */
-EPS_LNORM=1e-10;
+EPS_LNORM=0.0;
 EPS_LNORM6=1e-9;
 eps=1e-15;
 
@@ -402,12 +402,12 @@ for(i=1;i<=ntr;i++){
 			if(LNORM==2){
 
                           if(GRAD_FORM==1){
-			     if(MODE==1){intseis += DT*(section[i][j]-sectiondata[i][j]);}
+			     if(MODE==1 || MODE==3){intseis += DT*(section[i][j]-sectiondata[i][j]);}
 			     if(MODE==2){intseis += DT*(sectiondata[i][j]);}
                           }
 
                           if(GRAD_FORM==2){
-                             if(MODE==1){intseis = (section[i][j]-sectiondata[i][j]);}
+                             if(MODE==1 || MODE==3){intseis = (section[i][j]-sectiondata[i][j]);}
                              if(MODE==2){intseis = sectiondata[i][j];}
                           }
 
@@ -441,14 +441,14 @@ for(i=1;i<=ntr;i++){
                           tmp = abs_synthetics*abs_synthetics*abs_synthetics*abs_data;
                           tmp1 = abs_synthetics*abs_data;
 
-                          sectiondiff[i][invtime]=((intseis_synthetics*data_mult_synthetics)/(tmp+EPS_LNORM)) - (intseis_data/(tmp1+EPS_LNORM));
+                          sectiondiff[i][invtime]=((intseis_synthetics*data_mult_synthetics)/(tmp+EPS_LNORM)) - (intseis_data/(tmp1+EPS_LNORM));			  
 
 			}
 
                         if((LNORM==5)&&(swstestshot==1)){
 
                           tmp = abs_data*abs_synthetics;
-                          L2-=(intseis_data*intseis_synthetics)/(tmp+EPS_LNORM);
+			  L2-=(intseis_data*intseis_synthetics)/(tmp+EPS_LNORM);
 
 	                }
 			

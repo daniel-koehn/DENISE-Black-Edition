@@ -13,7 +13,7 @@
 
 void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 	float **  vz, float **  vzp1, float **  vzm1, float **  utty,float ** sxz, float ** syz,
-	float  **rho, float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff,
+	float  **rho, float **rhoi, float **  srcpos_loc, float ** signals, int nsrc, float ** absorb_coeff,
 	float *hc, int infoout,int sw, float * K_x, float * a_x, float * b_x, float * K_x_half, float * a_x_half, 
 	float * b_x_half, float * K_y, float * a_y, float * b_y, float * K_y_half, float * a_y_half, 
 	float * b_y_half, float ** psi_sxz_x, float ** psi_syz_y){
@@ -89,12 +89,12 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
 
       
 			}
@@ -156,12 +156,12 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
 
       
 			}
@@ -226,12 +226,12 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
 
       
 			}
@@ -299,12 +299,12 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	} 
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
 
       
 			}
@@ -374,12 +374,12 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
 
       
 			}
@@ -451,12 +451,12 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
                            	if(GRAD_FORM==2){
 
                                 	if(sw==0){
-                                 		vzp1[j][i] = (sxz_x+syz_y)/(rho[j][i]*DH);    
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN*DT*(sxz_x+syz_y)/(rho[j][i]*DH);
+                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
 
       
 			}

@@ -23,7 +23,7 @@ void RTM_PSV_out_shot(struct fwiPSV *fwiPSV, int ishot){
 	
 	/* output of P-image */
         /* ----------------- */
-	sprintf(jac,"%s_P_image_shot_%i.%i%i",JACOBIAN,ishot,POS[1],POS[2]);
+	sprintf(jac,"%s_P_image_shot_%i.%i.%i",JACOBIAN,ishot,POS[1],POS[2]);
 	FP=fopen(jac,"wb");
 
 	for (i=1;i<=NX;i=i+IDX){
@@ -47,7 +47,7 @@ void RTM_PSV_out_shot(struct fwiPSV *fwiPSV, int ishot){
 
 	/* output of S-image */
         /* ----------------- */
-	sprintf(jac,"%s_S_image_shot_%i.%i%i",JACOBIAN,ishot,POS[1],POS[2]);
+	sprintf(jac,"%s_S_image_shot_%i.%i.%i",JACOBIAN,ishot,POS[1],POS[2]);
 	FP=fopen(jac,"wb");
 
 	for (i=1;i<=NX;i=i+IDX){
