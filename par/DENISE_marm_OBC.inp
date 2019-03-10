@@ -6,14 +6,14 @@
 #
 # ------------------ DENISE Mode ---------------------------------
 # Operation mode:
-(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 1 
+(forward_modelling_only=0;FWI=1;RTM=2)_(MODE) = 0 
 #
 # ---------------- DENISE Physics -----------------------------
 (2D-PSV=1;2D-AC=2;2D-VTI=3;2D-TTI=4;2D-SH=5)_(PHYSICS) = 1
 #
 #-------------- Domain Decomposition -----------------------------
-number_of_processors_in_x-direction_(NPROCX) = 1
-number_of_processors_in_y-direction_(NPROCY) = 1
+number_of_processors_in_x-direction_(NPROCX) = 5
+number_of_processors_in_y-direction_(NPROCY) = 3
 #
 #-------------------- FD order -----------------------------------
 # Order of ssg FD coefficients (values: 2, 4, ..., 12)
@@ -27,20 +27,20 @@ FD_ORDER = 8
 #         4 =                 E = 3.0 %
 max_relative_error = 1
 #-------------------- 2-D Grid -----------------------------------
-number_of_gridpoints_in_x-direction_(NX) = 4000
-number_of_gridpoints_in_y-direction_(NY) = 1392
-distance_between_gridpoints(in_m)_(DH) = 2.5 
+number_of_gridpoints_in_x-direction_(NX) = 500
+number_of_gridpoints_in_y-direction_(NY) = 174
+distance_between_gridpoints(in_m)_(DH) = 20.0 
 #
 # Note that y denotes the vertical direction !
 #
 #-------------------Time Stepping -------------------------------
-time_of_wave_propagation_(in_sec)_(TIME) = 5.0
-timestep_(in_seconds)_(DT) = 2.5e-4
+time_of_wave_propagation_(in_sec)_(TIME) = 6.0
+timestep_(in_seconds)_(DT) = 2.0e-3
 #
 #--------------------Source---------------------------------------
 # Shape_of_source-signal:
 (ricker=1;fumue=2;from_SOURCE_FILE=3;SIN**3=4;Gaussian_deriv=5;Spike=6;Klauder=7)_(QUELLART) = 6
-SIGNAL_FILE = ./wavelet/wavelet_plexiglas
+SIGNAL_FILE = ./wavelet/wavelet_marmousi
 duration_of_Klauder_wavelet_(in_seconds)_(TS) = 8.0
 read_source_positions_from_SOURCE_FILE_(yes=1)_(SRCREC) = 1
 SOURCE_FILE = ./source/source_OBC_VSP.dat 
@@ -53,7 +53,7 @@ write_source_wavelet_(yes=1)_(WRITE_STF) = 1
 #
 #--------------------- Model -------------------------------------
 read_model_parameters_from_MFILE(yes=1)(READMOD) = 1
-MFILE = start/marmousi_II_start_1D
+MFILE = start/marmousi_II_marine
 write_model_files_(yes=1)_(WRITEMOD) = 1
 #
 #---------------------Q-approximation-----------------------------

@@ -737,6 +737,8 @@ void conv_FD(float * temp_TS, float * temp_TS1, float * temp_conv, int ns);
 
 void copy_mat(float ** A, float ** B);
 
+void count_src();
+
 void descent(float ** grad, float ** gradm);
 
 float dotp(float * vec1, float *vec2, int n1, int n2, int sw);

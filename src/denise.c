@@ -94,17 +94,15 @@ MPI_Comm_rank(SHOT_COMM, &MYID_SHOT);
 /* Init subdomain communication*/
 MPI_Comm_split(MPI_COMM_WORLD, MYID_SHOT, MYID, &DOMAIN_COMM);
 
-
 NCOLORS = NP / (NPROCX * NPROCY);
-printf("....MYID.......%d.. %d.. COLOR......shotcome\n", MYID, COLOR);
-printf("...........%d.. %d........shotcome\n", NP, NCOLORS);
-
-printf("...........%d.. %d........NX NY\n", NPROCX, NPROCY);
+printf("MYID: %d \t COLOR: %d \n", MYID, COLOR);
+printf("NP: %d \t NCOLORS: %d \n", NP, NCOLORS);
+printf("NX: %d \t NY: %d \n", NPROCX, NPROCY);
 
 MPI_Barrier(MPI_COMM_WORLD);
 
-sources(&NSHOTS);
-printf("The number of shots %d", NSHOTS);
+count_src();
+printf("Number of shots %d \n", NSHOTS);
 
 /* check if parameters for PHYSICS and MODE are correct */
 check_mode_phys();

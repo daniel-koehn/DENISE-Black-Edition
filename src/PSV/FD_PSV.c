@@ -59,7 +59,6 @@ void FD_PSV()
         /* ----------------------- */
 
         /* domain decomposition */
-
         initproc();
 
         MPI_Barrier(MPI_COMM_WORLD);
@@ -234,9 +233,9 @@ void FD_PSV()
         }
 
         /* For the calculation of the material parameters between gridpoints
-   they have to be averaged. For this, values lying at 0 and NX+1,
-   for example, are required on the local grid. These are now copied from the
-   neighbouring grids */
+        they have to be averaged. For this, values lying at 0 and NX+1,
+        for example, are required on the local grid. These are now copied from the
+        neighbouring grids */
         if (L)
         {
                 matcopy_PSV(matPSV.prho, matPSV.ppi, matPSV.pu, matPSV.ptaus, matPSV.ptaup);
@@ -324,7 +323,7 @@ void FD_PSV()
 
                 /*==================================================================================
                    Starting simulation (forward model)
-==================================================================================*/
+		==================================================================================*/
 
                 /* calculate wavelet for each source point */
                 acq.signals = NULL;
@@ -348,7 +347,7 @@ void FD_PSV()
                         {
                                 char source_signal_file[STRING_SIZE];
                                 sprintf(source_signal_file, "%s_source_signal.%d.su.shot%d", MFILE, MYID, ishot);
-                                fprintf(stdout, "\n PE %d outputs source timesss function in SU format to %s \n ", MYID, source_signal_file);
+                                fprintf(stdout, "\n PE %d outputs source time function in SU format to %s \n ", MYID, source_signal_file);
                                 output_source_signal(fopen(source_signal_file, "w"), acq.signals, NT, 1);
                         }
 
@@ -405,10 +404,12 @@ void FD_PSV()
                 nsrc_loc = 0;
         //} /* exclude shots */
         } /* end of loop over shots */
+
         MPI_Barrier(MPI_COMM_WORLD);
         printf("Loop over shots halas \n");
         printf("In FD_PSV (after shots) MYID = %d, COLOR =%d, MYID_SHOT = %d \n", MYID, COLOR, MYID_SHOT);
         MPI_Barrier(MPI_COMM_WORLD);
+
         /* deallocate memory for PSV forward problem */
         dealloc_PSV(&wavePSV, &wavePSV_PML);
 

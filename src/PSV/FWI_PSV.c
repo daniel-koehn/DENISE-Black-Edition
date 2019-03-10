@@ -606,9 +606,9 @@ void FWI_PSV()
       }
 
       /* apply smoothness constraints to gradients */
-      smooth_grad(fwiPSV.waveconv);
-      smooth_grad(fwiPSV.waveconv_u);
-      smooth_grad(fwiPSV.waveconv_rho);
+      smooth_grad(fwiPSV.waveconv, matPSV.pu);
+      smooth_grad(fwiPSV.waveconv_u, matPSV.pu);
+      smooth_grad(fwiPSV.waveconv_rho, matPSV.pu);
 
       /* Preconditioning of gradients after shot summation and smoothing */
       precond_PSV(&fwiPSV, &acq, nsrc, ntr_glob, taper_coeff, FP_GRAV);

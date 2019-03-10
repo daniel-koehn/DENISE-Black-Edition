@@ -53,56 +53,19 @@ float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
         SHOTINC=1;
 
 	if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
-
-	for (ishot=1;ishot<=nshots;ishot+=SHOTINC){
-	/*for (ishot=1;ishot<=1;ishot+=1){*/
-	/*if(ishot!=10 && ishot!=11 && ishot!=12 && ishot!=13 && ishot!=14 && ishot!=16 && ishot!=29){*/	
-
-	/*initialize gradient matrices for each shot with zeros*/
-	init_grad((*fwiPSV).waveconv_shot);
-	init_grad((*fwiPSV).waveconv_u_shot);
-	init_grad((*fwiPSV).waveconv_rho_shot);
-
-	if((EPRECOND==1)||(EPRECOND==3)){
-	   init_grad(Ws);
-	   init_grad(Wr);
-	   init_grad(We);
-	}			
-	  
-	if((N_STREAMER>0)||(READREC==2)){
-
-	   if (SEISMO){
-	      (*acq).recpos=receiver(FP, &ntr, ishot);
-	      (*acq).recswitch = ivector(1,ntr);
-	      (*acq).recpos_loc = splitrec((*acq).recpos,&ntr_loc, ntr, (*acq).recswitch);
-	      ntr_glob=ntr;
-	      ntr=ntr_loc;
-	   }
-
-	   /* Memory for seismic data */
-	   alloc_seisPSV(ntr,ns,seisPSV);
-	   
-	   /* Memory for full data seismograms */
-           alloc_seisPSVfull(seisPSV,ntr_glob);
-
-	   /* Memory for FWI seismic data */ 
-	   alloc_seisPSVfwi(ntr,ntr_glob,ns,seisPSVfwi);
-
-	if (RUN_MULTIPLE_SHOTS)
-		nshots = nsrc;
-	else
-		nshots = 1;
-
+					  
 	// dividing shots into NCOLORS groups
-    NSHOT1 = (1 + (NSHOTS-1) / NCOLORS) * COLOR + 1;
-    NSHOT2 = min(NSHOT1 + (NSHOTS-1) / NCOLORS, NSHOTS);
+        NSHOT1 = (1 + (NSHOTS-1) / NCOLORS) * COLOR + 1;
+        NSHOT2 = min(NSHOT1 + (NSHOTS-1) / NCOLORS, NSHOTS);
 
 	//printf("I'm at grad_obj_psv line 63, MYID = %d, NSHOT1 = %d,  NSHOT2 = %d", MYID, NSHOT1, NSHOT2);
 	MPI_Barrier(MPI_COMM_WORLD);
 	for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1)
 	{
 		/*for (ishot=1;ishot<=1;ishot+=1){*/
+		/*if(ishot!=10 && ishot!=11 && ishot!=12 && ishot!=13 && ishot!=14 && ishot!=16 && ishot!=29){*/
 		printf("ISHOT = %d", ishot);
+
 		/*initialize gradient matrices for each shot with zeros*/
 		init_grad((*fwiPSV).waveconv_shot);
 		init_grad((*fwiPSV).waveconv_u_shot);
