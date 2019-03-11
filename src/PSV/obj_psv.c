@@ -16,7 +16,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
         /* global variables */
 	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, QUELLTYP, ORDER_SPIKE;
         extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB;
-		extern int COLOR, NSHOT1, NSHOT2, NSHOTS, NCOLORS;
+	extern int COLOR, NSHOT1, NSHOT2, NSHOTS, NCOLORS;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
 	extern MPI_Comm SHOT_COMM;
 
@@ -44,9 +44,6 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 					 (*matPSV).ptausipjp,(*matPSV).f,(*matPSV).g,(*matPSV).bip,(*matPSV).bjm,(*matPSV).cip,(*matPSV).cjm,(*matPSV).dip,(*matPSV).d,(*matPSV).e);
 
 		if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
-
-		//NSHOT1 = NSHOTS/NCOLORS*COLOR + 1;
-		//NSHOT2 = min(NSHOT1 + NSHOTS/NCOLORS, NSHOTS);
 
 		for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1)
 		{		
