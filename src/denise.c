@@ -14,6 +14,7 @@
  *  T. Bohlen   (original FD forward code) 
  *  L. Zhang    (towed streamer, pressure inversion)
  *  D. Wehner   (gravity modelling and inversion)
+ *  V. Kazei    (shot parallelization of the PSV module)
  *  
  *  
  *  In case of questions contact the author:
