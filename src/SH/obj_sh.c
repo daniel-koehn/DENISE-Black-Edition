@@ -43,7 +43,7 @@ double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH
 
 		if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
-		for (ishot=TESTSHOT_START;ishot<=TESTSHOT_END;ishot=ishot+TESTSHOT_INCR){		
+		for (ishot=TESTSHOT_START;ishot<=TESTSHOT_END;ishot=ishot+TESTSHOT_INCR){	
 
 		if(MYID==0){
 		   printf("\n=================================================================================================\n");

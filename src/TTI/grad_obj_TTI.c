@@ -163,16 +163,15 @@ double grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, st
 	   Calculate objective function and data residuals
 	   =============================================== */
 
-	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){swstestshot=1;}
+	if ((ishot >= TESTSHOT_START) && (ishot <= TESTSHOT_END) && ((ishot - TESTSHOT_START) % TESTSHOT_INCR == 0)){
+          swstestshot=1;
+        }
 
 	if (ntr > 0){
 	   calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
 	}
 
-	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
-	       swstestshot=0;
-	       itestshot+=TESTSHOT_INCR;
-	}
+	swstestshot=0;
 
 	/* output of time reversed residual seismograms */
 	if ((SEISMO)&&(iter==1)&&(ishot==1)){

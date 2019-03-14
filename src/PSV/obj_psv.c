@@ -43,8 +43,9 @@ double obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct 
 
 		if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
-		for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1)
-		{		
+		for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1){	
+
+		if ((ishot >= TESTSHOT_START) && (ishot <= TESTSHOT_END) && ((ishot - TESTSHOT_START) % TESTSHOT_INCR == 0)){	
 
 		if(MYID==0){
 		   //printf("\n=================================================================================================\n");
@@ -190,6 +191,7 @@ double obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct 
 
 	nsrc_loc=0;
 
+	} /* end of IF reducing misfit function evaluation to test shots */
 	} /* end of loop over shots */
 
 	/* calculate L2 norm of all CPUs*/
