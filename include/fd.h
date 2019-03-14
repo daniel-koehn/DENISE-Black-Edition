@@ -75,7 +75,7 @@ struct seisPSVfwi{
    float ** sectionvydiff, ** sectionvydata, ** sectionread;
    float ** sectionpdata, ** sectionpdiff, ** sectionpdiffold;
    float energy;
-   float L2;
+   double L2;
 } seisPSVfwi;
 
 /* Acquisition geometry */
@@ -171,7 +171,7 @@ struct seisSHfwi{
    float ** sectionvzdata, ** sectionvzdiff, ** sectionvzdiffold;
    float ** sectionread;
    float energy;
-   float L2;
+   double L2;
 } seisSHfwi;
 
 /* SH (visco)-elastic wavefield variables */
@@ -236,7 +236,7 @@ void FD_PSV();
 
 void FWI_PSV();
 
-float grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec);
@@ -254,7 +254,7 @@ void model_freq_out_PSV(float ** ppi, float  **  rho, float **  pu, int iter, fl
 
 void model_it_out_PSV(float ** ppi, float  **  rho, float **  pu, int nstage, int iter, float freq);
 
-float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
 struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, int ntr_glob, 
 int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec);
 
@@ -287,7 +287,7 @@ void RTM_PSV_out_shot(struct fwiPSV *fwiPSV, int ishot);
 
 float step_length_est_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
-         float * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
+         double * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
          float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
 
 void stf_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, 
@@ -348,7 +348,7 @@ void checkfd_ssg_VTI(FILE *fp, float ** prho, float ** c11, float ** c13, float 
 
 void FD_VTI();
 
-float grad_obj_VTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI *matVTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double grad_obj_VTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matVTI *matVTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec);
@@ -390,7 +390,7 @@ void checkfd_ssg_TTI(FILE *fp, float ** prho, float ** c11, float ** c13, float 
 
 void FD_TTI();
 
-float grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matTTI *matTTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matTTI *matTTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec);
@@ -453,7 +453,7 @@ void FD_AC();
 
 void FWI_AC();
 
-float grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec);
@@ -466,7 +466,7 @@ void model_freq_out_AC(float ** ppi, float  **  rho, int iter, float freq);
 
 void model_it_out_AC(float ** ppi, float  **  rho, int nstage, int iter, float freq);
 
-float obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
          int ntr_glob, int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec);
 
@@ -492,7 +492,7 @@ void snap_AC(FILE *fp,int nt, int nsnap, float **vx, float **vy, float **p, floa
 
 float step_length_est_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
-         float * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
+         double * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
          float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
 
 void stf_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, struct seisPSV *seisPSV, 
@@ -582,7 +582,7 @@ void FD_grad_SH();
 
 void FWI_SH();
 
-float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec);
@@ -597,7 +597,7 @@ void model_freq_out_SH(float  **  rho, float **  pu, float ** ptaus, int iter, f
 
 void model_it_out_SH(float  **  rho, float **  pu, float **  ptaus, int nstage, int iter, float freq);
 
-float obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
          int ntr_glob, int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec);
 
@@ -627,7 +627,7 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 
 float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
-         float * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
+         double * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
          float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
 
 void stf_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, struct seisSH *seisSH, 
@@ -713,13 +713,11 @@ void calc_envelope(float ** datatrace, float ** envelope, int ns, int ntr);
 
 void calc_hilbert(float ** datatrace, float ** envelope, int ns, int ntr);
 
-double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, float L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter);
+double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, double L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter);
 
 double calc_res_grav(int ngrav, float *gz_mod, float *gz_res);
 
-double calc_misfit(float **sectiondiff, int ntr, int ns, int LNORM, float L2, int ntr_glob, int **recpos_loc, int nsrc_glob, int ishot);
-
-float calc_opt_step(float *  L2t, float * epst, int sws);
+float calc_opt_step(double *  L2t, float * epst, int sws);
 
 double calc_energy(float **sectiondata, int ntr, int ns, float energy, int ntr_glob, int **recpos_loc, int nsrc_glob, int ishot);
 
@@ -737,11 +735,11 @@ void conv_FD(float * temp_TS, float * temp_TS1, float * temp_conv, int ns);
 
 void copy_mat(float ** A, float ** B);
 
+void count_src();
+
 void descent(float ** grad, float ** gradm);
 
 float dotp(float * vec1, float *vec2, int n1, int n2, int sw);
-
-float exchange_L2(float L2, int sw, int bcast_l2);
 
 void eprecond(float ** W, float ** vx, float ** vy);
 

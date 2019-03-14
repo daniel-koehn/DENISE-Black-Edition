@@ -9,25 +9,25 @@
 
 #include "fd.h"
 
-float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matPSV *matPSV, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
          int ntr_glob, int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
 	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, QUELLTYP, ORDER_SPIKE;
         extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB;
+	extern int COLOR, NSHOT1, NSHOT2, NSHOTS, NCOLORS;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
+	extern MPI_Comm SHOT_COMM;
 
         /* local variables */
-        float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
+	double L2sum, L2_tmp;
         int ntr_loc, nt, ishot, nshots;
         FILE *FP;
 
         /* initialization of L2 calculation */
 	(*seisPSVfwi).L2=0.0;
 	(*seisPSVfwi).energy=0.0;
-	L2_all_shots=0.0;
-	energy_all_shots=0.0;
 
 	/* no differentiation of elastic and viscoelastic modelling because the viscoelastic parameters did not change during the forward modelling */
 	matcopy_elastic_PSV((*matPSV).prho,(*matPSV).ppi,(*matPSV).pu);
@@ -43,12 +43,14 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 
 		if (RUN_MULTIPLE_SHOTS) nshots=nsrc; else nshots=1;
 
-		for (ishot=TESTSHOT_START;ishot<=TESTSHOT_END;ishot=ishot+TESTSHOT_INCR){		
+		for (ishot = NSHOT1; ishot <= NSHOT2; ishot += 1){	
+
+		if ((ishot >= TESTSHOT_START) && (ishot <= TESTSHOT_END) && ((ishot - TESTSHOT_START) % TESTSHOT_INCR == 0)){	
 
 		if(MYID==0){
-		   printf("\n=================================================================================================\n");
+		   //printf("\n=================================================================================================\n");
 		   printf("\n *****  Starting simulation (test-forward model) no. %d for shot %d of %d (rel. step length %.8f) \n",itest,ishot,nshots,eps_scale);
-		   printf("\n=================================================================================================\n\n");
+		   //printf("\n=================================================================================================\n\n");
 		}
 		  
 		if((N_STREAMER>0)||(READREC==2)){
@@ -90,7 +92,7 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 				(*acq).srcpos_loc = splitsrc((*acq).srcpos,&nsrc_loc, nsrc);
 			}
 
-		MPI_Barrier(MPI_COMM_WORLD);
+		MPI_Barrier(SHOT_COMM);
 
 		/*==================================================================================
 		           Starting simulation (forward model)
@@ -189,28 +191,13 @@ float obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct m
 
 	nsrc_loc=0;
 
+	} /* end of IF reducing misfit function evaluation to test shots */
 	} /* end of loop over shots */
 
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
         L2_tmp = (*seisPSVfwi).L2;
-	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/* calculate L2 norm of all CPUs*/
-	energy_all_shots = 0.0;
-        energy_tmp = (*seisPSVfwi).energy;
-	MPI_Allreduce(&energy_tmp,&energy_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/* if(MYID==0){
-		printf("L2sum: %e\n", L2sum);
-		printf("energy_sum: %e\n\n", energy_all_shots);
-	}*/
-
-	if(LNORM==2){
-	     L2sum = L2sum/energy_all_shots;
-	}
-	else{L2sum=L2sum;}    
-
+	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
         
         return L2sum;
 	

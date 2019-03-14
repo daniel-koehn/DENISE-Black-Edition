@@ -13,7 +13,7 @@
 void extract_LBFGS_PSV( int iter, float ** waveconv, float ** gradp, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float **ppi, float ** pu, float ** prho, float * r_LBFGS){
 
 	extern int NX, NY, IDX, IDY;
-	extern int POS[3], MYID;
+	extern int POS[3], MYID, MYID_SHOT;
         extern float C_vp, C_vs, C_rho;
 	extern char JACOBIAN[STRING_SIZE];
 	

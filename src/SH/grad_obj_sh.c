@@ -9,7 +9,7 @@
 #include "fd.h"
 
 
-float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec){
@@ -25,7 +25,7 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 
         /* local variables */
 	int i, j, l, nshots, ishot, nt, lsnap, itestshot, swstestshot;
-        float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
+	double L2sum, L2_tmp;
         char source_signal_file[STRING_SIZE];
 
 	FILE *FP;
@@ -35,8 +35,6 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	/* initialization of L2 calculation */
 	(*seisSHfwi).L2=0.0;
 	(*seisSHfwi).energy=0.0;
-	L2_all_shots=0.0;
-	energy_all_shots=0.0;
 
 	EPSILON=0.0;  /* test step length */
 
@@ -178,16 +176,15 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	   Calculate objective function and data residuals
 	   =============================================== */
 
-	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){swstestshot=1;}
+	if ((ishot >= TESTSHOT_START) && (ishot <= TESTSHOT_END) && ((ishot - TESTSHOT_START) % TESTSHOT_INCR == 0)){
+	    swstestshot=1;
+	}
 
 	if (ntr > 0){
 	   calc_res_SH(seisSH,seisSHfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,swstestshot);
 	}
 
-	if((ishot==itestshot)&&(ishot<=TESTSHOT_END)){
-	       swstestshot=0;
-	       itestshot+=TESTSHOT_INCR;
-	}
+	swstestshot=0;
 
 	/* output of time reversed residual seismograms */
 	if ((SEISMO)&&(iter==1)&&(ishot==1)){
@@ -305,23 +302,7 @@ float grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct m
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
         L2_tmp = (*seisSHfwi).L2;
-	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/* calculate L2 norm of all CPUs*/
-	energy_all_shots = 0.0;
-        energy_tmp = (*seisSHfwi).energy;
-	MPI_Allreduce(&energy_tmp,&energy_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/*if(MYID==0){
-		printf("L2sum: %e\n", L2sum);
-		printf("energy_sum: %e\n\n", energy_all_shots);
-
-	}*/
-
-	if(LNORM==2){
-	     L2sum = L2sum/energy_all_shots;
-	}
-	else{L2sum=L2sum;}
+	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
 
 return L2sum;
 

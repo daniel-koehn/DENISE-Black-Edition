@@ -10,7 +10,7 @@
 
 float step_length_est_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
-         float * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
+         double * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
          float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
@@ -23,7 +23,8 @@ float step_length_est_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, s
 	float opteps_vp, ** rho_grav, ** rho_grav_ext;
 	int h, i, j, n, nshots, ishot, nt, lsnap, lsamp, nsnap, infoout;
         int step2, itest, itests, iteste, stepmax, countstep;
-        float scalefac, eps_scale, L2_grav, L2sum1, tmp, tmp1;
+        float scalefac, eps_scale, L2_grav, tmp, tmp1;
+	double L2sum1;
 	float * gz_res;
 	char jac_grav[STRING_SIZE];
 

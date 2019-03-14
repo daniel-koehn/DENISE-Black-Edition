@@ -22,22 +22,29 @@ EXEC= ../bin
 # CC=cc
 
 # On Linux NEC-cluster with Intel-MPI
-#CC=mpiicc
-#LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
-#CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict
-#SFLAGS=-L./../libcseife -L$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/lib
-#IFLAGS=-I./../libcseife -I$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/include -I./../include
+CC=mpiicc
+LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
+CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict
+SFLAGS=-L./../libcseife -L$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/lib
+IFLAGS=-I./../libcseife -I$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/include -I./../include
 
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
-CC=mpicc
-LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0
-SFLAGS=-L./../libcseife
-IFLAGS=-I./../libcseife -I./../include
+# CC=mpicc -Minfo=all -ta=multicore #tesla:cc60,managed
+# LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+# CFLAGS=-O3 -w -D_FORTIFY_SOURCE=0
+# SFLAGS=-L./../libcseife -L/scratch/dragon/amd/kazeiv/gpuhackathon2018/fftw_sw/fftw-3.3.7/lib/
+# IFLAGS=-I./../libcseife -I./../include -I/scratch/dragon/amd/kazeiv/gpuhackathon2018/fftw_sw/fftw-3.3.7/include/
+
+# On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
+# CC=mpicc
+# LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+# CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0
+# SFLAGS=-L./../libcseife
+# IFLAGS=-I./../libcseife -I./../include
 
 # On HLRN system
 #CC=mpcc
-#LFLAGS=-lm  
+#LFLAGS=-lm
 
 # ALTIX
 #CC=icc
@@ -248,3 +255,5 @@ clean:
 	find . -name "*.o" -exec rm {} \; 
 	find . -name "*.c%" -exec rm {} \;
 	find . -name "*.bck" -exec rm {} \;
+	rm $(EXEC)/denise 
+

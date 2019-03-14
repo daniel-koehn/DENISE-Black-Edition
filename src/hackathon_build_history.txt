@@ -1,0 +1,38 @@
+ 1114  module purge
+ 1115  module load fftw/3.3.7/openmpi-2.1.1-intel-2016-dp
+ 1116  module list
+ 
+
+
+1117  module show fftw/3.3.7/openmpi-2.1.1-intel-2016-dp
+ 1118  more /sw/csg/modulefiles/libs/fftw/3.3.7/openmpi-2.1.1-intel-2016-dp
+ 1119  module load /sw/csg/modulefiles/compilers/intel/2016
+ 1120  module load /sw/csg/modulefiles/compilers/openmpi/2.1.1/intel-2016
+ 1121  module list
+
+ 1122  echo $PATH
+ 
+1123  ls
+ 1124  pwd
+ 1125  cd -
+ 1126  pwd
+ 1127  ls
+ 1128  cd ..
+ 1129  cd -
+ 1130  cd ..
+ 1131  ls
+ 1132  cd libcseife/
+ 1133  make clean
+ 1134  make
+ 1135  module load cuda/9.0.176 
+ 1136  make
+ 1137  cd ..
+ 1138  module list
+ 1139  cd src/
+ 1140  ls
+ 1141  make clean
+ 1142  make denise
+ 1143  vi Makefile 
+ 1144  make denise
+ 1145  ll
+ 1146  history > hackathon.txt

@@ -21,7 +21,9 @@ float **  srcpos_loc, float ** signals, int nsrc, int sw){
 	   (explosive source) at source points */
 
        if(sw==0){
-	   for (l=1;l<=nsrc;l++) {
+	   
+#pragma acc parallel loop
+	for (l=1;l<=nsrc;l++) {
 	   	   i=(int)srcpos_loc[1][l];
 		   j=(int)srcpos_loc[2][l];
 		
@@ -40,7 +42,8 @@ float **  srcpos_loc, float ** signals, int nsrc, int sw){
        {
          if(QUELLTYPB>=4)
          {
-           for (l=1;l<=nsrc;l++) {
+#pragma acc parallel loop         
+  for (l=1;l<=nsrc;l++) {
                 i=(int)srcpos_loc[1][l];
                 j=(int)srcpos_loc[2][l];
                 sxx[j][i] += signals[l][nt];

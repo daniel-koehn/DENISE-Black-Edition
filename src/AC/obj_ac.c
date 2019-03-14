@@ -9,7 +9,7 @@
 
 #include "fd.h"
 
-float obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matAC, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
          int ntr_glob, int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec){
 
@@ -19,15 +19,13 @@ float obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC 
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
 
         /* local variables */
-        float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
+	double L2sum, L2_tmp;
         int ntr_loc, nt, ishot, nshots;
         FILE *FP;
 
         /* initialization of L2 calculation */
 	(*seisPSVfwi).L2=0.0;
 	(*seisPSVfwi).energy=0.0;
-	L2_all_shots=0.0;
-	energy_all_shots=0.0;
 
 	/* no differentiation of acoustic and visco-acoustic modelling because the visco-acoustic parameters did not change during the forward modelling */
         matcopy_acoustic_AC((*matAC).prho,(*matAC).ppi);
@@ -193,24 +191,8 @@ float obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC 
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
         L2_tmp = (*seisPSVfwi).L2;
-	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
+	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);   
 
-	/* calculate L2 norm of all CPUs*/
-	energy_all_shots = 0.0;
-        energy_tmp = (*seisPSVfwi).energy;
-	MPI_Allreduce(&energy_tmp,&energy_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/* if(MYID==0){
-		printf("L2sum: %e\n", L2sum);
-		printf("energy_sum: %e\n\n", energy_all_shots);
-	}*/
-
-	if(LNORM==2){
-	     L2sum = L2sum/energy_all_shots;
-	}
-	else{L2sum=L2sum;}    
-
-        
         return L2sum;
 	
 }

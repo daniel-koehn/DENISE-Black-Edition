@@ -13,7 +13,7 @@ void exchange_s_PSV(float ** sxx, float ** syy,
 	float ** buffertop_to_bot, float ** bufferbot_to_top,
 	MPI_Request * req_send, MPI_Request * req_rec){
 
-
+	extern MPI_Comm SHOT_COMM;
 	extern int NX, NY, POS[3], NPROCX, NPROCY, BOUNDARY, FDORDER;
 	extern int INDEX[5];
 	extern const int TAG1,TAG2,TAG5,TAG6;
@@ -56,12 +56,12 @@ void exchange_s_PSV(float ** sxx, float ** syy,
   	 /* send and receive values for points at inner boundaries */
 
 /*
-	MPI_Bsend(&buffertop_to_bot[1][1],NX*fdo3,MPI_FLOAT,INDEX[3],TAG5,MPI_COMM_WORLD);
-	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Recv(&buffertop_to_bot[1][1],NX*fdo3,MPI_FLOAT,INDEX[4],TAG5,MPI_COMM_WORLD,&status);
-	MPI_Bsend(&bufferbot_to_top[1][1],NX*fdo3,MPI_FLOAT,INDEX[4],TAG6,MPI_COMM_WORLD);
-	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Recv(&bufferbot_to_top[1][1],NX*fdo3,MPI_FLOAT,INDEX[3],TAG6,MPI_COMM_WORLD,&status);   
+	MPI_Bsend(&buffertop_to_bot[1][1],NX*fdo3,MPI_FLOAT,INDEX[3],TAG5,SHOT_COMM);
+	MPI_Barrier(SHOT_COMM);
+	MPI_Recv(&buffertop_to_bot[1][1],NX*fdo3,MPI_FLOAT,INDEX[4],TAG5,SHOT_COMM,&status);
+	MPI_Bsend(&bufferbot_to_top[1][1],NX*fdo3,MPI_FLOAT,INDEX[4],TAG6,SHOT_COMM);
+	MPI_Barrier(SHOT_COMM);
+	MPI_Recv(&bufferbot_to_top[1][1],NX*fdo3,MPI_FLOAT,INDEX[3],TAG6,SHOT_COMM,&status);   
 */
 	/* Initiates a communication with a persistent request handle */
 	/*for (i=2;i<=3;i++){
@@ -73,8 +73,8 @@ void exchange_s_PSV(float ** sxx, float ** syy,
 	
 	/* alternative communication */
 	/* still blocking communication */
-	MPI_Sendrecv_replace(&buffertop_to_bot[1][1],NX*fdo3,MPI_FLOAT,INDEX[3],TAG5,INDEX[4],TAG5,MPI_COMM_WORLD,&status);
-	MPI_Sendrecv_replace(&bufferbot_to_top[1][1],NX*fdo3,MPI_FLOAT,INDEX[4],TAG6,INDEX[3],TAG6,MPI_COMM_WORLD,&status);
+	MPI_Sendrecv_replace(&buffertop_to_bot[1][1],NX*fdo3,MPI_FLOAT,INDEX[3],TAG5,INDEX[4],TAG5,SHOT_COMM,&status);
+	MPI_Sendrecv_replace(&bufferbot_to_top[1][1],NX*fdo3,MPI_FLOAT,INDEX[4],TAG6,INDEX[3],TAG6,SHOT_COMM,&status);
 	
 
 
@@ -134,12 +134,12 @@ void exchange_s_PSV(float ** sxx, float ** syy,
  	 /* send and receive values for points at inner boundaries */
 
 /*
- 	MPI_Bsend(&bufferlef_to_rig[1][1],(NY)*fdo3,MPI_FLOAT,INDEX[1],TAG1,MPI_COMM_WORLD);
+ 	MPI_Bsend(&bufferlef_to_rig[1][1],(NY)*fdo3,MPI_FLOAT,INDEX[1],TAG1,SHOT_COMM);
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Recv(&bufferlef_to_rig[1][1],(NY)*fdo3,MPI_FLOAT,INDEX[2],TAG1,MPI_COMM_WORLD,&status);
-	MPI_Bsend(&bufferrig_to_lef[1][1],(NY)*fdo3,MPI_FLOAT,INDEX[2],TAG2,MPI_COMM_WORLD);
+	MPI_Recv(&bufferlef_to_rig[1][1],(NY)*fdo3,MPI_FLOAT,INDEX[2],TAG1,SHOT_COMM,&status);
+	MPI_Bsend(&bufferrig_to_lef[1][1],(NY)*fdo3,MPI_FLOAT,INDEX[2],TAG2,SHOT_COMM);
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Recv(&bufferrig_to_lef[1][1],(NY)*fdo3,MPI_FLOAT,INDEX[1],TAG2,MPI_COMM_WORLD,&status);
+	MPI_Recv(&bufferrig_to_lef[1][1],(NY)*fdo3,MPI_FLOAT,INDEX[1],TAG2,SHOT_COMM,&status);
 */
 
 	/* send and reveive values at edges of the local grid */
@@ -153,8 +153,8 @@ void exchange_s_PSV(float ** sxx, float ** syy,
 	
 	/* alternative communication */
 	/* still blocking communication */
-	MPI_Sendrecv_replace(&bufferlef_to_rig[1][1],NY*fdo3,MPI_FLOAT,INDEX[1],TAG1,INDEX[2],TAG1,MPI_COMM_WORLD,&status);
-	MPI_Sendrecv_replace(&bufferrig_to_lef[1][1],NY*fdo3,MPI_FLOAT,INDEX[2],TAG2,INDEX[1],TAG2,MPI_COMM_WORLD,&status);	
+	MPI_Sendrecv_replace(&bufferlef_to_rig[1][1],NY*fdo3,MPI_FLOAT,INDEX[1],TAG1,INDEX[2],TAG1,SHOT_COMM,&status);
+	MPI_Sendrecv_replace(&bufferrig_to_lef[1][1],NY*fdo3,MPI_FLOAT,INDEX[2],TAG2,INDEX[1],TAG2,SHOT_COMM,&status);	
 
 	
 	if ((BOUNDARY) || (POS[1]!=NPROCX-1))	/* no boundary exchange at right edge of global grid */

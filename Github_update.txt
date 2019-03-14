@@ -17,6 +17,25 @@ git clone -b branch_name https://github.com/daniel-koehn/DENISE-Black-Edition.gi
 Update of Github DENISE-Black-Edition repository
 ------------------------------------------------
 
+Before you update the repository: 
+
+Be sure that all compiled code in /src and /libcseife is removed by 
+
+make clean
+
+Furthermore, all model files, log files, snap shot files, FA-pick files, 
+STF files and seismograms from 
+
+par/jacobian
+par/log
+par/model
+par/picked_times
+par/start
+par/wavelet
+
+are removed. The /par directory should only contain the Marmousi-II example 
+input, workflow, source and receiver files. 
+
 1. Move to DENISE-Black-Edition directory
 2. git add -A
 3. git commit -m "Comment on the latest update"

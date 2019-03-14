@@ -40,7 +40,7 @@ char *buff_addr, ext[10], *fileinp, jac[225], source_signal_file[STRING_SIZE];
 
 double time1, time2, time7, time8, time_av_v_update=0.0, time_av_s_update=0.0, time_av_v_exchange=0.0, time_av_s_exchange=0.0, time_av_timestep=0.0;
 	
-float L2sum, *L2t;
+double L2sum, *L2t;
 	
 float ** taper_coeff, * epst1, *hc=NULL;
 int * DTINV_help;
@@ -68,7 +68,7 @@ float ** Ws, **Wr, **We;
 int stagemax=0, nstage;
 
 /*vector for abort criterion*/
-float * L2_hist=NULL;
+double * L2_hist=NULL;
 
 /* help variable for MIN_ITER */
 int min_iter_help=0;
@@ -210,7 +210,7 @@ if((N_STREAMER==0)&&(READREC!=2)){
 }
 
 /* memory allocation for abort criterion*/
-L2_hist = vector(1,1000);
+L2_hist = dvector(1,1000);
 
 /* estimate memory requirement of the variables in megabytes*/
 	
@@ -311,7 +311,7 @@ taper_coeff=  matrix(1,NY,1,NX);
 acq.srcpos1=fmatrix(1,8,1,1);
 
 /* memory of L2 norm */
-L2t = vector(1,4);
+L2t = dvector(1,4);
 epst1 = vector(1,3);
 	
 fprintf(FP," ... memory allocation for PE %d was successfull.\n\n", MYID);
@@ -891,9 +891,9 @@ if (nsrc_loc>0){
  free_matrix(acq.srcpos1,1,8,1,1);
  
  /* free memory for abort criterion */
- free_vector(L2_hist,1,1000);
+ free_dvector(L2_hist,1,1000);
  		
- free_vector(L2t,1,4);
+ free_dvector(L2t,1,4);
  free_vector(epst1,1,3);
 
  if((N_STREAMER==0)||(READREC!=2)){

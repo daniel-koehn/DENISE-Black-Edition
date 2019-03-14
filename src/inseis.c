@@ -8,7 +8,7 @@
 void  inseis(int comp, float **section, int ntr, int ns, int sws, int iter){
 
 	/* declaration of extern variables */
-	extern int NDT, MYID;
+	extern int NDT, MYID_SHOT;
 	extern char DATA_DIR[STRING_SIZE], SEIS_FILE_P[STRING_SIZE], SEIS_FILE_VX[STRING_SIZE];
 	extern char DATA_DIR_T0[STRING_SIZE];
 	extern char SEIS_FILE_VY[STRING_SIZE];
@@ -26,19 +26,19 @@ void  inseis(int comp, float **section, int ntr, int ns, int sws, int iter){
 	}
 	
 	if(sws==3){ /* open forward modelled data vx*/
-	   sprintf(data,"%s.shot%d.%d",SEIS_FILE_VX,comp,MYID);
+	   sprintf(data,"%s.shot%d.%d",SEIS_FILE_VX,comp,MYID_SHOT);
 	}
 	
 	if(sws==4){ /* open forward modelled data vy*/
-	   sprintf(data,"%s.shot%d.%d",SEIS_FILE_VY,comp,MYID);
+	   sprintf(data,"%s.shot%d.%d",SEIS_FILE_VY,comp,MYID_SHOT);
 	}
 	
 	if(sws==5){ /* open old data residuals vx*/
-	   sprintf(data,"%s.shot%d_it-1.%d",SEIS_FILE_VX,comp,MYID);
+	   sprintf(data,"%s.shot%d_it-1.%d",SEIS_FILE_VX,comp,MYID_SHOT);
 	}
 	
 	if(sws==6){ /* open old data residuals vy*/
-	   sprintf(data,"%s.shot%d_it-1.%d",SEIS_FILE_VY,comp,MYID);
+	   sprintf(data,"%s.shot%d_it-1.%d",SEIS_FILE_VY,comp,MYID_SHOT);
 	}
 	
 	if(sws==7){  /* open convolved seismic data vx */
@@ -62,11 +62,11 @@ void  inseis(int comp, float **section, int ntr, int ns, int sws, int iter){
         }
      
         if(sws==12){ /* open forward modelled data p*/
-           sprintf(data,"%s.shot%d.%d",SEIS_FILE_P,comp,MYID);
+           sprintf(data,"%s.shot%d.%d",SEIS_FILE_P,comp,MYID_SHOT);
         }
       
         if(sws==13){ /* open old data residuals p*/
-           sprintf(data,"%s.shot%d_it-1.%d",SEIS_FILE_P,comp,MYID);
+           sprintf(data,"%s.shot%d_it-1.%d",SEIS_FILE_P,comp,MYID_SHOT);
         }
        
         if(sws==14){  /* open convolved seismic data p */
