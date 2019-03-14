@@ -36,11 +36,11 @@ IFLAGS=-I./../libcseife -I$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/include -I./..
 # IFLAGS=-I./../libcseife -I./../include -I/scratch/dragon/amd/kazeiv/gpuhackathon2018/fftw_sw/fftw-3.3.7/include/
 
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
-#CC=mpicc
-#LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-#CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0
-#SFLAGS=-L./../libcseife
-#IFLAGS=-I./../libcseife -I./../include
+# CC=mpicc
+# LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+# CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0
+# SFLAGS=-L./../libcseife
+# IFLAGS=-I./../libcseife -I./../include
 
 # On HLRN system
 #CC=mpcc

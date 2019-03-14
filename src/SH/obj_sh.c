@@ -9,7 +9,7 @@
 
 #include "fd.h"
 
-float obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
          int ntr_glob, int ns, int itest, int iter, float **Ws, float **Wr, int hin, int *DTINV_help, float eps_scale, MPI_Request * req_send, MPI_Request * req_rec){
 
@@ -19,15 +19,13 @@ float obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH 
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
 
         /* local variables */
-        float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
+	double L2sum, L2_tmp;
         int ntr_loc, nt, ishot, nshots;
         FILE *FP;
 
         /* initialization of L2 calculation */
 	(*seisSHfwi).L2=0.0;
 	(*seisSHfwi).energy=0.0;
-	L2_all_shots=0.0;
-	energy_all_shots=0.0;
 
 	/* no differentiation of elastic and viscoelastic modelling because the viscoelastic parameters did not change during the forward modelling */
 	matcopy_elastic_SH((*matSH).prho,(*matSH).pu);
@@ -167,22 +165,7 @@ float obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH 
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
         L2_tmp = (*seisSHfwi).L2;
-	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/* calculate L2 norm of all CPUs*/
-	energy_all_shots = 0.0;
-        energy_tmp = (*seisSHfwi).energy;
-	MPI_Allreduce(&energy_tmp,&energy_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/* if(MYID==0){
-		printf("L2sum: %e\n", L2sum);
-		printf("energy_sum: %e\n\n", energy_all_shots);
-	}*/
-
-	if(LNORM==2){
-	     L2sum = L2sum/energy_all_shots;
-	}
-	else{L2sum=L2sum;}    
+	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);   
 
         
         return L2sum;

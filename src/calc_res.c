@@ -4,7 +4,7 @@
  *  ----------------------------------------------------------------------*/
 #include "fd.h"
 
-double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, float L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter){
+double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, double L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter){
 
 /* declaration of variables */
 extern float DT, DH, OFFSETC, FC, FC_START, C_vp, C_rho;
@@ -14,7 +14,7 @@ extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, MODE, OFFSET_MUTE;
 float RMS, RMS_obs, signL1, intseis;
 int Lcount,i,j,invtime,k,h,umax=0,h1;
-float l2;
+double l2;
 float abs_data, abs_synthetics, data_mult_synthetics, intseis_data, intseis_synthetics;
 float intseis_section, intseis_sectiondata, offset, xr, yr, xs, ys;
 float *picked_times=NULL, eps;

@@ -9,7 +9,7 @@
 #include "fd.h"
 
 
-float grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matTTI *matTTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
+double grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct matTTI *matTTI, struct fwiPSV *fwiPSV, struct mpiPSV *mpiPSV, 
          struct seisPSV *seisPSV, struct seisPSVfwi *seisPSVfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec){
@@ -25,7 +25,7 @@ float grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 
         /* local variables */
 	int i, j, nshots, ishot, nt, lsnap, itestshot, swstestshot;
-        float L2sum, L2_all_shots, energy_all_shots, energy_tmp, L2_tmp;
+	double L2sum, L2_tmp;
         char source_signal_file[STRING_SIZE];
 
 	FILE *FP;
@@ -35,8 +35,6 @@ float grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	/* initialization of L2 calculation */
 	(*seisPSVfwi).L2=0.0;
 	(*seisPSVfwi).energy=0.0;
-	L2_all_shots=0.0;
-	energy_all_shots=0.0;
 
 	EPSILON=0.0;  /* test step length */
 
@@ -303,23 +301,7 @@ float grad_obj_TTI(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, str
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;
         L2_tmp = (*seisPSVfwi).L2;
-	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/* calculate L2 norm of all CPUs*/
-	energy_all_shots = 0.0;
-        energy_tmp = (*seisPSVfwi).energy;
-	MPI_Allreduce(&energy_tmp,&energy_all_shots,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-
-	/*if(MYID==0){
-		printf("L2sum: %e\n", L2sum);
-		printf("energy_sum: %e\n\n", energy_all_shots);
-
-	}*/
-
-	if(LNORM==2){
-	     L2sum = L2sum/energy_all_shots;
-	}
-	else{L2sum=L2sum;}
+	MPI_Allreduce(&L2_tmp,&L2sum,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
 
 return L2sum;
 

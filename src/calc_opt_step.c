@@ -10,7 +10,7 @@
  *  ---------------------------------------------------------------------*/
 
 #include "fd.h"
-float calc_opt_step(float *  L2t, float * epst, int sws){
+float calc_opt_step(double *  L2t, float * epst, int sws){
 
 extern int NX, NY, IDX, IDY, MYID, MYID_SHOT;
 extern float EPSILON, EPSILON_u, EPSILON_rho;
@@ -80,6 +80,7 @@ opteps = epst[1]/2.0;
 free_matrix(A,1,n,1,n);
 free_vector(x,1,n);
 free_vector(b,1,n);
+
 return opteps;		
 }
 
