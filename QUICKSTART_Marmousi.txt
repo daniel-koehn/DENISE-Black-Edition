@@ -1,5 +1,5 @@
 Quickstart to run the elastic Marmousi-II benchmark example in 14 easy steps
-Details are described in the manual - http://www.geophysik.uni-kiel.de/~dkoehn/software.htm
+Details are described in the manual - https://danielkoehnsite.wordpress.com/software/
 
 Minimum requirements:
 ---------------------
