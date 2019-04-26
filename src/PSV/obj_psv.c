@@ -25,6 +25,8 @@ double obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, struct 
         int ntr_loc, nt, ishot, nshots;
         FILE *FP;
 
+	if ((MYID==0) && (LOG==1)) FP=stdout;
+
         /* initialization of L2 calculation */
 	(*seisPSVfwi).L2=0.0;
 	(*seisPSVfwi).energy=0.0;

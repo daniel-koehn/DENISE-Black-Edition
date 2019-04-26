@@ -15,13 +15,15 @@ double obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC
 
         /* global variables */
 	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, QUELLTYP, ORDER_SPIKE;
-        extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB;
+        extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB, NT;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
 
         /* local variables */
 	double L2sum, L2_tmp;
         int ntr_loc, nt, ishot, nshots;
         FILE *FP;
+
+	if ((MYID==0) && (LOG==1)) FP=stdout;
 
         /* initialization of L2 calculation */
 	(*seisPSVfwi).L2=0.0;
@@ -48,7 +50,7 @@ double obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC
 		   printf("\n=================================================================================================\n\n");
 		}
 		  
-		if((N_STREAMER>0)||(READREC==2)){
+		if(READREC==2){
 
 		   if (SEISMO){
 		      (*acq).recpos=receiver(FP, &ntr, ishot);
@@ -123,7 +125,7 @@ double obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC
 		   calc_res_PSV(seisPSV,seisPSVfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,1);
 		}
 		
-	   if((N_STREAMER>0)||(READREC==2)){
+	   if(READREC==2){
 
 	     if (SEISMO) free_imatrix((*acq).recpos,1,3,1,ntr_glob);
 
@@ -156,31 +158,57 @@ double obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC
 
 		    }
 
-	   }
+	     }
 
-	   free_matrix((*seisPSVfwi).sectionread,1,ntr_glob,1,ns);
-	   free_ivector((*acq).recswitch,1,ntr);
-	   
-	   if((QUELLTYPB==1)||(QUELLTYPB==3)||(QUELLTYPB==5)||(QUELLTYPB==7)){
-	      free_matrix((*seisPSVfwi).sectionvxdata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvxdiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvxdiffold,1,ntr,1,ns);
-	   }
-	   
-	   if((QUELLTYPB==1)||(QUELLTYPB==2)||(QUELLTYPB==6)||(QUELLTYPB==7)){   
-	      free_matrix((*seisPSVfwi).sectionvydata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvydiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvydiffold,1,ntr,1,ns);
-	   }
-	   
-	   if(QUELLTYPB>=4){   
-	      free_matrix((*seisPSVfwi).sectionpdata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionpdiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionpdiffold,1,ntr,1,ns);
-	   }
-	   
-	   ntr=0;
-	   ntr_glob=0;
+	    free_matrix((*seisPSVfwi).sectionread,1,ntr_glob,1,ns);
+	    free_ivector((*acq).recswitch,1,ntr);
+	    
+	    if((QUELLTYPB==1)||(QUELLTYPB==3)||(QUELLTYPB==5)||(QUELLTYPB==7)){
+	       free_matrix((*seisPSVfwi).sectionvxdata,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionvxdiff,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionvxdiffold,1,ntr,1,ns);
+	    }
+
+	    if((QUELLTYPB==1)||(QUELLTYPB==2)||(QUELLTYPB==6)||(QUELLTYPB==7)){    
+	       free_matrix((*seisPSVfwi).sectionvydata,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionvydiff,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionvydiffold,1,ntr,1,ns);
+	    }
+	    
+	    if(QUELLTYPB>=4){    
+	       free_matrix((*seisPSVfwi).sectionpdata,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionpdiff,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionpdiffold,1,ntr,1,ns);
+	    }    
+
+	    if(SEISMO){
+	       free_matrix((*seisPSV).fulldata,1,ntr_glob,1,NT); 
+	    }
+
+	    if(SEISMO==1){
+	       free_matrix((*seisPSV).fulldata_vx,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_vy,1,ntr_glob,1,NT);
+	    }
+
+	    if(SEISMO==2){
+	       free_matrix((*seisPSV).fulldata_p,1,ntr_glob,1,NT);
+	    } 
+	 
+	    if(SEISMO==3){
+	       free_matrix((*seisPSV).fulldata_curl,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_div,1,ntr_glob,1,NT);
+	    }
+
+	    if(SEISMO==4){
+	       free_matrix((*seisPSV).fulldata_vx,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_vy,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_p,1,ntr_glob,1,NT); 
+	       free_matrix((*seisPSV).fulldata_curl,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_div,1,ntr_glob,1,NT);
+	    } 
+
+	     ntr=0;
+	     ntr_glob=0;
 	 
 	}
 

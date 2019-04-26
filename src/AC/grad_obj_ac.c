@@ -61,7 +61,7 @@ double grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct 
 	   init_grad(We);
 	}			
 	  
-	if((N_STREAMER>0)||(READREC==2)){
+	if(READREC==2){
 
 	   if (SEISMO){
 	      (*acq).recpos=receiver(FP, &ntr, ishot);
@@ -230,7 +230,7 @@ double grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct 
 
 	if(RTM_SHOT==1){RTM_AC_out_shot(fwiPSV,ishot);}
 
-	if((N_STREAMER>0)||(READREC==2)){
+	if(READREC==2){
 
 	   if (SEISMO) free_imatrix((*acq).recpos,1,3,1,ntr_glob);
 
@@ -265,29 +265,55 @@ double grad_obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct 
 
 	   }
 
-	   free_matrix((*seisPSVfwi).sectionread,1,ntr_glob,1,ns);
-	   free_ivector((*acq).recswitch,1,ntr);
+	    free_matrix((*seisPSVfwi).sectionread,1,ntr_glob,1,ns);
+	    free_ivector((*acq).recswitch,1,ntr);
+	    
+	    if((QUELLTYPB==1)||(QUELLTYPB==3)||(QUELLTYPB==5)||(QUELLTYPB==7)){
+	       free_matrix((*seisPSVfwi).sectionvxdata,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionvxdiff,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionvxdiffold,1,ntr,1,ns);
+	    }
+
+	    if((QUELLTYPB==1)||(QUELLTYPB==2)||(QUELLTYPB==6)||(QUELLTYPB==7)){    
+	       free_matrix((*seisPSVfwi).sectionvydata,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionvydiff,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionvydiffold,1,ntr,1,ns);
+	    }
+	    
+	    if(QUELLTYPB>=4){    
+	       free_matrix((*seisPSVfwi).sectionpdata,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionpdiff,1,ntr,1,ns);
+	       free_matrix((*seisPSVfwi).sectionpdiffold,1,ntr,1,ns);
+	    }    
+
+	    if(SEISMO){
+	       free_matrix((*seisPSV).fulldata,1,ntr_glob,1,NT); 
+	    }
+
+	    if(SEISMO==1){
+	       free_matrix((*seisPSV).fulldata_vx,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_vy,1,ntr_glob,1,NT);
+	    }
+
+	    if(SEISMO==2){
+	       free_matrix((*seisPSV).fulldata_p,1,ntr_glob,1,NT);
+	    } 
+	 
+	    if(SEISMO==3){
+	       free_matrix((*seisPSV).fulldata_curl,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_div,1,ntr_glob,1,NT);
+	    }
+
+	    if(SEISMO==4){
+	       free_matrix((*seisPSV).fulldata_vx,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_vy,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_p,1,ntr_glob,1,NT); 
+	       free_matrix((*seisPSV).fulldata_curl,1,ntr_glob,1,NT);
+	       free_matrix((*seisPSV).fulldata_div,1,ntr_glob,1,NT);
+	    }
 	   
-	   if((QUELLTYPB==1)||(QUELLTYPB==3)||(QUELLTYPB==5)||(QUELLTYPB==7)){
-	      free_matrix((*seisPSVfwi).sectionvxdata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvxdiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvxdiffold,1,ntr,1,ns);
-	   }
-	   
-	   if((QUELLTYPB==1)||(QUELLTYPB==2)||(QUELLTYPB==6)||(QUELLTYPB==7)){   
-	      free_matrix((*seisPSVfwi).sectionvydata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvydiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionvydiffold,1,ntr,1,ns);
-	   }
-	   
-	   if(QUELLTYPB>=4){   
-	      free_matrix((*seisPSVfwi).sectionpdata,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionpdiff,1,ntr,1,ns);
-	      free_matrix((*seisPSVfwi).sectionpdiffold,1,ntr,1,ns);
-	   }
-	   
-	   ntr=0;
-	   ntr_glob=0;
+	    ntr=0;
+	    ntr_glob=0;
 	 
 	}
 

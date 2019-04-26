@@ -23,6 +23,8 @@ double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH
         int ntr_loc, nt, ishot, nshots;
         FILE *FP;
 
+	if ((MYID==0) && (LOG==1)) FP=stdout;
+
         /* initialization of L2 calculation */
 	(*seisSHfwi).L2=0.0;
 	(*seisSHfwi).energy=0.0;
@@ -30,7 +32,6 @@ double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH
 	/* no differentiation of elastic and viscoelastic modelling because the viscoelastic parameters did not change during the forward modelling */
 	matcopy_elastic_SH((*matSH).prho,(*matSH).pu);
 	
-
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	av_mu_SH((*matSH).pu, (*matSH).puip, (*matSH).pujp, (*matSH).prho);
