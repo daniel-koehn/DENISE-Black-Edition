@@ -15,7 +15,7 @@ double obj_ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC
 
         /* global variables */
 	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, QUELLTYP, ORDER_SPIKE;
-        extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB, NT;
+        extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB, NT, LOG;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
 
         /* local variables */
