@@ -17,7 +17,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
         /* global variables */
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
         extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
-        extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG, L;
+        extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG, L, NT;
         extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, WRITE_STF, NTDTINV;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
         extern float C_vs, C_rho, C_taus, *FL;
@@ -83,7 +83,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	   init_grad(We);
 	}			
 	  
-	if((N_STREAMER>0)||(READREC==2)){
+	if(READREC==2){
 
 	   if (SEISMO){
 	      (*acq).recpos=receiver(FP, &ntr, ishot);
@@ -256,7 +256,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 
 	if(RTM_SHOT==1){RTM_SH_out_shot(fwiSH,ishot);}
 
-	if((N_STREAMER>0)||(READREC==2)){
+	if(READREC==2){
 
 	   if (SEISMO) free_imatrix((*acq).recpos,1,3,1,ntr_glob);
 
@@ -283,7 +283,11 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	      free_matrix((*seisSHfwi).sectionvzdiff,1,ntr,1,ns);
 	      free_matrix((*seisSHfwi).sectionvzdiffold,1,ntr,1,ns);
 	   }	   
-	   
+
+    	   if(SEISMO){
+              free_matrix((*seisSH).fulldata_vz,1,ntr_glob,1,NT); 
+           }	   
+
 	   ntr=0;
 	   ntr_glob=0;
 	 

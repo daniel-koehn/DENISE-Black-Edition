@@ -134,18 +134,10 @@ void FD_PSV()
                 ntr_glob = ntr;
                 ntr = ntr_loc;
 
-                if (N_STREAMER > 0)
-                {
-                        free_imatrix(acq.recpos, 1, 3, 1, ntr_glob);
-                        if (ntr > 0)
-                                free_imatrix(acq.recpos_loc, 1, 3, 1, ntr);
-                        free_ivector(acq.recswitch, 1, ntr_glob);
-                }
         }
 
-        if ((N_STREAMER == 0) && (READREC != 2))
+        if (READREC != 2)
         {
-
                 /* Memory for seismic data */
                 alloc_seisPSV(ntr, ns, &seisPSV);
 
@@ -280,7 +272,7 @@ void FD_PSV()
                 /*for (ishot=1;ishot<=1;ishot+=1){*/
                 /*if(ishot!=10 && ishot!=11 && ishot!=12 && ishot!=13 && ishot!=14 && ishot!=29){*/
 
-                if ((N_STREAMER > 0) || (READREC == 2))
+                if (READREC == 2)
                 {
 
                         if (SEISMO)
@@ -360,7 +352,7 @@ void FD_PSV()
                 /* output of forward model seismograms */
                 outseis_PSVfor(&seisPSV, acq.recswitch, acq.recpos, acq.recpos_loc, ntr_glob, acq.srcpos, ishot, ns, iter, FP);
 
-                if ((N_STREAMER > 0) || (READREC == 2))
+                if (READREC == 2)
                 {
 
                         if (SEISMO)
@@ -396,6 +388,39 @@ void FD_PSV()
                                         break;
                                 }
                         }
+
+			free_ivector(acq.recswitch, 1, ntr);
+
+			if (SEISMO)
+			{
+				free_matrix(seisPSV.fulldata, 1, ntr_glob, 1, NT);
+			}
+
+			if (SEISMO == 1)
+			{
+				free_matrix(seisPSV.fulldata_vx, 1, ntr_glob, 1, NT);
+				free_matrix(seisPSV.fulldata_vy, 1, ntr_glob, 1, NT);
+			}
+
+			if (SEISMO == 2)
+			{
+				free_matrix(seisPSV.fulldata_p, 1, ntr_glob, 1, NT);
+			}
+
+			if (SEISMO == 3)
+			{
+				free_matrix(seisPSV.fulldata_curl, 1, ntr_glob, 1, NT);
+				free_matrix(seisPSV.fulldata_div, 1, ntr_glob, 1, NT);
+			}
+
+			if (SEISMO == 4)
+			{
+				free_matrix(seisPSV.fulldata_vx, 1, ntr_glob, 1, NT);
+				free_matrix(seisPSV.fulldata_vy, 1, ntr_glob, 1, NT);
+				free_matrix(seisPSV.fulldata_p, 1, ntr_glob, 1, NT);
+				free_matrix(seisPSV.fulldata_curl, 1, ntr_glob, 1, NT);
+				free_matrix(seisPSV.fulldata_div, 1, ntr_glob, 1, NT);
+			}
 
                         ntr = 0;
                         ntr_glob = 0;
@@ -441,7 +466,7 @@ void FD_PSV()
         /* free memory for source position definition */
         free_matrix(acq.srcpos1, 1, 8, 1, 1);
 
-        if ((N_STREAMER == 0) || (READREC != 2))
+        if (READREC != 2)
         {
 
                 if (SEISMO)

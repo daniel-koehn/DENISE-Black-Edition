@@ -15,7 +15,7 @@ double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH
 
         /* global variables */
 	extern int RUN_MULTIPLE_SHOTS, TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, N_STREAMER, SEISMO, QUELLART, QUELLTYP, ORDER_SPIKE;
-        extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB, LOG;
+        extern int TIME_FILT, INV_STF, ORDER, L, MYID, LNORM, READREC, QUELLTYPB, LOG, NT;
         extern float FC_SPIKE_2,FC_SPIKE_1, FC, FC_START;
 
         /* local variables */
@@ -52,7 +52,7 @@ double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH
 		   printf("\n=================================================================================================\n\n");
 		}
 		  
-		if((N_STREAMER>0)||(READREC==2)){
+		if(READREC==2){
 
 		   if (SEISMO){
 		      (*acq).recpos=receiver(FP, &ntr, ishot);
@@ -127,7 +127,7 @@ double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH
 		    calc_res_SH(seisSH,seisSHfwi,(*acq).recswitch,(*acq).recpos,(*acq).recpos_loc,ntr_glob,ntr,nsrc_glob,(*acq).srcpos,ishot,ns,iter,1);
 		}				
 		
-	   if((N_STREAMER>0)||(READREC==2)){
+	   if(READREC==2){
 
 	     if (SEISMO) free_imatrix((*acq).recpos,1,3,1,ntr_glob);
 
@@ -153,6 +153,10 @@ double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH
 	      free_matrix((*seisSHfwi).sectionvzdiff,1,ntr,1,ns);
 	      free_matrix((*seisSHfwi).sectionvzdiffold,1,ntr,1,ns);
 	   }
+
+    	   if(SEISMO){
+              free_matrix((*seisSH).fulldata_vz,1,ntr_glob,1,NT); 
+           }
 	   
 	   ntr=0;
 	   ntr_glob=0;

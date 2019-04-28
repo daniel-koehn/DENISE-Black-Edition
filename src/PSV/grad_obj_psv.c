@@ -15,7 +15,7 @@ double grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, st
 {
 
 	/* global variables */
-	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
+	extern int MYID, MYID_SHOT, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
 	extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
 	extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG;
 	extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, WRITE_STF;
@@ -33,8 +33,7 @@ double grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, st
 
 	FILE *FP;
 
-	if ((MYID == 0) && (LOG == 1))
-		FP = stdout;
+	if ((MYID_SHOT == 0) && (LOG == 1)) FP = stdout;
 
 	/* initialization of L2 calculation */
 	(*seisPSVfwi).L2 = 0.0;
@@ -76,7 +75,7 @@ double grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, st
 			init_grad(We);
 		}
 
-		if ((N_STREAMER > 0) || (READREC == 2))
+		if (READREC == 2)
 		{
 
 			if (SEISMO)
@@ -266,7 +265,7 @@ double grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, st
 			RTM_PSV_out_shot(fwiPSV, ishot);
 		}
 
-		if ((N_STREAMER > 0) || (READREC == 2))
+		if (READREC == 2)
 		{
 
 			if (SEISMO)
@@ -326,6 +325,37 @@ double grad_obj_psv(struct wavePSV *wavePSV, struct wavePSV_PML *wavePSV_PML, st
 				free_matrix((*seisPSVfwi).sectionpdiff, 1, ntr, 1, ns);
 				free_matrix((*seisPSVfwi).sectionpdiffold, 1, ntr, 1, ns);
 			}
+
+		        if (SEISMO)
+		        {
+		        	free_matrix((*seisPSV).fulldata, 1, ntr_glob, 1, NT);
+		    	}
+
+		        if (SEISMO == 1)
+		        {
+		      		free_matrix((*seisPSV).fulldata_vx, 1, ntr_glob, 1, NT);
+		      		free_matrix((*seisPSV).fulldata_vy, 1, ntr_glob, 1, NT);
+		    	}
+
+		        if (SEISMO == 2)
+		        {
+		      		free_matrix((*seisPSV).fulldata_p, 1, ntr_glob, 1, NT);
+		    	}
+
+		    	if (SEISMO == 3)
+		    	{
+		      		free_matrix((*seisPSV).fulldata_curl, 1, ntr_glob, 1, NT);
+		      		free_matrix((*seisPSV).fulldata_div, 1, ntr_glob, 1, NT);
+		    	}
+
+		    	if (SEISMO == 4)
+		    	{
+		      		free_matrix((*seisPSV).fulldata_vx, 1, ntr_glob, 1, NT);
+		      		free_matrix((*seisPSV).fulldata_vy, 1, ntr_glob, 1, NT);
+		      		free_matrix((*seisPSV).fulldata_p, 1, ntr_glob, 1, NT);
+		      		free_matrix((*seisPSV).fulldata_curl, 1, ntr_glob, 1, NT);
+		      		free_matrix((*seisPSV).fulldata_div, 1, ntr_glob, 1, NT);
+		    	}
 
 			ntr = 0;
 			ntr_glob = 0;

@@ -182,7 +182,7 @@ ns=NT;	/* in a FWI one has to keep all samples of the forward modeled data
 	the backpropagation; look at function saveseis_glob.c to see that every
 	NDT sample for the forward modeled wavefield is written to su files*/
 
-if (SEISMO&&(READREC!=2)){
+if (SEISMO && (READREC!=2)){
 
    acq.recpos=receiver(FP, &ntr, ishot);
    acq.recswitch = ivector(1,ntr);
@@ -190,15 +190,9 @@ if (SEISMO&&(READREC!=2)){
    ntr_glob=ntr;
    ntr=ntr_loc;
    
-   if(N_STREAMER>0){
-     free_imatrix(acq.recpos,1,3,1,ntr_glob);
-     if(ntr>0) free_imatrix(acq.recpos_loc,1,3,1,ntr);
-     free_ivector(acq.recswitch,1,ntr_glob);
-   }
-   
 }
 
-if((N_STREAMER==0)&&(READREC!=2)){
+if(READREC!=2){
 
    /* Memory for seismic data */
    alloc_seisSH(ntr,ns,&seisSH);
@@ -1016,7 +1010,7 @@ if (nsrc_loc>0){
  free_dvector(L2t,1,4);
  free_vector(epst1,1,3);
 
- if((N_STREAMER==0)||(READREC!=2)){
+ if(READREC!=2){
 
     if (SEISMO) free_imatrix(acq.recpos,1,3,1,ntr_glob);
 

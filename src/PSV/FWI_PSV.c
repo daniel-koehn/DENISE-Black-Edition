@@ -200,18 +200,10 @@ void FWI_PSV()
     ntr_glob = ntr;
     ntr = ntr_loc;
 
-    if (N_STREAMER > 0)
-    {
-      free_imatrix(acq.recpos, 1, 3, 1, ntr_glob);
-      if (ntr > 0)
-        free_imatrix(acq.recpos_loc, 1, 3, 1, ntr);
-      free_ivector(acq.recswitch, 1, ntr_glob);
-    }
   }
 
-  if ((N_STREAMER == 0) && (READREC != 2))
+  if (READREC != 2)
   {
-
     /* Memory for seismic data */
     alloc_seisPSV(ntr, ns, &seisPSV);
 
@@ -890,7 +882,7 @@ frequency MIN_ITER */
   free_dvector(L2t, 1, 4);
   free_vector(epst1, 1, 3);
 
-  if ((N_STREAMER == 0) || (READREC != 2))
+  if (READREC != 2)
   {
 
     if (SEISMO)
@@ -981,6 +973,7 @@ frequency MIN_ITER */
       free_matrix(seisPSV.fulldata_curl, 1, ntr_glob, 1, NT);
       free_matrix(seisPSV.fulldata_div, 1, ntr_glob, 1, NT);
     }
+
   }
 
   free_ivector(DTINV_help, 1, NT);
