@@ -18,5 +18,4 @@ cd $WORK/DENISE-Black-Edition/par
 mpirun $NQSII_MPIOPTS -np 15 ../bin/denise DENISE_marm_OBC.inp FWI_workflow_marmousi.inp > DENISE.out
 
 # Ausgabe der verbrauchten Ressourcen (Rechenzeit, Hauptspeicher) nach Jobende
-/usr/bin/nqsII/qstat -f ${PBS_JOBID/0:}
-
+/opt/nec/nqsv/bin/qstat -f ${PBS_JOBID/0:/}
