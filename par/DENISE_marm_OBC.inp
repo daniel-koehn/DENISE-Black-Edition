@@ -101,12 +101,12 @@ REC_FILE = ./receiver/receiver_OBC
 reference_point_for_receiver_coordinate_system_(REFREC) = 0.0 , 0.0
 #
 #
-#-------------------- Towed streamer -------------------------------
-# parameters for towed streamer acquisition
+#----------------- Towed streamer ------!!!!!DEPRECATED use READREC=2 instead---
+#!!!!!DEPRECATED use READREC=2 instead--- parameters for towed streamer acquisition
 The_first_(N_STREAMER)_receivers_in_REC_FILE_belong_to_streamer = 0
 Cable_increment_per_shot_(REC_INCR_X) = 80
 Cable_increment_per_shot_(REC_INCR_Y) = 0
-#
+#------!!!!!DEPRECATED use READREC=2 instead---
 #
 #--------------------  Seismograms  --------------------------------
 samplingrate_(in_timesteps!)_(NDT) = 1
