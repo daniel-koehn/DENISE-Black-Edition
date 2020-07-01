@@ -165,7 +165,7 @@ void ac(struct waveAC *waveAC, struct waveAC_PML *waveAC_PML, struct matAC *matA
 	   
 	   /* adjoint explosive source */
            if((QUELLTYPB>=4)&&(mode==1)){ 	
-	       psource_AC(nt,(*waveAC).p,(*acq).srcpos_loc_back,(*seisPSVfwi).sectionpdiff,nsrc_loc,1);
+	       psource_AC(nt,(*waveAC).p,(*acq).srcpos_loc_back,(*seisPSVfwi).sectionpdiff,ntr,1);
            }
  	 
 	   if ((FREE_SURF) && (POS[2]==0)){
