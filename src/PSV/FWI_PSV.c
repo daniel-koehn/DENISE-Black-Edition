@@ -687,16 +687,19 @@ frequency MIN_ITER */
         printf("MYID = %d \t epst1[1] = %e \t epst1[2] = %e \t epst1[3] = %e \n", MYID, epst1[1], epst1[2], epst1[3]);
 
         /*output of log file for combined inversion*/
-        if (iter_true == 1)
+        if (iter_true == 1 && GRAVITY)
         {
           LAMBDA = fopen("gravity/lambda.dat", "w");
         }
-        if (iter_true > 1)
+        if (iter_true > 1 && GRAVITY)
         {
           LAMBDA = fopen("gravity/lambda.dat", "a");
         }
-        fprintf(LAMBDA, "%d \t %d \t %e \t %e \t %e \t %e \t %e \t %e \t %e \n", nstage, iter, LAM_GRAV, L2sum, L2_grav, L2t[4], LAM_GRAV_GRAD, FWImax_all, GRAVmax_all);
-        fclose(LAMBDA);
+
+	if(GRAVITY){
+          fprintf(LAMBDA, "%d \t %d \t %e \t %e \t %e \t %e \t %e \t %e \t %e \n", nstage, iter, LAM_GRAV, L2sum, L2_grav, L2t[4], LAM_GRAV_GRAD, FWImax_all, GRAVmax_all);
+          fclose(LAMBDA);
+	}
       }
 
       if (MYID == 0)
