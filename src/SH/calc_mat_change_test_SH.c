@@ -41,8 +41,9 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){
 		
-		Zs = (u[j][i]-C_vs_min) / C_vs;     /* normalize Vs */
-		
+		//Zs = (u[j][i]-C_vs_min) / C_vs;     /* normalize Vs */
+		Zs = u[j][i];		
+
 		if(Zs>umax){umax=Zs;}
 		
 		if((i*j == 1) || (gradmax_u == 0.0)) {
@@ -64,8 +65,9 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 	for (i=1;i<=NX;i++){
 		for (j=1;j<=NY;j++){
 		
-		if((rho[j][i]-C_rho_min)/C_rho>rhomax){rhomax = (rho[j][i]-C_rho_min)/C_rho;}
-		
+		//if((rho[j][i]-C_rho_min)/C_rho>rhomax){rhomax = (rho[j][i]-C_rho_min)/C_rho;}
+		if(rho[j][i]>rhomax){rhomax = rho[j][i];}		
+
 		if((i*j == 1) || (gradmax_rho == 0.0)) {
 		        gradmax_rho = fabs(waveconv_rho[j][i]);
 		} else {
@@ -78,7 +80,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 		}}
 
 	/* find maximum of taus and gradient waveconv_ts */
-	tausmax = 0.0;
+	/*tausmax = 0.0;
 	gradmax_ts = 0.0;
 	
 	for (i=1;i<=NX;i++){
@@ -95,7 +97,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 					}
 				}
 		                               
-		}}
+		}}*/
 
 		
 	/* calculate scaling factor for the gradients */
@@ -127,7 +129,7 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 
 	/* parameter 3 */
 
-	   MPI_Allreduce(&tausmax,&tausmaxr,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+	   /*MPI_Allreduce(&tausmax,&tausmaxr,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
            MPI_Allreduce(&gradmax_ts,&gradmaxr_ts,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
 	
     	   EPSILON_ts = eps_scale * (tausmaxr/gradmaxr_ts);
@@ -135,13 +137,14 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
            epsilon1=EPSILON_ts;
 	   MPI_Allreduce(&EPSILON_ts,&epsilon1,1,MPI_FLOAT,MPI_MIN,MPI_COMM_WORLD);
 	
-	   EPSILON_ts=epsilon1;	
+	   EPSILON_ts=epsilon1;	*/
 
 	   
         if(MYID==0){
 	  printf("MYID = %d \t umaxr = %e \t gradmaxr_u = %e \n",MYID,umaxr,gradmaxr_u);
 	  printf("MYID = %d \t rhomaxr = %e \t gradmaxr_rho = %e \n",MYID,rhomaxr,gradmaxr_rho);
-	  printf("MYID = %d \t tsmaxr = %e \t gradmaxr_ts = %e \n",MYID,tausmaxr,gradmaxr_ts);}
+	  //printf("MYID = %d \t tsmaxr = %e \t gradmaxr_ts = %e \n",MYID,tausmaxr,gradmaxr_ts);
+	}
       
       /* save true step length */
       eps_true = EPSILON_u;
@@ -155,18 +158,21 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 		      
 		      testuplow=0;
 		                         
-		        unp1[j][i] = ((u[j][i]-C_vs_min) / C_vs) - EPSILON_u * waveconv_u[j][i];   	
+		        /*unp1[j][i] = ((u[j][i]-C_vs_min) / C_vs) - EPSILON_u * waveconv_u[j][i];   	
 		      rhonp1[j][i] = ((rho[j][i]-C_rho_min) / C_rho) - EPSILON_rho * waveconv_rho[j][i];
-		       tsnp1[j][i] = ((ts[j][i]-C_taus_min) / C_taus) - EPSILON_ts * waveconv_ts[j][i];
+		       tsnp1[j][i] = ((ts[j][i]-C_taus_min) / C_taus) - EPSILON_ts * waveconv_ts[j][i];*/
 		      
+		        unp1[j][i] = u[j][i] - EPSILON_u * waveconv_u[j][i];   	
+		      rhonp1[j][i] = rho[j][i] - EPSILON_rho * waveconv_rho[j][i];
+
 			
 		      /* apply bound constraints */      
                       if(INVMAT1==1){
 		      
 		        /* Denormalize updated material parameters */
-		        unp1[j][i] = C_vs_min + unp1[j][i] * C_vs;
+		        /*unp1[j][i] = C_vs_min + unp1[j][i] * C_vs;
 		        rhonp1[j][i] = C_rho_min + rhonp1[j][i] * C_rho;			  
-		        tsnp1[j][i] = C_taus_min + tsnp1[j][i] * C_taus;	
+		        tsnp1[j][i] = C_taus_min + tsnp1[j][i] * C_taus;*/	
 		      		  		      		      
 			/* S-wave velocities */
 		        if((unp1[j][i]<VSLOWERLIM)&&(unp1[j][i]>1e-6)){
@@ -187,13 +193,13 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 			}
 
 			/* taus */
-			if(tsnp1[j][i]>2.0/QSLOWERLIM){
+			/*if(tsnp1[j][i]>2.0/QSLOWERLIM){
 		        	tsnp1[j][i] = ts[j][i];
 			}
 			
 			if(tsnp1[j][i]<2.0/QSUPPERLIM){
 		        	tsnp1[j][i] = ts[j][i];
-			}
+			}*/
 
 		      }
 		      
@@ -206,14 +212,14 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 		        rhonp1[j][i] = rho[j][i];
 		      }
 
-		      if(tsnp1[j][i]<0.0){
+		      /*if(tsnp1[j][i]<0.0){
 		        tsnp1[j][i] = ts[j][i];
-		      }		      		  
+		      }	*/	      		  
 					  
 		      if(itest==0){
 			  rho[j][i] = rhonp1[j][i];
                             u[j][i] = unp1[j][i];
-                            ts[j][i] = tsnp1[j][i];
+                            /*ts[j][i] = tsnp1[j][i];*/
 			   
 		      } 
 		      
@@ -239,12 +245,12 @@ float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, fl
 
            if (MYID==0) mergemod(modfile,3);
 
-	   sprintf(modfile,"%s_ts.bin",INV_MODELFILE);
+	   /*sprintf(modfile,"%s_ts.bin",INV_MODELFILE);
 	   writemod(modfile,ts,3);
 	
 	   MPI_Barrier(MPI_COMM_WORLD);
 
-           if (MYID==0) mergemod(modfile,3);
+           if (MYID==0) mergemod(modfile,3);*/
 
         }
 

@@ -885,6 +885,7 @@ diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
 		if(INV_MOD_OUT==0){
         	    model_freq_out_SH(matSH.prho,matSH.pu,matSH.ptaus,nstage,FC);
 		}
+
 		s=1;
 		min_iter_help=0;
 		min_iter_help=iter+MIN_ITER;

@@ -321,7 +321,8 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 
 				    if(muss>0.0){			
 				         (*fwiSH).waveconv_u_shot[j][i] += - (*fwiSH).c1mu[j][i] * P3 + (*fwiSH).c4mu[j][i] * P5;
-			  		(*fwiSH).waveconv_ts_shot[j][i] += - (*fwiSH).c1ts[j][i] * P3 + (*fwiSH).c4ts[j][i] * P5;
+			  		//(*fwiSH).waveconv_ts_shot[j][i] += - (*fwiSH).c1ts[j][i] * P3 + (*fwiSH).c4ts[j][i] * P5;
+					(*fwiSH).waveconv_ts_shot[j][i] = 0.0;
 				    } 		                  
 		                }			
 						                                                                                                     
