@@ -1,0 +1,31 @@
+The DENISE Black-Edition code was first developed by Daniel Köhn, Denise De Nil and Andre Kurzmann 
+at Christian-Albrechts-Universität Kiel and TU Bergakademie Freiberg (Germany) from 2005 to 2009.
+
+The isotropic elastic forward code is partly based on the viscoelastic FD code fdveps (now SOFI2D) by 
+Thoams Bohlen [2002]. Different external libraries for timedomain filtering are used.
+
+The copyright of the source codes are held by different persons:
+
+cseife.c, cseife.h, lib_stfinv, lib_aff, lib_fourier:
+
+Copyright (c) 2005 by Thomas Forbriger (BFO Schiltach)
+
+cseife_deriv.c, cseife_gauss.c, cseife_rekfl.c, cseife_rfk.c and cseife_tides.c:
+Copyright (c) 1984 by Erhard Wielandt
+This algorithm was part of seife.f. A current version of seife.f can be obtained from 
+http://www.software-for-seismometry.de/
+
+Since then DENISE Black-Edition has been further developed, maintained and improved by contributions from: in alphabetical order
+
+Eva Dokter,
+Lisa Groos,
+Sven Heider,
+Vladimir Kazei,
+Youshan Liu,
+Oleg Ovcharenko,
+Martin Schäfer,
+Daniel Wehner,
+Albert Zhang,
+Linbin Zhang 
+...
+(add other developers here in the future).
