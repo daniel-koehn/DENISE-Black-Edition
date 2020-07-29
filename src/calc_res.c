@@ -4,22 +4,25 @@
  *  ----------------------------------------------------------------------*/
 #include "fd.h"
 
-double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, double L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter){
+double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, float L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter){
 
 /* declaration of variables */
-extern float DT, DH, OFFSETC, FC, FC_START, C_vp, C_rho;
-extern int REC1, REC2, MYID, MYID_SHOT, ORDER, COMP_WEIGHT;
+extern float DT, DH, OFFSETC, FC, FC_START, FC_END, C_vp, C_rho;
+extern int REC1, REC2, MYID, ORDER, COMP_WEIGHT;
 extern int TRKILL, GRAD_FORM, ENV, N_ORDER;
 extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, MODE, OFFSET_MUTE;
-float RMS, RMS_obs, signL1, intseis;
+
 int Lcount,i,j,invtime,k,h,umax=0,h1;
-double l2;
+int NAGC;
+
+float RMS, RMS_obs, signL1, intseis, l2;
 float abs_data, abs_synthetics, data_mult_synthetics, intseis_data, intseis_synthetics;
 float intseis_section, intseis_sectiondata, offset, xr, yr, xs, ys;
 float *picked_times=NULL, eps;
 float **integrated_section=NULL, **integrated_sectiondata=NULL;
 float **integrated_sectiondata_envelope=NULL, **integrated_section_envelope=NULL, **integrated_section_hilbert=NULL;
+float ** agc_sectiondata = NULL;
 float **dummy_1=NULL, **dummy_2=NULL; 
 float EPS_LNORM, EPS_LNORM6, tmp, tmp1;
 
@@ -38,6 +41,16 @@ if(TIMEWIN) picked_times = vector(1,ntr);
 umax=ntr*ns;
 zero(&sectiondiff[1][1],umax);
 
+/* AGC weighted L2-Norm */
+if((LNORM==8)&&(GRAD_FORM==2)){
+
+    /* Allocate memory for AGC applied to field data */
+    agc_sectiondata = matrix(1,ntr,1,ns);
+    
+    /* Compute AGC window length based on central frequency of current filter bandwidth */
+    NAGC = iround((FC_START + FC_END) / (2*DT));
+    
+}
 
 /* declaration of variables for trace killing */
 int ** kill_tmp, *kill_vector;
@@ -366,6 +379,21 @@ for(i=1;i<=ntr;i++){
 	}
 	
      }
+     
+    /* AGC weighted L2-Norm */
+    if((LNORM==8)&&(GRAD_FORM==2)){
+
+        /* apply AGC to field data */
+        for(j=1;j<=ns;j++){            /* loop over time samples */
+	    for(h=j-NAGC;h<=j+NAGC;h++){     /* loop over AGC window */ 
+	        if(h > 0 && h <= ns){
+		    agc_sectiondata[i][j] += sectiondata[i][h] * sectiondata[i][h];	
+	        }
+	    }
+	    agc_sectiondata[i][j] = sqrt(agc_sectiondata[i][j]);   
+        }
+
+    } /* end of if LNORM==8 */
 
      /* integrate synthetic and field data N_ORDER times */
      if(N_ORDER){
@@ -463,7 +491,13 @@ for(i=1;i<=ntr;i++){
                             sectiondiff[i][invtime]=dummy_2[i][j] - ((integrated_section[i][j]/(integrated_section_envelope[i][j]*integrated_section_envelope[i][j]+EPS_LNORM6))*(log(integrated_sectiondata_envelope[i][j]+EPS_LNORM6)-log(integrated_section_envelope[i][j]+EPS_LNORM6)));
                           }
 
-                        } 
+                        }
+			
+		        /* AGC weighted L2-Norm */
+    			if((LNORM==8)&&(GRAD_FORM==2)){ 
+			    intseis = (section[i][j]-sectiondata[i][j]) / agc_sectiondata[i][j];
+			    sectiondiff[i][invtime]=intseis;
+			}
 
 						
 			invtime--;                                      /* reverse time direction */
@@ -540,6 +574,10 @@ for(i=1;i<=ntr;i++){
 	 if((LNORM==7)&&(swstestshot==1)){
 	   L2 += 0.5 * dQ[i][invtime] * dQ[i][invtime]; 
 	 }
+	 
+	 if((LNORM==8)&&(swstestshot==1)){
+	   L2 += 0.5 * (section[i][j]-sectiondata[i][j]) * (section[i][j]-sectiondata[i][j]) / agc_sectiondata[i][j]; 
+	 }
 
          invtime--;    /*reverse time direction */
 
@@ -580,6 +618,10 @@ if(LNORM==6){
   free_matrix(integrated_section_hilbert,1,ntr,1,ns); 
   free_matrix(dummy_1,1,ntr,1,ns); 
   free_matrix(dummy_2,1,ntr,1,ns); 
+} 
+
+if((LNORM==8)&&(GRAD_FORM==2)){
+  free_matrix(agc_sectiondata,1,ntr,1,ns);
 } 
  
 return l2;
