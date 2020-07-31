@@ -120,15 +120,17 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            if(GRAD_FORM==2){
 
-                              if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*p_x/DH;    
-                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
-
                               if(sw==1){
-                                 vxp1[j][i] = vx[j][i]; 
-                                 vyp1[j][i] = vy[j][i];} 
+				 vxp1[j][i] = vx[j][i];
+			         vyp1[j][i] = vy[j][i];			      
+ 			      }
+                           
+                              if(sw==0){
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;			      			         
 
-                           }
+                              }
+			   }
                            
                            vx[j][i] += DT*rip[j][i]*p_x/DH;
 		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 		         
@@ -209,15 +211,17 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            if(GRAD_FORM==2){
 
-                              if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*p_x/DH;    
-                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
-
                               if(sw==1){
-                                 vxp1[j][i] = vx[j][i]; 
-                                 vyp1[j][i] = vy[j][i];} 
+				 vxp1[j][i] = vx[j][i];
+			         vyp1[j][i] = vy[j][i];			      
+ 			      }
+                           
+                              if(sw==0){
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;			      			         
 
-                           }
+                              }
+			   }
                            
                            vx[j][i] += DT*rip[j][i]*p_x/DH;
 		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 		         
@@ -300,15 +304,17 @@ void update_v_PML_AC(int nx1, int nx2, int ny1, int ny2, int nt,
 
                            if(GRAD_FORM==2){
 
-                              if(sw==0){
-                                 vxp1[j][i] = rip[j][i]*p_x/DH;    
-                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}   
-
                               if(sw==1){
-                                 vxp1[j][i] = vx[j][i]; 
-                                 vyp1[j][i] = vy[j][i];} 
+				 vxp1[j][i] = vx[j][i];
+			         vyp1[j][i] = vy[j][i];			      
+ 			      }
+                           
+                              if(sw==0){
+                                 vxp1[j][i] = rip[j][i]*p_x/DH;
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;			      			         
 
-                           }
+                              }
+			   }
                            
                            vx[j][i] += DT*rip[j][i]*p_x/DH;
 		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 		         
@@ -395,15 +401,17 @@ for (j=ny1;j<=ny2;j++){
                            
                            if(GRAD_FORM==2){
 
+                              if(sw==1){
+				 vxp1[j][i] = vx[j][i];
+			         vyp1[j][i] = vy[j][i];			      
+ 			      }
+                           
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*p_x/DH;
-                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}
-                           
-                              if(sw==1){
-			         vxp1[j][i] = vx[j][i];
-			         vyp1[j][i] = vy[j][i];}
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;			      			         
 
-                           }
+                              }
+			   }   
 
                            vx[j][i] += DT*rip[j][i]*p_x/DH;
 		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 		         
@@ -493,15 +501,17 @@ for (j=ny1;j<=ny2;j++){
                            
                            if(GRAD_FORM==2){
 
+                              if(sw==1){
+				 vxp1[j][i] = vx[j][i];
+			         vyp1[j][i] = vy[j][i];			      
+ 			      }
+                           
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*p_x/DH;
-                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}
-                           
-                              if(sw==1){
-			         vxp1[j][i] = vx[j][i];
-			         vyp1[j][i] = vy[j][i];}
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;			      			         
 
-                           }
+                              }
+			   }
 
                            vx[j][i] += DT*rip[j][i]*p_x/DH;
 		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 
@@ -588,15 +598,17 @@ for (j=ny1;j<=ny2;j++){
                            
                            if(GRAD_FORM==2){
 
+                              if(sw==1){
+				 vxp1[j][i] = vx[j][i];
+			         vyp1[j][i] = vy[j][i];			      
+ 			      }
+                           
                               if(sw==0){
                                  vxp1[j][i] = rip[j][i]*p_x/DH;
-                                 vyp1[j][i] = rjp[j][i]*p_y/DH;}
-                           
-                              if(sw==1){
-			         vxp1[j][i] = vx[j][i];
-			         vyp1[j][i] = vy[j][i];}
+                                 vyp1[j][i] = rjp[j][i]*p_y/DH;			      			         
 
-                           }
+                              }
+			   }
 
                            vx[j][i] += DT*rip[j][i]*p_x/DH;
 		           vy[j][i] += DT*rjp[j][i]*p_y/DH; 

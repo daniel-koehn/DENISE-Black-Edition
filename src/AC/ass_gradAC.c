@@ -43,6 +43,17 @@ void ass_gradAC(struct fwiPSV *fwiPSV, struct matAC *matAC, int iter){
 		    		}
 	    
           		}
+			
+			if(GRAD_FORM==2){
+	 
+        	    		lamss = (*matAC).ppi[j][i];
+	    
+		    		if(lamss>0.0){
+        	       		  (*fwiPSV).waveconv_lam[j][i] = - (1.0/(lamss * lamss)) * (*fwiPSV).waveconv_lam[j][i];
+		    		}
+	    
+          		}
+			
 
           		(*fwiPSV).waveconv_shot[j][i] = (*fwiPSV).waveconv_lam[j][i];
 		}
@@ -67,7 +78,7 @@ void ass_gradAC(struct fwiPSV *fwiPSV, struct matAC *matAC, int iter){
 	      			lamss = (*matAC).prho[j][i] * (*matAC).ppi[j][i] * (*matAC).ppi[j][i];
 	      
 	      			if(lamss>0.0){
-		  			(*fwiPSV).waveconv_lam[j][i] = (1.0/(4.0 * lamss * lamss)) * (*fwiPSV).waveconv_lam[j][i];
+		  			(*fwiPSV).waveconv_lam[j][i] = -(1.0/(lamss * lamss)) * (*fwiPSV).waveconv_lam[j][i];
 	      			}
 	      
 	      			(*fwiPSV).waveconv_shot[j][i] = 2.0 * (*matAC).ppi[j][i] * (*matAC).prho[j][i] * (*fwiPSV).waveconv_lam[j][i]; 
