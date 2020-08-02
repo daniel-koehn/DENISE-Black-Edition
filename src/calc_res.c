@@ -48,7 +48,7 @@ if((LNORM==8)&&(GRAD_FORM==2)){
     agc_sectiondata = matrix(1,ntr,1,ns);
     
     /* Compute AGC window length based on central frequency of current filter bandwidth */
-    NAGC = iround((FC_START + FC_END) / (2*DT));
+    NAGC = iround(2.0 / ((FC_START + FC_END)*DT));
     
 }
 
@@ -494,8 +494,11 @@ for(i=1;i<=ntr;i++){
                         }
 			
 		        /* AGC weighted L2-Norm */
-    			if((LNORM==8)&&(GRAD_FORM==2)){ 
-			    intseis = (section[i][j]-sectiondata[i][j]) / agc_sectiondata[i][j];
+    			if((LNORM==8)&&(GRAD_FORM==2)){
+			    intseis = 0.0;
+			    if(fabs(agc_sectiondata[i][j])>EPS_LNORM){
+			       intseis = (section[i][j]-sectiondata[i][j]) / agc_sectiondata[i][j];
+			    }
 			    sectiondiff[i][invtime]=intseis;
 			}
 
@@ -576,7 +579,9 @@ for(i=1;i<=ntr;i++){
 	 }
 	 
 	 if((LNORM==8)&&(swstestshot==1)){
-	   L2 += 0.5 * (section[i][j]-sectiondata[i][j]) * (section[i][j]-sectiondata[i][j]) / agc_sectiondata[i][j]; 
+	    if(fabs(agc_sectiondata[i][j])>EPS_LNORM){
+	        L2 += 0.5 * (section[i][j]-sectiondata[i][j]) * (section[i][j]-sectiondata[i][j]) / agc_sectiondata[i][j]; 
+	    }			
 	 }
 
          invtime--;    /*reverse time direction */
