@@ -4,11 +4,11 @@
  *  ----------------------------------------------------------------------*/
 #include "fd.h"
 
-double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, float L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter){
+double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, double L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter){
 
 /* declaration of variables */
 extern float DT, DH, OFFSETC, FC, FC_START, FC_END, C_vp, C_rho;
-extern int REC1, REC2, MYID, ORDER, COMP_WEIGHT;
+extern int REC1, REC2, MYID, MYID_SHOT, ORDER, COMP_WEIGHT;
 extern int TRKILL, GRAD_FORM, ENV, N_ORDER;
 extern char TRKILL_FILE[STRING_SIZE];
 extern int NORMALIZE, TIMEWIN, MODE, OFFSET_MUTE;
@@ -16,7 +16,9 @@ extern int NORMALIZE, TIMEWIN, MODE, OFFSET_MUTE;
 int Lcount,i,j,invtime,k,h,umax=0,h1;
 int NAGC;
 
-float RMS, RMS_obs, signL1, intseis, l2;
+double l2;
+
+float RMS, RMS_obs, signL1, intseis;
 float abs_data, abs_synthetics, data_mult_synthetics, intseis_data, intseis_synthetics;
 float intseis_section, intseis_sectiondata, offset, xr, yr, xs, ys;
 float *picked_times=NULL, eps;
