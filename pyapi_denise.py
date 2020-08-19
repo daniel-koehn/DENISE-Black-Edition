@@ -4,6 +4,9 @@ and inversion.
 by Oleg Ovcharenko, Vladimir Kazei and Daniel Koehn
 KAUST, 23955, Thuwal, Saudi Arabia, 2020
 
+Based on PythonIO by Daniel Koehn
+https://github.com/daniel-koehn/DENISE-Black-Edition/tree/master/par/pythonIO
+
 oleg.ovcharenko@kaust.edu.sa
 vladimir.kazei@kaust.edu.sa
 daniel.koehn@ifg.uni-kiel.de
