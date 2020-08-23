@@ -14,7 +14,7 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	extern  char REC_FILE[STRING_SIZE];
 	extern float DH, REFREC[4], FW;
 	extern int READREC, NX;
-	extern int MYID_SHOT, N_STREAMER;
+	extern int MYID_SHOT;
 	extern float REC_INCR_X, REC_INCR_Y;
 
 	int **recpos1, **recpos, nxrec=0, nyrec=0, nzrec=0;
@@ -25,8 +25,8 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	
 	FILE *fpr;
 
-	if (MYID_SHOT==0)
-	{
+	/*if (MYID_SHOT==0)
+	{*/
 
      	     if (READREC){ /* read receiver positions from file */
 
@@ -47,21 +47,12 @@ int **receiver(FILE *fp, int *ntr, int ishot){
      			if (c=='\n') ++(*ntr);
      		rewind(fpr);
      
-     		recpos1=imatrix(1,3,1,*ntr);
-		
-		aa = (float)(ishot-1)*REC_INCR_X;
-                bb = (float)(ishot-1)*REC_INCR_Y;
+     		recpos1=imatrix(1,3,1,*ntr);		
 		
      		for (itr=1;itr<=*ntr;itr++){
      			fscanf(fpr,"%f%f\n",&xrec, &yrec);
-     			
-			if(itr<=N_STREAMER){
-			  recpos1[1][itr]=iround((xrec+REFREC[1]+aa)/DH);
-     			  recpos1[2][itr]=iround((yrec+REFREC[2]+bb)/DH);
-			}else{
-			  recpos1[1][itr]=iround((xrec+REFREC[1])/DH);
-     			  recpos1[2][itr]=iround((yrec+REFREC[2])/DH);
-			}
+			recpos1[1][itr]=iround((xrec+REFREC[1])/DH);
+     			recpos1[2][itr]=iround((yrec+REFREC[2])/DH);
      			recpos1[3][itr]=iround((0.0+REFREC[3])/DH);
      		}
      		fclose(fpr);
@@ -104,13 +95,13 @@ int **receiver(FILE *fp, int *ntr, int ishot){
      
     
 
-	}
+	/*}*/
 
 
-	MPI_Barrier(MPI_COMM_WORLD);
+/*	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Bcast(ntr,1,MPI_INT,0,MPI_COMM_WORLD);
 	if (MYID_SHOT!=0) recpos=imatrix(1,3,1,*ntr);
-	MPI_Bcast(&recpos[1][1],(*ntr)*3,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&recpos[1][1],(*ntr)*3,MPI_INT,0,MPI_COMM_WORLD);*/
 
 /*	if (MYID_SHOT==0)
 	{

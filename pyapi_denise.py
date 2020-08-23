@@ -219,8 +219,12 @@ class Denise(object):
             rec_filename = self.REC_FILE
             for isrc in range(1, src.nsrc + 1):
                 _rec = rec
-                _rec.x = rec.x  # + (isrc - 1) * self.REC_INCR_X
-                _rec.y = rec.y  # + (isrc - 1) * self.REC_INCR_Y
+                if isrc == 1:
+                    _rec.x = rec.x
+                    _rec.y = rec.y
+                else:
+                    _rec.x = rec.x + self.REC_INCR_X
+                    _rec.y = rec.y + self.REC_INCR_Y
                 self.REC_FILE = f'{rec_filename}_shot_{isrc}'
                 self._print_1(f'\tsource {isrc}: {self.REC_FILE}')
                 self._write_src_rec(src, _rec)
