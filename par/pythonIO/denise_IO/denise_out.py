@@ -67,6 +67,100 @@ def check_domain_decomp(para):
 
 	return
 
+def check_src_rec_pml(x,y,para,sws):
+
+	# check if sources & receivers are located in the computational domain and not the PMLs
+	flag = 0    # flag source and receiver positions in PML boundary frame
+	n = len(x)  # number of sources or receivers
+	for i in range(n):
+		
+		# left boundary 
+		if x[i] <= para["FW"] * para["DH"] and x[i] >= para["DH"]:
+			if(sws==1):
+				print("receiver # " + str(i) + " is located in the left PML boundary frame")
+				flag+=1				
+
+			if(sws==2):
+				print("source # " + str(i) + " is located in the left PML boundary frame")
+				flag+=1
+
+		if x[i] < para["DH"]:
+			if(sws==1):
+				print("receiver # " + str(i) + " is located outside FD grid (left boundary)")
+				flag+=1				
+
+			if(sws==2):
+				print("source # " + str(i) + " is located outside FD grid (left boundary)")
+				flag+=1
+				
+		# right boundary 
+		if x[i] >= (para["NX"] - para["FW"]) * para["DH"] and x[i] <= para["NX"] * para["DH"]:
+			if(sws==1):
+				print("receiver # " + str(i) + " is located in the right PML boundary frame")
+				flag+=1				
+
+			if(sws==2):
+				print("source # " + str(i) + " is located in the right PML boundary frame")
+				flag+=1
+
+		if x[i] > para["NX"] * para["DH"]:
+			if(sws==1):
+				print("receiver # " + str(i) + " is located outside FD grid (right boundary)")
+				flag+=1				
+
+			if(sws==2):
+				print("source # " + str(i) + " is located outside FD grid (right boundary)")
+				flag+=1
+
+
+		# top boundary 
+		if para["FREE_SURF"] != 1 and y[i] <= para["FW"] * para["DH"] and y[i] >= para["DH"]:
+			if(sws==1):
+				print("receiver # " + str(i) + " is located in the top PML boundary frame")
+				flag+=1				
+
+			if(sws==2):
+				print("source # " + str(i) + " is located in the top PML boundary frame")
+				flag+=1
+
+		if y[i] < para["DH"]:
+			if(sws==1):
+				print("receiver # " + str(i) + " is located outside FD grid (top boundary)")
+				flag+=1				
+
+			if(sws==2):
+				print("source # " + str(i) + " is located outside FD grid (top boundary)")
+				flag+=1
+
+
+		# bottom boundary 
+		if y[i] >= (para["NY"] - para["FW"]) * para["DH"] and y[i] <= para["NY"] * para["DH"]:
+			if(sws==1):
+				print("receiver # " + str(i) + " is located in the bottom PML boundary frame")
+				flag+=1				
+
+			if(sws==2):
+				print("source # " + str(i) + " is located in the bottom PML boundary frame")
+				flag+=1
+
+		if y[i] > para["NY"] * para["DH"]:
+			if(sws==1):
+				print("receiver # " + str(i) + " is located outside FD grid (bottom boundary)")
+				flag+=1				
+
+			if(sws==2):
+				print("source # " + str(i) + " is located outside FD grid (bottom boundary)")
+				flag+=1
+
+
+	if flag == 0 and sws == 1:
+		print("No receivers in the PML boundary frame - test passed")
+
+	if flag == 0 and sws == 2:
+		print("No sources in the PML boundary frame - test passed")
+
+	return
+
 def check_stability(vp,vs,para):
 	
 	# define FD operator weights for Taylor and Holberg operators: 
@@ -114,6 +208,22 @@ def check_stability(vp,vs,para):
 	#print("gamma = ", gamma)
 	
 	return dt
+
+def check_steplength(nshot,para):
+	
+	# check steplength parameters
+	if(para["TESTSHOT_END"] > nshot):
+		print("TESTSHOT_END = " + str(para["TESTSHOT_END"]) + " > " + "nshot = " + str(nshot) + "\n")
+		print("Choose TESTSHOT_END <= nshot")
+	
+	elif(para["TESTSHOT_START"] < 1):
+		print("TESTSHOT_START = " + str(para["TESTSHOT_START"]) + " < " + " 1 \n")
+		print("Choose TESTSHOT_START >= 1")
+
+	else:
+		print("Step length check - passed")
+
+	return
 	
 def do_plot(n, model, cm, an, title, vpmin, vpmax, x, y, font):
     
