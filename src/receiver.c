@@ -15,7 +15,8 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	extern float DH, REFREC[4], FW;
 	extern int READREC, NX;
 	extern int MYID_SHOT;
-	extern float REC_INCR_X, REC_INCR_Y;
+	extern float REC_INCR_X, REC_INCR_Y;	
+	extern MPI_Comm SHOT_COMM;
 
 	int **recpos1, **recpos, nxrec=0, nyrec=0, nzrec=0;
 	int   itr=1, itr1=0, itr2=0, recflag=0, c, ifw, n, i, j;
@@ -25,8 +26,8 @@ int **receiver(FILE *fp, int *ntr, int ishot){
 	
 	FILE *fpr;
 
-	/*if (MYID_SHOT==0)
-	{*/
+	if (MYID_SHOT==0)
+	{
 
      	     if (READREC){ /* read receiver positions from file */
 
@@ -95,13 +96,13 @@ int **receiver(FILE *fp, int *ntr, int ishot){
      
     
 
-	/*}*/
-
-
-/*	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Bcast(ntr,1,MPI_INT,0,MPI_COMM_WORLD);
+	}
+	
+	MPI_Barrier(SHOT_COMM);
+	MPI_Bcast(ntr,1,MPI_INT,0,SHOT_COMM);
 	if (MYID_SHOT!=0) recpos=imatrix(1,3,1,*ntr);
-	MPI_Bcast(&recpos[1][1],(*ntr)*3,MPI_INT,0,MPI_COMM_WORLD);*/
+	MPI_Bcast(&recpos[1][1],(*ntr)*3,MPI_INT,0,SHOT_COMM);
+	
 
 /*	if (MYID_SHOT==0)
 	{
