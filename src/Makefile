@@ -24,9 +24,10 @@ EXEC= ../bin
 # On Linux NEC-cluster with Intel-MPI
 #CC=mpiicc
 #LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
-#CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict
-#SFLAGS=-L./../libcseife -L$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/lib
-#IFLAGS=-I./../libcseife -I$//sfs/fs2/work-sh2/sungw331/fftw-3.3.4/include -I./../include
+#CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict -no-multibyte-chars
+#SFLAGS=-L./../libcseife -L$//gxfs_work1/cau/sungw331/fftw-3.3.4/lib
+#IFLAGS=-I./../libcseife -I$//gxfs_work1/cau/sungw331/fftw-3.3.4/include -I./../include
+
 
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
 # CC=mpicc -Minfo=all -ta=multicore #tesla:cc60,managed
