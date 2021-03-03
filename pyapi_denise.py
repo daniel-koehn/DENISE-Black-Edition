@@ -2,7 +2,7 @@
 and inversion.
 
 by Oleg Ovcharenko, Vladimir Kazei and Daniel Koehn
-KAUST, 23955, Thuwal, Saudi Arabia, 2020
+KAUST, 23955, Thuwal, Saudi Arabia, 2021
 
 Based on PythonIO by Daniel Koehn
 https://github.com/daniel-koehn/DENISE-Black-Edition/tree/master/par/pythonIO
@@ -36,6 +36,7 @@ Example (see full example in the end of the file):
     >>> import denise_api as api
     >>>
     >>> denise = api.Denise('./', verbose=1)
+    >>> denise.parser_report()
     >>> denise.help()
     >>>
     >>> denise.NPROCX = 5
@@ -59,6 +60,8 @@ import ast
 import os
 import re
 import time
+import copy
+import codecs
 
 import numpy as np
 import segyio
@@ -67,11 +70,8 @@ import segyio
 def natsorted(iterable, key=None, reverse=False):
     """ https://github.com/bdrung/snippets/blob/master/natural_sorted.py """
     prog = re.compile(r"(\d+)")
-
     def alphanum_key(element):
-        return [int(c) if c.isdigit() else c for c in prog.split(key(element)
-                                                                 if key else element)]
-
+        return [int(c) if c.isdigit() else c for c in prog.split(key(element) if key else element)]
     return sorted(iterable, key=alphanum_key, reverse=reverse)
 
 
@@ -81,14 +81,23 @@ def _check_keys(keys):
     return keys
 
 
+def is_defined(v):
+    return False if v is None else True
+
+
 class Denise(object):
     """
     Public methods:
         forward:        starts forward modeling
         fwi:            starts full-waveform inversion
         help:           prints the .inp parameter file
-        clean:          hard delete of the save_folder (!!!)
+        parser_report:  details parsing results of .inp file in ./par/
+        clean:          hard delete of the save_folder (DANGEROUS, uses rm -rf  !!!)
         get_shots:      read shots into a list of numpy arrays
+        get_fwi_models: read fwi results into a list of numpy arrays
+        get_fwi_tapers: read gradient tapers into a list of numpy arrays
+        get_fwi_gradients: read last gradients into a list of numpy arrays
+        get_snapshots:  read wavefield snapshots into a list of numpy arrays
         add_fwi_stage:  append a dict with fwi parameters to self.fwi_stages
         set_model:      extract model dimensions
         set_paths:      build paths if something changed
@@ -114,13 +123,14 @@ class Denise(object):
         self._inp_file = None
 
         # Set attributes from ./par/*.inp file
+        self.msg_parser_report = None
         self._parse_inp_file()
 
         self.save_folder = './outputs/'
+        self.cwd = os.getcwd()
+
         self.SEIS_FILE_NAME = 'seis'
-
         self.DT, self.NT = None, None
-
         self.set_paths()
 
     def __repr__(self):
@@ -136,6 +146,11 @@ class Denise(object):
     def _root_model(self):
         """ Path to output models from FWI """
         return os.path.join(self.save_folder, "model")
+
+    @property
+    def _root_snap(self):
+        """ Path to output snapshots from forward modeling"""
+        return os.path.join(self.save_folder, "snap")
 
     @property
     def _root_gradients(self):
@@ -157,88 +172,138 @@ class Denise(object):
         for k, v in d.items():
             setattr(self, k, v)
 
-    def help(self):
-        """ Print out parameters file """
-        self._write_inp_file(write=False)
+    def help(self, search=None):
+        """ Print out parameters file. write=False is effectively print only. Search parameter is list of strings """
+        msg = self._write_inp_file(write=False)
+        keys = _check_keys(search)
+        if keys:
+            print(f'Search keys {keys}')
+            msg = [m for m in msg if any(k in m for k in search)]
+        print(''.join(msg))
 
     def set_model(self, model):
         """ Extract model dimensions. If model is a tuple of (np.array, float), then wrap them into Model class """
         if isinstance(model, tuple):
             model = Model().from_array(*model)
-
         self.NY, self.NX = model.vp.shape[:2]
         self.DH = model.dx
         self.model = model
+        self._print_1(f'Init model:\n\t{self.NY} x {self.NX}, dx = {self.DH} m')
 
     def _write_model(self):
         """ Create binaries for vp, vs and rho components of velocity model """
-        self._print_1(f'Write binaries for\n\t{self.MFILE}.vp\n\t{self.MFILE}.vs\n\t{self.MFILE}.rho')
-        _write_binary(self.model.vp, self.MFILE + '.vp')
-        _write_binary(self.model.vs, self.MFILE + '.vs')
-        _write_binary(self.model.rho, self.MFILE + '.rho')
+        if is_defined(self.model.vp):
+            self._print_1(f'Write {self.MFILE}.vp')
+            _write_binary(self.model.vp, self.MFILE + '.vp')
+
+        if is_defined(self.model.vs):
+            self._print_1(f'Write {self.MFILE}.vs')
+            _write_binary(self.model.vs, self.MFILE + '.vs')
+
+        if is_defined(self.model.rho):
+            self._print_1(f'Write {self.MFILE}.rho')
+            _write_binary(self.model.rho, self.MFILE + '.rho')
+
+    def _write_acquisition(self, src, rec):
+        # Receiver locations were set as Receivers(xsrc, ysrc) and Sources(xsrc, ysrc)
+        the_src = src
+        the_rec = rec[0]
+        if self.N_STREAMER > 0:
+            # Workaround to enable streamer mode. It is deprecated in the original C implementation
+            # Given source locations, moves an array of receivers accordingly
+            self._print_1('Enable streamer mode!')
+            self.READREC = 2
+            rec_filename = self.REC_FILE
+            for isrc in range(1, len(the_src) + 1):
+                _rec = copy.deepcopy(the_rec)
+                _rec.x = the_rec.x + (isrc - 1) * self.REC_INCR_X
+                _rec.y = the_rec.y + (isrc - 1) * self.REC_INCR_Y
+                self.REC_FILE = f'{rec_filename}_shot_{isrc}'
+                self._print_1(f'\tsource {isrc}: {self.REC_FILE}')
+                self._write_src_rec(the_src, _rec)
+            self.REC_FILE = rec_filename
+        elif self.READREC == 1:
+            # otherwise save all source locations in single file and all rec locations in single file
+            # e.g. for land acquisition
+            self._print_1('Write sources and receivers in single file each!')
+            self._write_src_rec(the_src, the_rec)
+        else:
+            # Sources and receivers were set by Receivers.add(xsrc, ysrc) and Sources(xsrc, ysrc),
+            # meaning that for every source there is a specific configuration of receivers.
+            # Save source info in single file, but receivers info in separate files for every shot.
+            self._print_1('Write all sources in single file, but receivers in single file for every shot!')
+            the_src = src
+            rec_filename = self.REC_FILE
+            for isrc in range(1, len(the_src) + 1):
+                self.REC_FILE = f'{rec_filename}_shot_{isrc}'
+                self._print_1(f'\tsource {isrc}: {self.REC_FILE}.dat')
+                self._write_src_rec(the_src, rec[isrc-1])
+            self.REC_FILE = rec_filename
+
+        # Write wavelets
+        if src.wavelets is not None:
+            self._print_1('Write wavelets, one for every shot.')
+            ws = src.wavelets
+            nwav, nt = ws.shape
+            assert len(src) == nwav, f'Number of sources and wavelets must match! NSRC={len(src)}, nwav={nwav}'
+            for isrc in range(1, nwav + 1):
+                signal_file = f'{self.SIGNAL_FILE}_shot_{isrc}.dat'
+                self._print_1(f'\twavelet {isrc}: {signal_file}')
+                np.savetxt(signal_file, ws[isrc-1, :], delimiter='\n', fmt='%.4f')
+
+    def _calc_nt_dt(self):
+        self._print_1('Compute DT and NT')
+        maxvp = np.max(self.model.vp[np.nonzero(self.model.vp)])
+        if is_defined(self.model.vs):
+            poisson_ratio = _get_poisson_ratio(self.model).mean().mean()
+            vs_mean = self.model.vs.mean().mean()
+            self._print_1(f'Check elastic ratios:')
+            self._print_1(f'\tPoisson ratio:\t\t{poisson_ratio}')
+            self._print_1(f'\tShear wave velocity:\t{vs_mean}')
+            self._print_1(f'\tRayleigh velocity:\t{vs_mean * (0.862 + 1.14 * poisson_ratio) / (1 + poisson_ratio)}')
+            maxvs = np.max(self.model.vs[np.nonzero(self.model.vs)])
+        else:
+            maxvp = maxvs
+
+        # Compute time step so it is consistent with seismic records
+        if self.MODE < 1:
+            # If forward modeling was run before, use the same DT
+            self._print_1('\tfrom input model')
+            self.DT = self._check_stability(maxvp, maxvs)
+            self.NT = int(self.TIME / self.DT)
+        elif self.DT is None:
+            # If FWI is running without forward modeling (e.g. true model is unknown), use velocity box conditions
+            self._print_1('\tfrom BOX constraints. VPUPPERLIM, VSUPPERLIM')
+            self.DT = self._check_stability(self.VPUPPERLIM, self.VSUPPERLIM)
 
     def _engine(self, model, src, rec, run_command, disable):
-        """ Creates folders, and executes C binaries"""
+        """ Creates folders, and executes C binaries """
         self.set_paths(makedirs=True)
         self.set_model(model)
-
-        self.NREC = len(rec.x)
-        self.NSRC = len(src.x)
 
         # Simulation analysis
         self._check_max_frequency()
         self._check_domain_decomp()
 
-        poisson_ratio = _get_poisson_ratio(self.model).mean().mean()
-        vs_mean = self.model.vs.mean().mean()
+        # Calculate time step for stable simulation
+        if self.DT is None:
+            self._calc_nt_dt()
 
-        self._print_1(f'Check elastic ratios:')
-        self._print_1(f'\tPoisson ratio:\t\t{poisson_ratio}')
-        self._print_1(f'\tShear wave velocity:\t{vs_mean}')
-        self._print_1(f'\tRayleigh velocity:\t{vs_mean * (0.862 + 1.14 * poisson_ratio) / (1 + poisson_ratio)}')
+        # Write config files
+        self._write_model()              # Write model files
+        self._write_acquisition(src, rec)    # Write source and receiver files
+        self._write_inp_file()           # Write main .inp config file
 
-        # Compute time step so it is consistent with seismic records
-        if self.MODE < 1:
-            # If forward modeling was run before, use the same DT
-            self._print_1('Compute DT from model given as argument')
-            self.DT = self._check_stability(np.max(self.model.vp[np.nonzero(self.model.vp)]),
-                                            np.max(self.model.vs[np.nonzero(self.model.vs)]))
-            self.NT = int(self.TIME / self.DT)
-        elif self.DT is None:
-            self._print_1('Compute DT from BOX constraints. VPUPPERLIM, VSUPPERLIM')
-            # If FWI is running without forward modeling (e.g. true model is unknown), use velocity box conditions
-            self.DT = self._check_stability(self.VPUPPERLIM, self.VSUPPERLIM)
-
-        # Write files
-        self._write_model()
-
-        if self.N_STREAMER > 0:
-            # Workaround to enable streamer mode. It is deprecated in the original C implementation
-            self._print_1('Enable streamer mode!')
-            self.READREC = 2
-            rec_filename = self.REC_FILE
-            for isrc in range(1, src.nsrc + 1):
-                _rec = rec
-                _rec.x = rec.x  # + (isrc - 1) * self.REC_INCR_X
-                _rec.y = rec.y  # + (isrc - 1) * self.REC_INCR_Y
-                self.REC_FILE = f'{rec_filename}_shot_{isrc}'
-                self._print_1(f'\tsource {isrc}: {self.REC_FILE}')
-                self._write_src_rec(src, _rec)
-            self.REC_FILE = rec_filename
-        else:
-            self._write_src_rec(src, rec)
-        self._write_inp_file()
-
+        # Execute binaries unless disabled
         time1 = time.time()
         run_command = run_command if run_command else f"mpirun -np {self.NPROCX * self.NPROCY}"
-        self._print_1(f'Start simulation for NREC: {self.NREC}, NSRC: {self.NSRC}, NT: {self.NT}...wait\n')
+        self._print_1(f'Start simulation for {len(src)} sources. NT: {self.NT}, DT: {self.DT}...wait\n')
 
         if not disable:
             _cmd(f"{run_command} " +
                  ' ' + os.path.join(self._root_denise, "bin/denise ") +
                  ' ' + self.filename +
                  ' ' + self.filename_workflow)
-
             print(f"\nDone. {time.time() - time1} sec.\n\n"
                   f"Check results in {self.save_folder}su/")
 
@@ -263,9 +328,15 @@ class Denise(object):
 
     def _get_filenames(self, dir, keys=None):
         """ List all files from dir which contain keys"""
+        self._print_2(f'Parse files from {dir} which contain {keys}')
         keys = _check_keys(keys)
         files = [os.path.join(dir, f) for f in os.listdir(dir)]
         files = [f for f in files if all(True if k in f else False for k in keys)]
+        files = [f for f in files if not os.path.isdir(f)]
+        try:
+            self._print_2(f'Found {len(files)}, e.g. {files[0]}')
+        except IndexError:
+            self._print_2('No files found! Exception raised.')
         return natsorted(files)
 
     def get_shots(self, idx=None, keys=None, return_filenames=False):
@@ -293,11 +364,12 @@ class Denise(object):
         else:
             return self._from_su(files)
 
-    def _read_bins(self, dir, keys=None, return_filenames=False):
+    def _read_bins(self, dir, shape, keys=None, return_filenames=False):
         """ Read binaries which contain keys from a dir
 
         Args:
             dir (str): path to folder with data
+            shape (tuple): shape where to read binary data
             keys (str, list): substrings to be present in filenames
             return_filenames (bool): return filenames together with data
 
@@ -305,7 +377,30 @@ class Denise(object):
             List of np.ndarrays, or (list of np.ndarrays, list of strings) if return_filenames enabled
         """
         files = self._get_filenames(dir, keys)
-        return self._from_bin(files, return_filenames)
+        return self._from_bin(files, shape, return_filenames)
+
+    def _from_ascii(self, files, shape, return_filenames=False):
+        if not isinstance(files, (list, tuple)):
+            files = [files]
+        outs = []
+        fnames = []
+        files = [f for f in files if not os.path.isdir(f)]
+        for file in files:
+            self._print_1(f'< {file} > np.array{shape}')
+            try:
+               vs = np.loadtxt(file)
+               outs.append(np.reshape(vs, shape))
+            except ValueError:
+                self._print_1(f'\tFailed! Reading or converting, check _from_ascii().')
+        if return_filenames:
+            return outs, fnames
+        else:
+            return outs
+
+    def _read_asciis(self, dir, shape, keys=None, return_filenames=False):
+        """ Read ascii which contain keys from a dir """
+        files = self._get_filenames(dir, keys)
+        return self._from_ascii(files, shape, return_filenames)
 
     def get_fwi_models(self, keys=None, return_filenames=False):
         """ Read output models from FWI from self.save_folder/model/
@@ -317,34 +412,57 @@ class Denise(object):
         Returns:
             List of np.ndarrays, or (list of np.ndarrays, list of strings) if return_filenames enabled
         """
+        self._print_1(f'Read models from {self._root_model} with {keys}')
         keys = _check_keys(keys)
-        keys.append('.bin')
-        where = self._root_model
-        print(f'Read models from {where} with {keys}')
-        return self._read_bins(where, keys, return_filenames)
+        return self._read_bins(self._root_model, (self.NX, self.NY), keys, return_filenames)
 
     def get_fwi_gradients(self, keys=None, return_filenames=False):
-        """ Read gradients from FWI from self.save_folder/jacobian/
-
-        Args:
-            keys (str, list): substrings to be present in filenames
-            return_filenames (bool): return filenames together with data
-
-        Returns:
-            List of np.ndarrays, or (list of np.ndarrays, list of strings) if return_filenames enabled
-        """
+        """ Read gradients from FWI from self.save_folder/jacobian/ """
+        self._print_1(f'Read gradients from {self._root_gradients}')
         keys = _check_keys(keys)
-        return self._read_bins(self._root_gradients, keys, return_filenames)
+        return self._read_bins(self._root_gradients, (self.NX, self.NY), keys, return_filenames)
+
+    def get_fwi_tapers(self, keys=['taper'], return_filenames=False):
+        """ Read tapers used in FWI from self.save_folder """
+        keys = _check_keys(keys)
+        keys.append('.bin')
+        return self._read_bins(self.cwd, (self.NX, self.NY), keys, return_filenames)
+
+    def get_snapshots(self, keys=None, return_filenames=False, shape=None):
+        """ Read snapshots from forward modeling from self.save_folder/snap """
+        keys = _check_keys(keys)
+        nsnaps = int(np.round((self.TSNAP2 - self.TSNAP1) / self.TSNAPINC))
+        self._print_1(f'Read snapshots for {nsnaps} time steps.')
+        # Run Daniel's bin/snapmerge
+        _cmd(os.path.join(self._root_denise, "bin/snapmerge") + ' ' + self.filename)
+        if self.SNAP_FORMAT == 3:
+            shape = (self.NX, self.NY, nsnaps) if shape is None else shape
+            self._print_1(f'Search for .bin snapshots...')
+            keys.append('.bin')
+            return self._read_bins(self._root_snap, shape, keys, return_filenames)
+        elif self.SNAP_FORMAT == 2:
+            shape = (nsnaps, self.NX, self.NY) if shape is None else shape
+            self._print_1(f'Search for .asc snapshots...')
+            keys.append('.asc')
+            return self._read_asciis(self._root_snap, shape, keys, return_filenames)
+        else:
+            print('Only .bin and .asc supported!')
+            return []
 
     def clean(self):
-        """ Hard delete of self.save_folder """
+        """ Hard delete of self.save_folder !!! BE CAREFUL WITH IT """
         _cmd(f'rm -rf {self.save_folder}')
 
     def set_paths(self, makedirs=False):
         """ Adds/updates paths to a dict of parameters """
+        self._print_1(f'Init paths at {self.save_folder}')
 
         if makedirs:
-            _create_folders(self.save_folder)
+            _folders = ['start', 'su', 'receiver', 'source', 'snap', 'log', 'wavelet',
+                        'jacobian', 'model', 'gravity', 'picked_times', 'trace_kill']
+            for _f in _folders:
+                os.makedirs(os.path.join(self.save_folder, f'{_f}/'), exist_ok=True)
+                self._print_2(f'Create {_f}')
 
         def route(old_path):
             return os.path.join(self.save_folder, old_path)
@@ -355,14 +473,14 @@ class Denise(object):
         p['filename'] = route(f'{s}.inp')
         p['filename_workflow'] = route(f'{s}_fwi.inp')
         p["MFILE"] = route(f"start/model")
-        p["SEIS_FILE_VX"] = route(f"su/{s}_x.su")  # filename for vx component
-        p["SEIS_FILE_VY"] = route(f"su/{s}_y.su")  # filename for vy component
-        p["SEIS_FILE_CURL"] = route(f"su/{s}_rot.su")  # filename for rot_z component ~ S-wave energy
-        p["SEIS_FILE_DIV"] = route(f"su/{s}_div.su")  # filename for div component ~ P-wave energy
+        p["SEIS_FILE_VX"] = route(f"su/{s}_x.su")       # filename for vx component
+        p["SEIS_FILE_VY"] = route(f"su/{s}_y.su")       # filename for vy component
+        p["SEIS_FILE_CURL"] = route(f"su/{s}_rot.su")   # filename for rot_z component ~ S-wave energy
+        p["SEIS_FILE_DIV"] = route(f"su/{s}_div.su")    # filename for div component ~ P-wave energy
         p["SEIS_FILE_P"] = route(f"su/{s}_p.su")
         p["REC_FILE"] = route('receiver/receivers')
         p["SOURCE_FILE"] = route("source/sources.dat")
-        p["SIGNAL_FILE"] = route(f"wavelet/wavelet_{s}")
+        p["SIGNAL_FILE"] = route(f"wavelet/wavelet")
         p["SNAP_FILE"] = route("snap/waveform_forward")
         p["LOG_FILE"] = route(f"log/{s}.log")  # Log file name
         # ----------------------------
@@ -379,64 +497,121 @@ class Denise(object):
         self._dict_to_args(p)
 
     def _parse_inp_file(self):
-        """ Parse original .ini file and init respective arguments """
+        """ Parse original .ini file and init respective arguments. Supports arguments given as following:
+            * ARG1 = VAL1
+            * description..(ARG1) = VAL1
+            * description..(ARG1, ARG2,...) = VAL1, VAL2,...
+        """
         para = {}
-        count = 0
+        msg_report = []
+        special = ['<', '>', '=', ')', '(', ';', '/', '-']
         fname = os.path.join(self._root_denise, 'par/', 'DENISE_marm_OBC.inp')
+        msg_report.append(f'==============================\nReport parsing {fname}...')
+        msg_report.append(['LINE', 'ARG', 'VAL', 'TEXT'])
         self._print_1(f'Parse {fname}')
+
         with open(fname) as fp:
             self._inp_file = fp.readlines()
-            for line in self._inp_file:
-                count += 1
+            prev_line = ''
+            for iline, line in enumerate(self._inp_file):
                 line = line.strip()
-                # self._print("{}: {}".format(count, line))
                 # For not commented lines
                 if not line[0] == '#':
                     if '(' in line:
                         # description_(ARG) = VAL
-                        arg_name = re.findall(r'\((.*?)\)', line)[-1]
-                        arg_val = line.split('=')[-1].strip()
+                        arg = re.findall(r'\((.*?)\)', line)
+                        val = line.split('=')[-1]
+                        # print(arg)
+                        arg = [a for a in arg if not any((c in a) for c in special)]
+                        arg = [a for a in arg if not a.isnumeric()]
+                        if arg:
+                            arg = arg[-1]
+                        else:
+                            if '#' in prev_line:
+                                # if empty list, then maybe argument spans two lines (assuming its commented)
+                                mix = prev_line + line
+                                arg = re.findall(r'\((.*?)\)', mix)
+                                val = mix.split('=')[-1]
+                                if len(arg) > 1:
+                                    arg = [a for a in arg if not any((c in a) for c in special)]
+                                if arg:
+                                    arg = arg[-1]
+                            elif '_' in line:
+                                arg = line.split('_')[0]
+                                for s in special:
+                                    arg = arg.replace(s, '_')
+                                val = line.split('=')[-1]
                     elif '=' in line:
                         # ARG = VAL
-                        arg_name = line.split('=')[0].strip()
-                        arg_val = line.split('=')[-1].strip()
+                        arg = line.split('=')[0]
+                        val = line.split('=')[-1]
                     else:
                         break
 
+                    # if ARG1,ARG2,ARG3 = VAL1, VAL2,VAL3
+                    if ',' in arg:
+                        mult_arg, mult_val = arg.split(','), val.split(',')
+                    else:
+                        mult_arg, mult_val = [arg], [val]
+
                     # Recognize data type, if fails use string
-                    try:
-                        # Numeric
-                        para[arg_name] = ast.literal_eval(arg_val)
-                    except (SyntaxError, ValueError):
-                        # String
-                        para[arg_name] = arg_val
+                    for iarg, (arg, val) in enumerate(zip(mult_arg, mult_val)):
+                        arg, val = arg.strip(), val.replace(';', '').strip()
+                        # print(arg, val)
+                        narg = len(mult_arg)
+                        try:
+                            # Numeric
+                            para[arg] = ast.literal_eval(val)
+                        except (SyntaxError, ValueError):
+                            # String
+                            para[arg] = val
+                        # Store line number from original file
+                        self._map_args[arg] = (iline, narg, iarg)
+                        self._print_2(f'\t{arg} <-- {val}, {self._map_args[arg]}')
+                        msg_report.append([iline, arg, val, line])
+                prev_line = line
+            self._dict_to_args(para)
+            self.msg_parser_report = msg_report
 
-                    # Store line number from original file
-                    self._map_args[arg_name] = count
-
-                    self._print_2(f'\t{arg_name} <-- {arg_val}')
-
-        self._dict_to_args(para)
+    def parser_report(self):
+        row_format = "{:<3} {:<15} {:<10} {:<50}"
+        for irow, row in enumerate(self.msg_parser_report):
+            if irow == 0:
+                print(row)
+            else:
+                print(row_format.format(*row))
 
     def _write_inp_file(self, write=True):
         """ Write parameters file """
-
         c = self._inp_file
-        for attr, line_id in self._map_args.items():
-            self._print_2(f'{c[line_id - 1]}', end='')
-            self._print_2(f'<-- {getattr(self, attr)}')
-            c[line_id - 1] = '='.join(c[line_id - 1].split('=')[:-1]) + '= ' + \
-                             str(getattr(self, attr)).replace('(', '').replace(')', '') \
-                             + '\n'
-
-        c = ''.join(c)
+        for arg, (iline, narg, iarg) in self._map_args.items():
+            self._print_2(f'{c[iline]}', end='')
+            self._print_2(f'<-- {getattr(self, arg)}')
+            if narg > 1:
+                # Multiple arguments in line
+                str_left = '='.join(c[iline].split('=')[:-1])
+                str_right = str(getattr(self, arg)).replace('(', '').replace(')', '')
+                if iarg == 0:
+                    # if 1st of narg: make left part = VAL1
+                    c[iline] = str_left + '= ' + str_right
+                else:
+                    # append ,VAL2 to existing string
+                    c[iline] += ',{}'.format(str_right)
+                    if iarg == narg - 1:
+                        c[iline] += '\n'
+            else:
+                # Single argument in line
+                c[iline] = '='.join(c[iline].split('=')[:-1]) + '= ' + \
+                                 str(getattr(self, arg)).replace('(', '').replace(')', '') \
+                                 + '\n'
         if write:
+            c = ''.join(c)
             fp = open(self.filename, mode='w')
             fp.write(c)
             fp.close()
+            return None
         else:
-            print(c)
-        return
+            return c
 
     def _write_src_rec(self, src_, rec_):
         """ Writes .dat files with source and receiver configurations """
@@ -569,22 +744,24 @@ class Denise(object):
 
     def _check_max_frequency(self):
         """ Compute maximum frequency of source wavelet based on grid dispersion criterion """
-        vp = self.model.vp
-        vs = self.model.vs
         # define gridpoints per minimum wavelength for Taylor and Holberg operators
         gridpoints_per_wavelength = np.array([[23.0, 8.0, 6.0, 5.0, 5.0, 4.0],
                                               [49.7, 8.32, 4.77, 3.69, 3.19, 2.91],
                                               [22.2, 5.65, 3.74, 3.11, 2.8, 2.62],
                                               [15.8, 4.8, 3.39, 2.9, 2.65, 2.51],
                                               [9.16, 3.47, 2.91, 2.61, 2.45, 2.36]])
-
-        # estimate minimum s-wave velocity != 0 in the model
-        minvs = np.min(vs[np.nonzero(vs)])
-        self._print_1('Check max source frequency:')
-        self._print_1(f"\tmin Vs: {minvs} m/s")
-
+        vp = self.model.vp
         # estimate minimum p-wave velocity != 0 in the model
         minvp = np.min(vp[np.nonzero(vp)])
+
+        self._print_1('Check max source frequency:')
+        if is_defined(self.model.vs):
+            vs = self.model.vs
+            # estimate minimum s-wave velocity != 0 in the model
+            minvs = np.min(vs[np.nonzero(vs)])
+            self._print_1(f"\tmin Vs: {minvs} m/s")
+        else:
+            minvs = minvp
         self._print_1(f"\tmin Vp: {minvp} m/s")
 
         # estimate minimum seismic velocity in model
@@ -625,25 +802,28 @@ class Denise(object):
                 self._print_1(f'< {file} > np.array({outs[-1].shape})')
         return outs
 
-    def _from_bin(self, files, return_filenames=False):
-        """ Read .bin files into a list of np.ndarrays """
+    def _from_bin(self, files, shape, return_filenames=False):
+        """ Read .bin files into a list of np.ndarrays
+        shape: tuple [nx, ny] !!!
+        """
         if not isinstance(files, (list, tuple)):
             files = [files]
         outs = []
         fnames = []
+        files = [f for f in files if not os.path.isdir(f)]
         for file in files:
-            self._print_1(f'< {file} > np.array({self.NX, self.NY})')
+            self._print_1(f'< {file} > np.array({shape})')
             f = open(file)
             data_type = np.dtype('float32').newbyteorder('<')
             vs = np.fromfile(f, dtype=data_type)
             try:
-                vs = vs.reshape(self.NX, self.NY)
+                vs = vs.reshape(*shape)
                 vs = np.transpose(vs)
                 vs = np.flipud(vs)
                 outs.append(vs)
                 fnames.append(file)
             except ValueError:
-                self._print_1(f'\tFailed to reshape {vs.shape} to ({self.NX, self.NY})')
+                self._print_1(f'\tFailed to reshape {vs.shape} to ({shape})')
         if return_filenames:
             return outs, fnames
         else:
@@ -662,7 +842,6 @@ class Denise(object):
 
     def _write_denise_workflow(self, stage):
         """ Write FWI stage into workflow file
-
         Args:
             stage (dict): parameters for one stage of full-waveform inversion
         """
@@ -684,7 +863,6 @@ class Denise(object):
                       eps_stf=1e-1, normalize=0, offset_mute=0, offsetc=10, scale_rho=0.5, scale_qs=1.0, env=1,
                       n_order=0):
         """ Appends a dict with FWI stage parameters to self.fwi_stages
-
         Args:
             pro (float): Termination criterion
             time_filt(int): Frequency filtering
@@ -832,23 +1010,17 @@ def _get_poisson_ratio(m):
     return 0.5 * (m.vp ** 2 - 2 * m.vs ** 2) / (m.vp ** 2 - m.vs ** 2)
 
 
-def _create_folders(save_path):
-    """ Creates a set of subfolders in save_path """
-    _folders = ['start', 'su', 'receiver', 'source', 'snap', 'log', 'wavelet',
-                'jacobian', 'model', 'gravity', 'picked_times', 'trace_kill']
-
-    for _f in _folders:
-        os.makedirs(os.path.join(save_path, f'{_f}/'), exist_ok=True)
-
-
 def _write_binary(data, name):
     """ Writes a binary file accounting for indexing """
-    f = open(name, mode='wb')
-    data_type = np.dtype('float32').newbyteorder('<')
-    vp1 = np.array(data, dtype=data_type)
-    vp1 = np.rot90(vp1, 3)
-    vp1.tofile(f)
-    f.close()
+    try:
+        f = open(name, mode='wb')
+        data_type = np.dtype('float32').newbyteorder('<')
+        vp1 = np.array(data, dtype=data_type)
+        vp1 = np.rot90(vp1, 3)
+        vp1.tofile(f)
+        f.close()
+    except:
+        print('Could not write binary! Exception raised.')
 
 
 def _cmd(command):
@@ -886,8 +1058,10 @@ class Sources(_Template):
             y (list): locations along OY (vertical) axis, in meters
         """
         super().__init__(**kwargs)
-        self.x = x
-        self.y = y
+        self.name = ''
+        self.x = np.array(x)                     # [nsrc, 1]
+        self.y = np.array(y)                     # [nsrc, 1]
+        self.wavelets = None           # [nt]
         self._ones = np.ones_like(x)
         self.z = 0.0 * self._ones
         self._set_default_source()
@@ -904,31 +1078,62 @@ class Sources(_Template):
         self.QUELLTYPB = 1
         self.src_type = self.QUELLTYPB * self._ones
 
-    @property
-    def nsrc(self):
+    def __len__(self):
         return len(self.x)
 
+
+# class Sources(_Template):
+#     def __init__(self, x=None, y=None, **kwargs):
+#         super().__init__(**kwargs)
+#         self.x, self.y = x, y
+#         self.many = []
+#
+#         if is_defined(x) and is_defined(y):
+#             self.add(x, y)
+#
+#     def __len__(self):
+#         return len(self.many)
+#
+#     def __getitem__(self, item):
+#         return self.many[item]
+#
+#     def add(self, x, y):
+#         self.many.append(Source(x, y))
+
+
+class Receiver(_Template):
+    """ Wrapper for receiver locations. Axes origin is in top left corner
+
+    Args:
+        x (list): locations along OX (horizontal) axis, in meters
+        y (list): locations along OY (vertical) axis, in meters
+    """
+    def __init__(self, x, y, **kwargs):
+        super().__init__(**kwargs)
+        self.x, self.y = x, y
+        self.name = ''
+
     def __len__(self):
-        return self.nsrc
+        return len(self.x)
 
 
 class Receivers(_Template):
-    def __init__(self, x, y, **kwargs):
-        """ Wrapper for receiver locations. Axes origin is in top left corner
-
-        Args:
-            x (list): locations along OX (horizontal) axis, in meters
-            y (list): locations along OY (vertical) axis, in meters
-        """
+    def __init__(self, x=None, y=None, **kwargs):
         super().__init__(**kwargs)
         self.x, self.y = x, y
+        self.many = []
 
-    @property
-    def nrec(self):
-        return len(self.x)
+        if is_defined(x) and is_defined(y):
+            self.add(np.array(x), np.array(y))
 
     def __len__(self):
-        return self.nrec
+        return len(self.many)
+
+    def __getitem__(self, item):
+        return self.many[item]
+
+    def add(self, x, y):
+        self.many.append(Receiver(x, y))
 
 
 class Model(_Template):
@@ -944,12 +1149,20 @@ class Model(_Template):
         super().__init__(**kwargs)
         self.vp, self.vs, self.rho = vp, vs, rho
         self.dx = dx
+        self._defined = []
+        if is_defined(vp):
+            self._defined.append('vp')
+        if is_defined(vs):
+            self._defined.append('vs')
+        if is_defined(rho):
+            self._defined.append('rho')
 
     def __repr__(self):
         msg = []
-        msg.append('vp:\t{}, {:.4f}, {:.4f} m/s\n'.format(self.vp.shape, self.vp.min(), self.vp.max()))
-        msg.append('vs:\t{}, {:.4f}, {:.4f} m/s\n'.format(self.vs.shape, self.vs.min(), self.vs.max()))
-        msg.append('rho:\t{}, {:.4f}, {:.4f} g/cm3\n'.format(self.rho.shape, self.rho.min(), self.rho.max()))
+        for component in self._defined:
+            v = getattr(self, component)
+            msg.append('{}:\t{}, {:.4f}, {:.4f} m/s\n'.format(component, v.shape, v.min(), v.max()))
+
         msg.append('dx:\t{:.4f}'.format(self.dx))
         msg.append('Size:\n\tOX:\tmin {:.4f}\tmax {:.4f} m'.format(self.xmin, self.xmax))
         msg.append('Size:\n\tOZ:\tmin {:.4f}\tmax {:.4f} m'.format(self.zmin, self.zmax))
@@ -1009,6 +1222,13 @@ class Model(_Template):
         self.from_array(np.load(fname), dx)
         return self
 
+    def write_bin(self, filename):
+        for component in self._defined:
+            data = getattr(self, component)
+            fname = filename + f'.{component}'
+            print(f'Write binary model file {fname}')
+            _write_binary(data, fname)
+
 
 if __name__ == "__main__":
     # Make sure to complete ONE of the following:
@@ -1017,6 +1237,8 @@ if __name__ == "__main__":
     # 3. DENISE environmental variable points to the root of DENISE-Black-Edition installation
 
     d = Denise('./', verbose=1)
+    # d.parser_report()
+    d.help()
 
     print(f'\n-----------------\n'
           f'Run DEMO:\n\tpython denise_api.py --demo\n'
@@ -1063,7 +1285,7 @@ if __name__ == "__main__":
 
         # -------------------------------------
         # Forward modeling. Saves data in d.save_folder/su/
-        d.forward(model, src, rec)
+        d.forward(model, src, rec, 'mpirun -np 15')
 
         # -------------------------------------
         # Full-waveform inversion stages
@@ -1071,4 +1293,4 @@ if __name__ == "__main__":
             d.add_fwi_stage(fc_low=0.0, fc_high=freq)
 
         # Run inversion. Saves inverted models for every stage in d.save_folder/model/
-        d.fwi(model, src, rec)
+        d.fwi(model, src, rec, 'mpirun -np 15')
