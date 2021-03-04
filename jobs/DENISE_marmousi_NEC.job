@@ -1,21 +1,20 @@
-#!/bin/ksh
-#PBS -l elapstim_req=48:00:00  # Walltime
-#PBS -l cputim_job=720:00:00   # akkumulierte CPU-Zeit pro Knoten
-#PBS -l memsz_job=100gb        # Hauptspeicherbedarf
-#PBS -b 1                      # Anzahl der Knoten
-#PBS -T intmpi                 # gibt Jobtyp an; intmpi fuer Intel-MPI 
-#PBS -l cpunum_job=15          # Anzahl benoetigter CPUs pro Knoten 
-#PBS -N DENISE                 # Name des Batch-Jobs
-#PBS -o DENISE.out             # Datei fuer die Standardausgabe
-#PBS -j o                      # Standard- und Fehlerausgabe in eine Datei 
-#PBS -q clmedium               # Batch-Klasse
+#!/bin/bash
+#SBATCH --job-name=Marmousi
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=30
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=100000
+#SBATCH --time=24:00:00
+#SBATCH --output=test.out
+#SBATCH --error=test.err
+#SBATCH --partition=cluster
+
+# Number of threads
+export OMP_NUM_THREADS=1
 
 # Initialisierung der Intel-Umgebung
-module load intel17.0.4 intelmpi17.0.4
+module load intel/20.0.4 intelmpi/20.0.4
 
 # Starte DENISE Black-Edition
 cd $WORK/DENISE-Black-Edition/par
-mpirun $NQSII_MPIOPTS -np 15 ../bin/denise DENISE_marm_OBC.inp FWI_workflow_marmousi.inp > DENISE.out
-
-# Ausgabe der verbrauchten Ressourcen (Rechenzeit, Hauptspeicher) nach Jobende
-/opt/nec/nqsv/bin/qstat -f ${PBS_JOBID/0:/}
+mpirun -np 30 ../bin/denise DENISE_marm_OBC.inp FWI_workflow_marmousi.inp > DENISE.out
