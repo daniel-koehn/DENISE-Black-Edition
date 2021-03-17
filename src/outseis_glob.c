@@ -22,7 +22,7 @@ int nsrc, int ns, int seis_form, int ishot, int sws){
 	int tracl1 ;
 	float xr, yr, x, y;
 	float XS=0.0, YS=0.0;
-	
+	float drec;
 	
 	nt=iround(TIME/DT);
 	if (sws==1){	/* parameter NDT is used */
@@ -43,6 +43,7 @@ int nsrc, int ns, int seis_form, int ishot, int sws){
 	
 	switch(seis_form){
 	case 1 :
+		drec = ( (recpos[1][2]*DH) - (recpos[1][1]*DH) );
 		for(tracl1=1;tracl1<=ntr;tracl1++){        /*SEGY (without file-header)*/
          		xr=recpos[1][tracl1]*DH;
          		yr=recpos[2][tracl1]*DH;
@@ -50,7 +51,7 @@ int nsrc, int ns, int seis_form, int ishot, int sws){
          		y=yr-REFREC[2];
 			tr.tracl=(int)recpos[3][tracl1];
 			tr.ep=comp;     
-			tr.cdp=(int)recpos[3][tracl1];
+			tr.cdp=(signed int)(100 + iround((fabs(xr+XS)/2.0)/drec));
 			tr.trid=(short)1;           /* trace identification code: 1=seismic*/
 			tr.offset=(signed int)iround(sqrt((XS-xr)*(XS-xr)
                                   +(YS-yr)*(YS-yr))*1000.0);
