@@ -238,11 +238,6 @@ void FWI_PSV()
   /* calculate memory requirements for PSV forward problem */
   mem_fwiPSV(nseismograms, ntr, ns, fdo3, nd, buffsize, ntr_glob);
 
-  /* Define gradient formulation */
-  /* GRAD_FORM = 1 - stress-displacement gradients */
-  /* GRAD_FORM = 2 - stress-velocity gradients for decomposed impedance matrix */
-  GRAD_FORM = 1;
-
   if (GRAVITY == 1 || GRAVITY == 2)
   {
 
