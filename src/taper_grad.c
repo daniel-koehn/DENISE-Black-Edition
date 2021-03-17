@@ -14,20 +14,22 @@ void taper_grad(float **waveconv, float **taper_coeff, float **srcpos, int nshot
         /* extern variables */
 
         extern float DH;
+        extern float SRTRADIUS, EXP_TAPER_GRAD_HOR;
+        extern int SRTSHAPE, FILTSIZE;
         extern int FREE_SURF, NX, NY, NXG, NYG;
         extern int NPROCX, NPROCY, MYID, POS[3];
+        extern int GRADT1, GRADT2, GRADT3, GRADT4;
+        extern char TFILE[STRING_SIZE];
         extern FILE *FP;
 
         /* local variables */
         int i, j, h, ifw, ii, jj, n, xb, yb, xe, ye, taperlength, taperlength2, VTON, SRTON;
         int ijc, iy, ix, iii, jjj, xx, yy, srctaper_gridpt, i1, j1;
 
-        extern int GRADT1, GRADT2, GRADT3, GRADT4;
+
         float amp, a, *window, grad_tap, **waveconvtmp;
         char modfile[STRING_SIZE];
 
-        extern float SRTRADIUS, EXP_TAPER_GRAD_HOR;
-        extern int SRTSHAPE, FILTSIZE;
         float **m, **edgemat, **mm, **msum, minm, maxm, x, y, rad, **taper_coeff_glob;
         float maxrad;
 
@@ -166,7 +168,7 @@ void taper_grad(float **waveconv, float **taper_coeff, float **srcpos, int nshot
                         }
                 }
 
-                sprintf(modfile, "taper_coeff_vert.bin");
+                sprintf(modfile, "%s_coeff_vert.bin", TFILE);
 
                 writemod(modfile, taper_coeff, 3);
 
@@ -309,7 +311,7 @@ void taper_grad(float **waveconv, float **taper_coeff, float **srcpos, int nshot
                 }
         }*/
 
-                sprintf(modfile, "taper_coeff_hor.bin");
+                sprintf(modfile, "%s_coeff_hor.bin", TFILE);
                 writemod(modfile, taper_coeff, 3);
                 MPI_Barrier(MPI_COMM_WORLD);
                 if (MYID == 0)
@@ -553,7 +555,7 @@ void taper_grad(float **waveconv, float **taper_coeff, float **srcpos, int nshot
                 free_matrix(waveconvtmp, 0, NX + 1, 0, NY + 1);
 
                 MPI_Barrier(MPI_COMM_WORLD);
-                sprintf(modfile, "taper_coeff_sources.bin");
+                sprintf(modfile, "%s_coeff_sources.bin", TFILE);
                 writemod(modfile, taper_coeff, 3);
                 MPI_Barrier(MPI_COMM_WORLD);
                 if (MYID == 0)
@@ -575,15 +577,18 @@ void taper_grad(float **waveconv, float **taper_coeff, float **srcpos, int nshot
 
                 if (sws == 4)
                 {
-                        fp_taper = fopen("taper.bin", "r");
+			sprintf(modfile, "%s.bin", TFILE);
+                        fp_taper = fopen(modfile, "r");
                 }
                 if (sws == 5)
                 {
-                        fp_taper = fopen("taper_u.bin", "r");
+			sprintf(modfile, "%s_u.bin", TFILE);
+                        fp_taper = fopen(modfile, "r");
                 }
                 if (sws == 6)
                 {
-                        fp_taper = fopen("taper_rho.bin", "r");
+			sprintf(modfile, "%s_rho.bin", TFILE);
+                        fp_taper = fopen(modfile, "r");
                 }
 
                 /* loop over global grid */
@@ -614,7 +619,7 @@ void taper_grad(float **waveconv, float **taper_coeff, float **srcpos, int nshot
 
                 fclose(fp_taper);
 
-                sprintf(modfile, "taper_coeff_file.bin");
+                sprintf(modfile, "%s_coeff_file.bin", TFILE);
                 writemod(modfile, taper_coeff, 3);
 
                 MPI_Barrier(MPI_COMM_WORLD);

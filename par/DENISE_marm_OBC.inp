@@ -154,6 +154,7 @@ radius_in_m_(SRTRADIUS) = 5.0
 # --> minimum for SRTRADIUS is 5x5 gridpoints
 filtsize_in_gridpoints_(FILTSIZE) = 1
 read_taper_from_file_(yes=1)_(SWS_TAPER_FILE) = 0
+taper_file_basename_(TFILE) = taper/taper
 #
 #
 # ----- Output of inverted models ----- #
