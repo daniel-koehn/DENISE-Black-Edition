@@ -141,3 +141,6 @@ int WRITE_STF, WRITEMOD;
 
 /* parameters for time integation */
 int N_ORDER;
+
+/* parameters for ROWI */
+int ROWI;

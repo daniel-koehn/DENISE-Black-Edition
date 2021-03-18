@@ -27,8 +27,8 @@ void FWI_PSV()
   extern float LAM_GRAV, GAMMA_GRAV, LAM_GRAV_GRAD, L2_GRAV_IT1;
 
   /* full waveform inversion */
-  extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, EPRECOND, PCG_BETA;
-  extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER, INV_MOD_OUT;
+  extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, EPRECOND, PCG_BETA, LNORM;
+  extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER, INV_MOD_OUT, ROWI;
   extern float FC_END, PRO, C_vp, C_vs, C_rho;
   extern char MISFIT_LOG_FILE[STRING_SIZE], JACOBIAN[STRING_SIZE];
   extern char *FILEINP1;
@@ -83,6 +83,9 @@ void FWI_PSV()
   int ngrav = 0, nxgrav, nygrav;
   float L2_grav, FWImax, GRAVmax, FWImax_all, GRAVmax_all;
   char jac_grav[STRING_SIZE];
+
+  /* parameters for random number generation */
+  int ra, ra1;
 
   FILE *FPL2, *FP_stage, *FP_GRAV, *LAMBDA;
 
@@ -415,7 +418,37 @@ void FWI_PSV()
  * -------------------------------------- */
     while (iter <= ITERMAX)
     {
+
+      /* Apply random objective waveform inversion */
+      if(ROWI){
+      
+         /* fetch random number on MYID==0 */
+         if(MYID==0){
+      
+            /* initialize random number generator */
+      	    srand((unsigned)time(NULL));
+      
+      	    /* generate random number between 1 and 100 */
+            ra = rand();
+      	    ra1 = (ra % 100) + 1;
+            
+         }
+      
+         /* broadcast random number over all MPI processes */	       
+         MPI_Barrier(MPI_COMM_WORLD);
+         MPI_Bcast(&ra1,1,MPI_INT,0,MPI_COMM_WORLD);
+      
+         if(ra1<=50){LNORM=8;}
+	 if(ra1>50){LNORM=2;}
+      
+         if(MYID==0){
+            printf("ra1 = %d \t LNORM = %d \n", ra1, LNORM);      
+         }
+      
+      }
+        
       MPI_Barrier(MPI_COMM_WORLD);
+
       if (GRAD_METHOD == 2)
       {
 

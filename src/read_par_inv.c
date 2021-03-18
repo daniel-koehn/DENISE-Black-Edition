@@ -20,7 +20,7 @@ extern int TIME_FILT, ORDER, EPRECOND;
 extern int LNORM, OFFSET_MUTE;
 extern int INV_STF, N_ORDER;
 extern float PRO, FC_START, FC_END, EPS_STF, OFFSETC, OFFSETC_STF; 
-extern int TIMEWIN;
+extern int TIMEWIN, ROWI;
 extern float TWLENGTH_PLUS, TWLENGTH_MINUS, GAMMA;
 extern float WD_DAMP, WD_DAMP1, SCALERHO, SCALEQS;
 extern float GAMMA_GRAV;
@@ -29,10 +29,10 @@ extern float GAMMA_GRAV;
 int i;
 char str [80];
 
-fscanf(fp,"%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str);
+fscanf(fp,"%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str);
 for (i=1;i<=nstage;i++){
      
-fscanf(fp,"%f%i%f%f%i%i%f%f%f%i%i%i%i%i%f%f%i%i%i%f%f%i%i%f%f%f%i%f%i",&PRO,&TIME_FILT,&FC_START,&FC_END,&ORDER,&TIMEWIN,&GAMMA,&TWLENGTH_MINUS,&TWLENGTH_PLUS,&INV_VP_ITER,&INV_VS_ITER,&INV_RHO_ITER,&INV_QS_ITER,&SPATFILTER,&WD_DAMP,&WD_DAMP1,&EPRECOND,&LNORM,&INV_STF,&OFFSETC_STF,&EPS_STF,&NORMALIZE,&OFFSET_MUTE,&OFFSETC,&SCALERHO,&SCALEQS,&ENV,&GAMMA_GRAV,&N_ORDER);
+fscanf(fp,"%f%i%f%f%i%i%f%f%f%i%i%i%i%i%f%f%i%i%i%i%f%f%i%i%f%f%f%i%f%i",&PRO,&TIME_FILT,&FC_START,&FC_END,&ORDER,&TIMEWIN,&GAMMA,&TWLENGTH_MINUS,&TWLENGTH_PLUS,&INV_VP_ITER,&INV_VS_ITER,&INV_RHO_ITER,&INV_QS_ITER,&SPATFILTER,&WD_DAMP,&WD_DAMP1,&EPRECOND,&LNORM,&ROWI,&INV_STF,&OFFSETC_STF,&EPS_STF,&NORMALIZE,&OFFSET_MUTE,&OFFSETC,&SCALERHO,&SCALEQS,&ENV,&GAMMA_GRAV,&N_ORDER);
 }
 
 fclose(fp);
@@ -112,8 +112,13 @@ if(MYID==0){
    printf("   LNORM==5 corresponds to global correlation\n");
    printf("   LNORM==6 corresponds to envelope objective function\n\n");
    printf(" Used LNORM=%d\n",LNORM);
-   printf(" N_ORDER=%d\n\n",N_ORDER);	
-   
+   printf(" N_ORDER=%d\n\n",N_ORDER);
+	
+   printf("\n\n");
+   if(ROWI==1){   
+   printf(" --------------- ROWI -------------------\n");
+   printf(" Apply Random Objective Waveform Inversion according to Pan & Gao (2020): ROWI = %d\n\n",ROWI);
+   }
   printf("\n\n");
   if(INV_STF==1){
   printf(" --------------- STF inversion  -------------------\n");
