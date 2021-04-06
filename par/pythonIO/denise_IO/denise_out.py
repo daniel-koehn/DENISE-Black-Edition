@@ -444,6 +444,7 @@ def write_denise_para(para):
 	fp.write("taper_length_(in_rec_numbers)_(TAPERLENGTH) = " + str(para["TAPERLENGTH"]) + "\n")
 	fp.write("gradient_taper_geometry_(GRADT1,GRADT2,GRADT3,GRADT4) = " + str(para["GRADT1"]) + ", " + str(para["GRADT2"]) + ", " + str(para["GRADT3"]) + ", " + str(para["GRADT4"]) + "\n")
 	fp.write("type_of_material_parameters_to_invert_(Vp,Vs,rho=1/Zp,Zs,rho=2/lam,mu,rho=3)_(INVMAT1) = " + str(para["INVMAT1"]) + "\n")
+	fp.write("gradient_formulation_(GRAD_FORM) = " + str(para["GRAD_FORM"]) + "\n")
 	fp.write("adjoint_source_type_(x-y_components=1/y_comp=2/x_comp=3/p_comp=4/x-p_comp=5/y-p_comp=6/x-y-p_comp=7)_(QUELLTYPB) = " + str(para["QUELLTYPB"]) + "\n")
 	fp.write("testshots_for_step_length_estimation_(TESTSHOT_START,TESTSHOT_END,TESTSHOT_INCR) = " + str(para["TESTSHOT_START"]) + ", " + str(para["TESTSHOT_END"]) + ", " + str(para["TESTSHOT_INCR"]) + "\n")
 	fp.write("#\n")
@@ -551,7 +552,7 @@ def write_denise_workflow_header(para):
 	fp = open(para["filename_workflow"], mode='w')
 
 	# write header to DENISE workflow file
-	fp.write("PRO \t TIME_FILT \t FC_low \t FC_high \t ORDER \t TIME_WIN \t GAMMA \t TWIN- \t TWIN+ \t INV_VP_ITER \t INV_VS_ITER \t INV_RHO_ITER \t INV_QS_ITER \t SPATFILTER \t WD_DAMP \t WD_DAMP1 \t EPRECOND \t LNORM \t STF_INV \t OFFSETC_STF \t EPS_STF \t NORMALIZE \t OFFSET_MUTE \t OFFSETC \t SCALERHO \t SCALEQS \t ENV \t GAMMA_GRAV \t N_ORDER \n")
+	fp.write("PRO \t TIME_FILT \t FC_low \t FC_high \t ORDER \t TIME_WIN \t GAMMA \t TWIN- \t TWIN+ \t INV_VP_ITER \t INV_VS_ITER \t INV_RHO_ITER \t INV_QS_ITER \t SPATFILTER \t WD_DAMP \t WD_DAMP1 \t EPRECOND \t LNORM \t ROWI \t STF_INV \t OFFSETC_STF \t EPS_STF \t NORMALIZE \t OFFSET_MUTE \t OFFSETC \t SCALERHO \t SCALEQS \t ENV \t GAMMA_GRAV \t N_ORDER \n")
 
 	# close DENISE workflow file
 	fp.close()
@@ -565,7 +566,7 @@ def write_denise_workflow(para):
 	fp = open(para["filename_workflow"], mode='a')
 
 	# write header to DENISE workflow file
-	fp.write(str(para["PRO"]) + "\t" + str(para["TIME_FILT"]) + "\t" + str(para["FC_LOW"]) + "\t" + str(para["FC_HIGH"]) + "\t" + str(para["ORDER"]) + "\t" + str(para["TIME_WIN"]) + "\t" + str(para["GAMMA"]) + "\t" + str(para["TWIN-"]) + "\t" + str(para["TWIN+"]) + "\t" + str(para["INV_VP_ITER"]) + "\t" + str(para["INV_VS_ITER"]) + "\t" + str(para["INV_RHO_ITER"]) + "\t" + str(para["INV_QS_ITER"]) + "\t" + str(para["SPATFILTER"]) + "\t" + str(para["WD_DAMP"]) + "\t" + str(para["WD_DAMP1"]) + "\t" + str(para["EPRECOND"]) + "\t" + str(para["LNORM"]) + "\t" + str(para["STF"]) + "\t" + str(para["OFFSETC_STF"]) + "\t" + str(para["EPS_STF"]) + "\t" + "0" + "\t" + str(para["OFFSET_MUTE"]) + "\t" + str(para["OFFSETC"]) + "\t" + str(para["SCALERHO"]) + "\t" + str(para["SCALEQS"]) + "\t" + str(para["ENV"]) + "\t" + "0" + "\t" + str(para["N_ORDER"]) + "\n")
+	fp.write(str(para["PRO"]) + "\t" + str(para["TIME_FILT"]) + "\t" + str(para["FC_LOW"]) + "\t" + str(para["FC_HIGH"]) + "\t" + str(para["ORDER"]) + "\t" + str(para["TIME_WIN"]) + "\t" + str(para["GAMMA"]) + "\t" + str(para["TWIN-"]) + "\t" + str(para["TWIN+"]) + "\t" + str(para["INV_VP_ITER"]) + "\t" + str(para["INV_VS_ITER"]) + "\t" + str(para["INV_RHO_ITER"]) + "\t" + str(para["INV_QS_ITER"]) + "\t" + str(para["SPATFILTER"]) + "\t" + str(para["WD_DAMP"]) + "\t" + str(para["WD_DAMP1"]) + "\t" + str(para["EPRECOND"]) + "\t" + str(para["LNORM"]) + "\t" + str(para["ROWI"]) + "\t" + str(para["STF"]) + "\t" + str(para["OFFSETC_STF"]) + "\t" + str(para["EPS_STF"]) + "\t" + "0" + "\t" + str(para["OFFSET_MUTE"]) + "\t" + str(para["OFFSETC"]) + "\t" + str(para["SCALERHO"]) + "\t" + str(para["SCALEQS"]) + "\t" + str(para["ENV"]) + "\t" + "0" + "\t" + str(para["N_ORDER"]) + "\n")
 
 	# close DENISE workflow file
 	fp.close()

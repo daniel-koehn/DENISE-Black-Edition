@@ -836,7 +836,7 @@ class Denise(object):
             "PRO \t TIME_FILT \t FC_low \t FC_high \t ORDER \t TIME_WIN \t"
             " GAMMA \t TWIN- \t TWIN+ \t INV_VP_ITER \t INV_VS_ITER \t"
             " INV_RHO_ITER \t INV_QS_ITER \t SPATFILTER \t WD_DAMP \t WD_DAMP1"
-            " \t EPRECOND \t LNORM \t STF_INV \t OFFSETC_STF \t EPS_STF \t NORMALIZE"
+            " \t EPRECOND \t LNORM \t ROWI \t STF_INV \t OFFSETC_STF \t EPS_STF \t NORMALIZE"
             " \t OFFSET_MUTE \t OFFSETC \t SCALERHO \t SCALEQS \t ENV \t GAMMA_GRAV \t N_ORDER \n")
         fp.close()
 
@@ -851,7 +851,7 @@ class Denise(object):
             stage["GAMMA"]) + "\t" + str(stage["TWIN-"]) + "\t" + str(stage["TWIN+"]) + "\t" + str(
             stage["INV_VP_ITER"]) + "\t" + str(stage["INV_VS_ITER"]) + "\t" + str(stage["INV_RHO_ITER"]) + "\t" + str(
             stage["INV_QS_ITER"]) + "\t" + str(stage["SPATFILTER"]) + "\t" + str(stage["WD_DAMP"]) + "\t" + str(
-            stage["WD_DAMP1"]) + "\t" + str(stage["EPRECOND"]) + "\t" + str(stage["LNORM"]) + "\t" + str(
+            stage["WD_DAMP1"]) + "\t" + str(stage["EPRECOND"]) + "\t" + str(stage["LNORM"]) + "\t" + str(stage["ROWI"]) + "\t" + str(
             stage["STF"]) + "\t" + str(stage["OFFSETC_STF"]) + "\t" + str(stage["EPS_STF"]) + "\t" + "0" + "\t" + str(
             stage["OFFSET_MUTE"]) + "\t" + str(stage["OFFSETC"]) + "\t" + str(stage["SCALERHO"]) + "\t" + str(
             stage["SCALEQS"]) + "\t" + str(stage["ENV"]) + "\t" + "0" + "\t" + str(stage["N_ORDER"]) + "\n")
@@ -859,7 +859,7 @@ class Denise(object):
 
     def add_fwi_stage(self, pro=0.01, time_filt=1, fc_low=0.0, fc_high=5.0, order=6, time_win=0, gamma=20,
                       twin_minus=0., twin_plus=0., inv_vp_iter=0, inv_vs_iter=0, inv_rho_iter=0, inv_qs_iter=0,
-                      spatfilter=0, wd_damp=0.5, wd_damp1=0.5, e_precond=3, lnorm=2, stf=0, offsetc_stf=-4.,
+                      spatfilter=0, wd_damp=0.5, wd_damp1=0.5, e_precond=3, lnorm=2, rowi=0, stf=0, offsetc_stf=-4.,
                       eps_stf=1e-1, normalize=0, offset_mute=0, offsetc=10, scale_rho=0.5, scale_qs=1.0, env=1,
                       n_order=0):
         """ Appends a dict with FWI stage parameters to self.fwi_stages
@@ -895,6 +895,9 @@ class Denise(object):
                 LNORM = 5 - global correlation norm (Choi & Alkhalifah 2012)
                 LNORM = 6 - envelope objective functions after Chi, Dong and Liu (2014) - EXPERIMENTAL
                 LNORM = 7 - NIM objective function after Chauris et al. (2012) and Tejero et al. (2015) - EXPERIMENTAL
+            rowi (int): Activate Random objective waveform inversion (ROWI, Pan & Gao 2020)
+                ROWI = 0 - no ROWI
+                ROWI = 1 - 50% GCN L2 norm / 50% AGC L2 norm (AC, PSV and SH module only)
             stf (int): Source wavelet inversion
                 STF = 0 - no source wavelet inversion, default
                 STF = 1 - estimate source wavelet by stabilized Wiener Deconvolution
@@ -965,6 +968,11 @@ class Denise(object):
         # LNORM = 6 - envelope objective functions after Chi, Dong and Liu (2014) - EXPERIMENTAL
         # LNORM = 7 - NIM objective function after Chauris et al. (2012) and Tejero et al. (2015) - EXPERIMENTAL
         para["LNORM"] = lnorm
+
+        # Activate Random objective waveform inversion (ROWI, Pan & Gao 2020)
+        # ROWI = 0 - no ROWI
+        # ROWI = 1 - 50% GCN L2 norm / 50% AGC L2 norm (AC, PSV and SH module only)
+        para["ROWI"] = rowi
 
         # Source wavelet inversion
         # STF = 0 - no source wavelet inversion
