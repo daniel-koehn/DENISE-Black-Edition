@@ -462,6 +462,7 @@ def write_denise_para(para):
 	fp.write("# --> minimum for SRTRADIUS is 5x5 gridpoints\n")
 	fp.write("filtsize_in_gridpoints_(FILTSIZE) = 1\n")
 	fp.write("read_taper_from_file_(yes=1)_(SWS_TAPER_FILE) = " + str(para["SWS_TAPER_FILE"]) + "\n")
+	fp.write("taper_file_basename_(TFILE) = " + para["TFILE"] + "\n")
 	fp.write("#\n")
 	fp.write("# ----- Output of inverted models ----- #\n")
 	fp.write("write_inverted_model_after_each_iteration_(yes=1)_(INV_MOD_OUT) = " + str(para["INV_MOD_OUT"]) + "\n")
