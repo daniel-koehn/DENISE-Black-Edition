@@ -3,15 +3,15 @@ Git cloning ...
 
 ... the master branch
 
-git clone https://github.com/daniel-koehn/DENISE-Black-Edition.git
+git clone git@github.com:daniel-koehn/DENISE-Black-Edition.git
 
 ... only the latest master branch update 
 
-git clone --depth=1 https://github.com/daniel-koehn/DENISE-Black-Edition.git  
+git clone --depth=1 git@github.com:daniel-koehn/DENISE-Black-Edition.git 
 
 ... a developing branch
 
-git clone -b branch_name https://github.com/daniel-koehn/DENISE-Black-Edition.git
+git clone -b branch_name git@github.com:daniel-koehn/DENISE-Black-Edition.git
 
 
 Update of Github DENISE-Black-Edition repository

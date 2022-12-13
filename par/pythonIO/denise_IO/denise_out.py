@@ -232,17 +232,17 @@ def do_plot(n, model, cm, an, title, vpmin, vpmax, x, y, font):
     #ax.set_yticks([0.5, 1, 1.5, 2, 2.5, 3, 3.5])
     
     #plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-    rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+    #rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
     ## for Palatino and other serif fonts use:
     #rc('font',**{'family':'serif','serif':['Palatino']})
     #plt.rc('text', usetex=True)
-    rc('text', usetex=True)
+    #rc('text', usetex=True)
     
     # plt.pcolor(x, y, vp, cmap=cm, vmin=vpmin)
     plt.imshow(model, cmap=cm, interpolation='none', extent=[np.min(x),np.max(x),np.min(y),np.max(y)], vmin=vpmin, vmax=vpmax)
-    a = gca()
-    a.set_xticklabels(a.get_xticks(), font)
-    a.set_yticklabels(a.get_yticks(), font)
+    #a = gca()
+    #a.set_xticklabels(a.get_xticks(), font)
+    #a.set_yticklabels(a.get_yticks(), font)
     plt.axis('scaled')
     plt.ylabel('Depth [km]', fontdict=font)
     if n==3:
@@ -290,9 +290,9 @@ def plot_acq(vp,xrec,yrec,xsrc,ysrc,x,y,cmap,vpmin,vpmax):
 	plt.plot(xrec,yrec,'cv',markersize=5)
 	plt.plot(xsrc,ysrc,'r*',markersize=10)
 
-	a = gca()
-	a.set_xticklabels(a.get_xticks(), font)
-	a.set_yticklabels(a.get_yticks(), font)
+	#a = gca()
+	#a.set_xticklabels(a.get_xticks(), font)
+	#a.set_yticklabels(a.get_yticks(), font)
 
 	plt.ylabel('Depth [m]', fontdict=font)
 	plt.xlabel('Distance [m]', fontdict=font)
