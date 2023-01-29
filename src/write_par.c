@@ -370,9 +370,9 @@ void write_par(FILE *fp){
 	
 	fprintf(fp,"\n\n");
 	fprintf(fp," --------------- Gradient smoothing with 2D-Gaussian filter -------------------\n");
-	if(MODEL_FILTER==1){
-		fprintf(fp," GRAD_FILTER=%d: Jacobians are filtered.(FILT_SIZE_GRAD=%d)\n",MODEL_FILTER,FILT_SIZE_GRAD);}
-	else 	fprintf(fp," MODEL_FILTER=%d: Jacobians are not filtered.\n",MODEL_FILTER);
+	if(GRAD_FILTER==1){
+		fprintf(fp," GRAD_FILTER=%d: Gradients are filtered.(FILT_SIZE_GRAD=%d)\n",GRAD_FILTER,FILT_SIZE_GRAD);}
+	else 	fprintf(fp," GRAD_FILTER=%d: Gradients are not filtered.\n",GRAD_FILTER);
 		
 	fprintf(fp,"\n\n");
 	fprintf(fp," --------------- Limits of model parameters -------------------\n");

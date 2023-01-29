@@ -1,82 +1,49 @@
 /*****************************************************************************/
 /*         calculate the median of a 2D matrix                               */
+/* Median code from https://codingpointer.com/c-tutorial/median              */
 /*****************************************************************************/
 
 
 #include "fd.h"
 
-int minpos(float *a, int n);
-float vecmax(float *a, int n);
-
-
 float median2d(float **mat, int ny, int nx){
 
-	int i, j, k;
-	float *t, *s, maxglob, med;
-	
+	int i, j, k, n;
+	float *a, temp, med;
 
-	t = vector(1,nx*ny);
-	s = vector(1,nx*ny);
+	n = nx*ny;
+	a = vector(0,n-1);
 	
 	k = 0;
-	for (j=1;j<=ny;j++)
-		for (i=1;i<=nx;i++)
-		{
-			k++;
-			t[k] = mat[j][i];
-		}
+	for (j=1;j<=ny;j++){
+		for (i=1;i<=nx;i++){
 		
-	maxglob = vecmax(t,k);
-	
-	for (j=1;j<=k;j++)
-	{
-		for (i=1;i<=k;i++)
-		{
-			s[j] = t[minpos(t,k)];
-			t[minpos(t,k)] = maxglob;
+			a[k] = mat[j][i];
+			k++;
 		}
-	}
+	}			
+		
+	temp = 0;                                                                        
+	/* sorting */                                                                   
+	for(i=0;i<n-1;i++){                                                                              
+   	   for(j=0; j<n-i-1; j++){                                                                            
+    		if(a[j]<a[j+1]){                                                                           
+     			
+		    temp = a[j];                                                               
+     		    a[j] = a[j+1];                                                             
+     		    a[j+1] = temp;
+		                                                                 
+    		}                                                                           
+   	   }                                                                            
+ 	}               
 	
-	med = s[(k+1)/2];
+	 /* calculate median */                                                       
+ 	if( n%2 == 0)                                                                  
+  		med = (a[(n/2)-1]+a[(n/2)])/2.0;                                           
+ 	else                                                                           
+  		med = a[(n/2)];
 	
-	free_vector(t,1,k);
-	free_vector(s,1,k);
+	free_vector(a,0,n-1);
 	
 	return med;
-}
-
-
-int minpos(float *a, int n){
-	float mini;
-	int j;
-	int minp = 1;
-
-	mini = a[1];
-	for (j=2;j<=n;j++)
-	{	
-		if (a[j]<mini)
-		{
-			mini = a[j];
-			minp = j;
-		}
-	}
-		
-	return minp;
-}
-
-
-float vecmax(float *a, int n){
-	float maxi;
-	int j;
-
-	maxi = a[1];
-	for (j=2;j<=n;j++)
-	{	
-		if (a[j]>maxi)
-		{
-			maxi = a[j];
-		}
-	}
-		
-	return maxi;
 }

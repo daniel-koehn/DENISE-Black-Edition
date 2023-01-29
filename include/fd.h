@@ -607,6 +607,11 @@ void outseis_SHres(struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, int *recs
 
 void physics_SH();
 
+void PML_pro_SH(float * d_x, float * K_x, float * alpha_prime_x, float * a_x, float * b_x, 
+            float * d_x_half, float * K_x_half, float * alpha_prime_x_half, float * a_x_half, float * b_x_half,
+            float * d_y, float * K_y, float * alpha_prime_y, float * a_y, float * b_y, 
+            float * d_y_half, float * K_y_half, float * alpha_prime_y_half, float * a_y_half, float * b_y_half);
+
 void precond_SH(struct fwiSH *fwiSH, struct acq *acq, int nsrc, int ntr_glob, float ** taper_coeff, FILE *FP_GRAV);
 
 void prepare_update_s_visc_SH(float *etajm, float *etaip, float *peta, float **fipjp, float **pujp, 
@@ -623,7 +628,7 @@ void saveseis_glob_SH(FILE *fp, float **sectionvz, int  **recpos, int  **recpos_
 
 void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
-         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);
+         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);	  
 
 float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
@@ -774,6 +779,8 @@ void LBFGS(int iter, float * y_LBFGS, float * s_LBFGS, float * rho_LBFGS, float 
 double LU_decomp(double  **A, double *x, double *b,int n);
 
 float maximum_m(float **mat, int nx, int ny);
+
+void median_model(float ** waveconv, int filt_size);
 
 void median_src(float ** waveconv,float ** taper_coeff, float **srcpos, int nshots, int **recpos, int ntr, int iter, int sws);
 

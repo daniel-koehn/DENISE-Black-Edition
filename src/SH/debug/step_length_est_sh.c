@@ -45,6 +45,7 @@ float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, s
         /* store current SH models */
         copy_mat((*matSH).prho,(*fwiSH).prho_old);
         copy_mat((*matSH).pu,(*fwiSH).pu_old);
+        copy_mat((*matSH).ptaus,(*fwiSH).ptaus_old);
 
 	while((step2!=1)||(*step1!=1)){
 

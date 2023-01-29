@@ -30,14 +30,24 @@ void stf_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *
         (*acq).signals=NULL;
 	(*acq).signals=wavelet((*acq).srcpos_loc,nsrc_loc,ishot);
 
-	if (nsrc_loc){if(QUELLART==6){
+	if (nsrc_loc){
+	   if(QUELLART==6){
 
-   		/* time domain filtering of the source signal */
+   		/* time domain filtering of the source signal with bandlimited spike filter parameters */
    		apply_tdfilt((*acq).signals,nsrc_loc,ns,ORDER_SPIKE,FC_SPIKE_2,FC_SPIKE_1);
 
 	   }
-	} 
-
+	   
+	   if(TIME_FILT){
+	   
+	        /* time domain filtering of the source signal with FWI filter parameters of current stage */
+   		apply_tdfilt((*acq).signals,nsrc_loc,ns,ORDER,FC,FC_START);
+	   
+	   }
+	   
+	}
+	
+	 
         /* forward problem */
         sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
 

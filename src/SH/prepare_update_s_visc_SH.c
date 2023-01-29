@@ -33,8 +33,6 @@ void prepare_update_s_visc_SH(float *etajm, float *etaip, float *peta, float **f
 	for (l=1;l<=L;l++){
 		sumu=sumu+((ws*ws*pts[l]*pts[l])/(1.0+ws*ws*pts[l]*pts[l]));
 	}
-	
-	ALPHA_VISC = sumu;
 
 	for (l=1;l<=L;l++){
 		etajm[l] = peta[l];

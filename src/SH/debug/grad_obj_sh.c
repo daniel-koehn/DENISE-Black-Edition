@@ -206,27 +206,32 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	/* solve adjoint problem */	  
         sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,1,req_send,req_rec);
 
+	/* assemble SH gradients for each shot */
+	ass_gradSH(fwiSH,matSH,iter);
+
 	/* calculate gradients for normalized material parameters */
-	/*for(i=1;i<=NX;i=i+IDX){
+	for(i=1;i<=NX;i=i+IDX){
 	    for(j=1;j<=NY;j=j+IDY){
 
                 (*fwiSH).waveconv_u_shot[j][i] = -(*fwiSH).waveconv_u_shot[j][i] / (NTDTINV * nshots * ntr_glob);
 		(*fwiSH).waveconv_rho_shot[j][i] = -(*fwiSH).waveconv_rho_shot[j][i] / (NTDTINV * nshots * ntr_glob);
-		
+		(*fwiSH).waveconv_ts_shot[j][i] = -(*fwiSH).waveconv_ts_shot[j][i] / (NTDTINV * nshots * ntr_glob);
+
 	    }
-	}*/
+	}
 
 	if((EPRECOND==1)||(EPRECOND==3)){
 
 	  /* calculate energy weights */
 	  eprecond1(We,Ws,Wr);
 	      
-	  /* scale gradient with maximum model parameters and energy weights */
+	  /* scale gradient with maximum model parameters and energy weights*/
 	  for(i=1;i<=NX;i=i+IDX){
 	      for(j=1;j<=NY;j=j+IDY){
 
-		       (*fwiSH).waveconv_u_shot[j][i] = (*fwiSH).waveconv_u_shot[j][i] / (We[j][i]*C_vs*C_vs);
-		     (*fwiSH).waveconv_rho_shot[j][i] = (*fwiSH).waveconv_rho_shot[j][i] / (We[j][i]*C_rho*C_rho);
+		       (*fwiSH).waveconv_u_shot[j][i] = (*fwiSH).waveconv_u_shot[j][i] / We[j][i];
+		     (*fwiSH).waveconv_rho_shot[j][i] = (*fwiSH).waveconv_rho_shot[j][i] / We[j][i];
+		      (*fwiSH).waveconv_ts_shot[j][i] = (*fwiSH).waveconv_ts_shot[j][i] / We[j][i];
 
 	      }
 	  }
@@ -241,11 +246,11 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	
 	} /* end of SWS_TAPER_CIRCULAR_PER_SHOT == 1 */
 
-	/* Add shot contributions */
 	for(i=1;i<=NX;i=i+IDX){
 		for(j=1;j<=NY;j=j+IDY){
 			(*fwiSH).waveconv_rho[j][i] += (*fwiSH).waveconv_rho_shot[j][i];
 			(*fwiSH).waveconv_u[j][i] += (*fwiSH).waveconv_u_shot[j][i];
+			(*fwiSH).waveconv_ts[j][i] += (*fwiSH).waveconv_ts_shot[j][i];
 		}
 	}
 
@@ -291,6 +296,12 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	nsrc_loc=0;
 
 	} /* end of loop over shots (forward and backpropagation) */   
+
+	/* Calculate Pseudo-Hessian for Vs-rho-ts parametrization */
+	/* and apply inverse Hessian to gradient */
+	if(EPRECOND==4){
+	   apply_inv_hessSH(fwiSH, matSH, nshots);
+	}
 
 	/* calculate L2 norm of all CPUs*/
 	L2sum = 0.0;

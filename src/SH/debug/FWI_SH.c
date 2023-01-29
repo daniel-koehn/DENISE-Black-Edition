@@ -27,7 +27,6 @@ extern float LAM_GRAV, GAMMA_GRAV, LAM_GRAV_GRAD, L2_GRAV_IT1;
 /* full waveform inversion */
 extern int GRAD_METHOD, NLBFGS, ITERMAX, IDX, IDY, INVMAT1, EPRECOND, PCG_BETA, LNORM;
 extern int GRAD_FORM, POS[3], QUELLTYPB, MIN_ITER, MODEL_FILTER, INV_MOD_OUT, ROWI;
-extern int GRAD_FILTER, MODEL_FILTER, FILT_SIZE, FILT_SIZE_GRAD;
 extern float FC_END, PRO, C_vs, C_rho, C_taus, C_vs_min, C_rho_min, C_taus_min;
 extern char MISFIT_LOG_FILE[STRING_SIZE], JACOBIAN[STRING_SIZE];
 extern char *FILEINP1;
@@ -37,7 +36,7 @@ int ns, nseismograms=0, nt, nd, fdo3, j, i, iter, h, hin, iter_true, SHOTINC, s=
 int buffsize, ntr=0, ntr_loc=0, ntr_glob=0, nsrc=0, nsrc_loc=0, nsrc_glob=0, ishot, nshots=0, itestshot;
 
 float sum, eps_scale, opteps_vp, opteps_vs, opteps_rho, opteps_ts, Vs_max, rho_max, taus_max, Vs_sum, rho_sum, taus_sum;
-float Vs_min, rho_min, taus_min, Vs_avg, rho_avg;
+float Vs_min, rho_min, taus_min;
 char *buff_addr, ext[10], *fileinp, jac[225], source_signal_file[STRING_SIZE];
 
 double time1, time2, time7, time8, time_av_v_update=0.0, time_av_s_update=0.0, time_av_v_exchange=0.0; 
@@ -249,7 +248,7 @@ if(GRAVITY==1 || GRAVITY==2){
 alloc_SH(&waveSH,&waveSH_PML);
 
 /* calculate damping coefficients for CPMLs (SH problem)*/
-if(FW>0){PML_pro_SH(waveSH_PML.d_x, waveSH_PML.K_x, waveSH_PML.alpha_prime_x, waveSH_PML.a_x, waveSH_PML.b_x, waveSH_PML.d_x_half, waveSH_PML.K_x_half, waveSH_PML.alpha_prime_x_half, waveSH_PML.a_x_half, 
+if(FW>0){PML_pro(waveSH_PML.d_x, waveSH_PML.K_x, waveSH_PML.alpha_prime_x, waveSH_PML.a_x, waveSH_PML.b_x, waveSH_PML.d_x_half, waveSH_PML.K_x_half, waveSH_PML.alpha_prime_x_half, waveSH_PML.a_x_half, 
                  waveSH_PML.b_x_half, waveSH_PML.d_y, waveSH_PML.K_y, waveSH_PML.alpha_prime_y, waveSH_PML.a_y, waveSH_PML.b_y, waveSH_PML.d_y_half, waveSH_PML.K_y_half, waveSH_PML.alpha_prime_y_half, 
                  waveSH_PML.a_y_half, waveSH_PML.b_y_half);
 }
@@ -288,9 +287,15 @@ if(GRAD_METHOD==2){
 if(GRAD_METHOD==1){
 
   PCG_class = 2;                 /* number of parameter classes */ 
-  PCG_vec = PCG_class*NX*NY;  	 /* length of one PCG-parameter class */  
+  if(L){PCG_class = 3;}
+  PCG_vec = PCG_class*NX*NY;  	 /* length of one PCG-parameter class */
+  
+  PCG_old  =  vector(1,PCG_vec);
+  PCG_new  =  vector(1,PCG_vec);
+  PCG_dir  =  vector(1,PCG_vec);
  
 }
+
 
 taper_coeff=  matrix(1,NY,1,NX);
 
@@ -365,7 +370,6 @@ if(GRAVITY==1 || GRAVITY==2){
 SHOTINC=1;
     
 iter_true=1;
-
 /* Begin of FWI-workflow */
 for(nstage=1;nstage<=stagemax;nstage++){
 
@@ -378,13 +382,6 @@ if((EPRECOND==1)||(EPRECOND==3)){
   Ws = matrix(1,NY,1,NX); /* total energy of the source wavefield */
   Wr = matrix(1,NY,1,NX); /* total energy of the receiver wavefield */
   We = matrix(1,NY,1,NX); /* total energy of source and receiver wavefield */
-}
-
-/* Variables for PCG method */
-if(GRAD_METHOD==1){  
-  PCG_old  =  vector(1,PCG_vec);
-  PCG_new  =  vector(1,PCG_vec);
-  PCG_dir  =  vector(1,PCG_vec);
 }
 
 FC=FC_END;
@@ -511,9 +508,6 @@ if(iter_true==1){
 	Vs_min = 1e10;
 	rho_min = 1e10;
 	taus_min = 1e10; 
-	
-	Vs_avg = 0.0;
-	rho_avg = 0.0; 
 	 
         for (i=1;i<=NX;i=i+IDX){
            for (j=1;j<=NY;j=j+IDY){
@@ -526,10 +520,7 @@ if(iter_true==1){
 		 /* calculate minimum Vs */
 		 if(matSH.pu[j][i] < Vs_min){
 		     Vs_min = matSH.pu[j][i];
-		 }
-		 
-		 /* calculate average vs value */
-		 Vs_avg += matSH.pu[j][i];		 
+		 }		 
 		 
 		 /* calculate maximum rho */
 		 if(matSH.prho[j][i] > rho_max){
@@ -540,9 +531,6 @@ if(iter_true==1){
 		 if(matSH.prho[j][i] < rho_min){
 		     rho_min = matSH.prho[j][i];
 		 }
-		 
-		 /* calculate average rho value */
-		 rho_avg += matSH.prho[j][i];
 
 		 /* calculate maximum taus */
 		 if(matSH.ptaus[j][i] > taus_max){
@@ -572,9 +560,9 @@ if(iter_true==1){
         MPI_Allreduce(&taus_min,&taus_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
         C_taus_min=taus_sum;
 		
-	/*if(MYID==0){
+	if(MYID==0){
            printf("Vs_min = %e \t rho_min = %e \t taus_min = %e \n ",C_vs_min, C_rho_min, C_taus_min);	
-	}*/
+	}
 		
         /* calculate maximum Vs, rho and taus of all CPUs*/
 	
@@ -589,24 +577,9 @@ if(iter_true==1){
 	taus_sum = 0.0;
         MPI_Allreduce(&taus_max,&taus_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
         taus_max=taus_sum;
-	
-	/* calculate average Vs, rho and taus of all CPUs*/
-	
-	Vs_sum = 0.0;
-        MPI_Allreduce(&Vs_avg,&Vs_sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-        Vs_avg=Vs_sum / (NXG*NYG);
-	
-	rho_sum = 0.0;
-        MPI_Allreduce(&rho_avg,&rho_sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-        rho_avg=rho_sum / (NXG*NYG);
-
 		
-	/*if(MYID==0){
-           printf("Vs_max = %e \t rho_max = %e \t taus_max = %e \n ",Vs_max, rho_max, taus_max);	
-	}*/
-	
 	if(MYID==0){
-           printf("Vs_avg = %e \t rho_max = %e \n ",Vs_avg, rho_avg);	
+           printf("Vs_max = %e \t rho_max = %e \t taus_max = %e \n ",Vs_max, rho_max, taus_max);	
 	}
 	
 	/* scaling factor for gradients normalized relative to mininum and maximum values*/
@@ -615,13 +588,9 @@ if(iter_true==1){
 	C_taus = taus_max - C_taus_min;*/
 	
 	/* scaling factor for gradients normalized relative to maximum values*/
-	/*C_vs = Vs_max;
+	C_vs = Vs_max;
 	C_rho = rho_max;
-	C_taus = taus_max;*/
-	
-	/* scaling factor for gradients normalized relative to average values*/
-	C_vs = Vs_avg;
-	C_rho = rho_avg;
+	C_taus = taus_max;
 	
 	C_vs_min = 0.0;
 	C_rho_min = 0.0;
@@ -659,6 +628,74 @@ nsrc_glob, nsrc_loc, ntr_loc, nstage, We, Ws, Wr, taper_coeff, hin, DTINV_help, 
 L2t[1]=L2sum;
 L2t[4]=L2sum;
 
+if(GRAVITY==2){
+
+  /* save seismic L2-norm of seismic data residuals */
+  L2sum = L2t[1];
+
+  /* global density model */
+  rho_grav =  matrix(1,NYG,1,NXG);
+  rho_grav_ext =  matrix(1,nygrav,1,nxgrav);
+
+  /* model gravity data */
+  /* save current density model */
+  sprintf(jac_grav,"%s_tmp.rho.%i.%i",JACOBIAN,POS[1],POS[2]);
+  FP_GRAV=fopen(jac_grav,"wb");
+
+  for (i=1;i<=NX;i=i+IDX){
+      for (j=1;j<=NY;j=j+IDY){
+          fwrite(&matPSV.prho[j][i],sizeof(float),1,FP_GRAV);
+      }
+  }
+	
+  fclose(FP_GRAV);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+          
+  /* merge model file */ 
+  sprintf(jac_grav,"%s_tmp.rho",JACOBIAN);
+  if (MYID==0) mergemod(jac_grav,3);
+  
+  MPI_Barrier(MPI_COMM_WORLD);
+  
+  /* gravity forward modelling */
+  read_density_glob(rho_grav,2);
+  extend_mod(rho_grav,rho_grav_ext,nxgrav,nygrav);
+  grav_mod(rho_grav_ext,ngrav,gravpos,gz_mod,nxgrav,nygrav,NZGRAV);
+
+  /* calculate gravity data residuals */
+  L2_grav=calc_res_grav(ngrav,gz_mod,gz_res);
+
+  /* calculate lambda 1 */
+  if(iter==1){
+  	LAM_GRAV = GAMMA_GRAV * (L2sum/L2_grav);
+  }
+
+  /* add gravity penalty term to the seismic objective function */
+  L2t[1]+=LAM_GRAV * L2_grav;
+  L2t[4]+=LAM_GRAV * L2_grav;
+
+  /* calculate gravity gradient */
+  for (i=1;i<=NX;i=i+IDX){
+       for (j=1;j<=NY;j=j+IDY){
+           grad_grav[j][i]=0.0;
+       }
+  }
+  grav_grad(ngrav,gravpos,grad_grav,gz_res);
+  
+  MPI_Barrier(MPI_COMM_WORLD);        
+
+  /* merge model file */
+  sprintf(jac,"%s_grav",JACOBIAN);          
+  if (MYID==0) mergemod(jac,3); 
+
+  /* free memory */
+  free_matrix(rho_grav,1,NYG,1,NXG);
+  free_matrix(rho_grav_ext,1,nygrav,1,nxgrav);
+  
+
+}
+
 /* Interpolate missing spatial gradient values in case IDXI > 1 || IDXY > 1 */
 /* ------------------------------------------------------------------------ */
 
@@ -666,11 +703,46 @@ if((IDXI>1)||(IDYI>1)){
 
    interpol(IDXI,IDYI,fwiSH.waveconv_u,1);
    interpol(IDXI,IDYI,fwiSH.waveconv_rho,1);
+   interpol(IDXI,IDYI,fwiSH.waveconv_ts,1);
 
 }
 
-/* assemble SH gradients */
-ass_gradSH(&fwiSH,&matSH,iter);
+/* Add gravity gradient to FWI density gradient */
+/* -------------------------------------------- */
+	
+   if(GRAVITY==2){
+		 		 
+     /* calculate maximum values of waveconv_rho and grad_grav */
+     FWImax = 0.0;
+     GRAVmax = 0.0;
+	
+     for (i=1;i<=NX;i++){
+        for (j=1;j<=NY;j++){
+		
+	    if(fabs(fwiSH.waveconv_rho[j][i])>FWImax){FWImax=fabs(fwiSH.waveconv_rho[j][i]);}
+	    if(fabs(grad_grav[j][i])>GRAVmax){GRAVmax=fabs(grad_grav[j][i]);}
+		
+        }
+     }
+	
+     MPI_Allreduce(&FWImax,&FWImax_all,  1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+     MPI_Allreduce(&GRAVmax,&GRAVmax_all,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+		
+    /* calculate lambda 2, normalized with respect to the maximum gradients */
+	if(iter==1){
+		LAM_GRAV_GRAD = GAMMA_GRAV * (FWImax_all/GRAVmax_all);
+	} 
+		 
+     /* add gravity gradient to seismic gradient with respect to the density */
+     for (i=1;i<=NX;i++){
+        for (j=1;j<=NY;j++){
+			
+            fwiSH.waveconv_rho[j][i] += LAM_GRAV_GRAD * grad_grav[j][i];
+				
+        }
+     }
+		
+   }
 
 /* Apply diagonal elements of inverse Pseudo-Hessian to gradients */
 /*if(EPRECOND==4){
@@ -685,18 +757,19 @@ ass_gradSH(&fwiSH,&matSH,iter);
    }
 }*/
 
-/* Preconditioning of gradients after shot summation and smoothing */
-precond_SH(&fwiSH,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
-
-/* apply 2D Median filter to gradients */
-if(GRAD_FILTER==1){
-    median_model(fwiSH.waveconv_u,FILT_SIZE_GRAD);
-    median_model(fwiSH.waveconv_rho,FILT_SIZE_GRAD);
-}
-
-/* smooth gradients using Gaussian filter */
+/* apply smoothness constraints to gradients and Hessian */
 smooth_grad(fwiSH.waveconv_u, matSH.pu);
 smooth_grad(fwiSH.waveconv_rho, matSH.pu);
+smooth_grad(fwiSH.waveconv_ts, matSH.pu);
+
+/*if(EPRECOND==4){
+    smooth_grad(fwiSH.ihess_vs2, matSH.pu);
+    smooth_grad(fwiSH.ihess_rho2, matSH.pu);
+    smooth_grad(fwiSH.ihess_ts2, matSH.pu);
+}*/
+
+/* Preconditioning of gradients after shot summation and smoothing */
+precond_SH(&fwiSH,&acq,nsrc,ntr_glob,taper_coeff,FP_GRAV);
 
 /* Use preconditioned conjugate gradient optimization method */
 if(GRAD_METHOD==1){
@@ -704,6 +777,7 @@ if(GRAD_METHOD==1){
     /* calculate steepest descent direction */
     descent(fwiSH.waveconv_u,fwiSH.gradp_u);
     descent(fwiSH.waveconv_rho,fwiSH.gradp_rho);
+    descent(fwiSH.waveconv_ts,fwiSH.gradp_ts);
 
     /* store current gradients in PCG_new vector */
     store_PCG_SH(PCG_new,fwiSH.gradp_u,fwiSH.gradp_rho,fwiSH.gradp_ts);
@@ -720,6 +794,7 @@ if(GRAD_METHOD==1){
     /* steepest descent direction -> gradient direction */
     descent(fwiSH.waveconv_u,fwiSH.waveconv_u);
     descent(fwiSH.waveconv_rho,fwiSH.waveconv_rho);
+    descent(fwiSH.waveconv_ts,fwiSH.waveconv_ts);
 
 }
 
@@ -737,6 +812,11 @@ if(GRAD_METHOD==2){
     extract_LBFGS_SH(iter, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, fwiSH.gradp_rho, fwiSH.waveconv_ts, fwiSH.gradp_ts, matSH.pu, matSH.prho, matSH.ptaus, r_LBFGS);
 
 }
+
+/* Write Pseudo-Hessian approximations */
+/*if(EPRECOND==4){
+   store_pseudo_hess_SH(&fwiSH);
+}*/
 
 opteps_vs=0.0;
 opteps_rho=0.0;
@@ -800,10 +880,9 @@ s=0;
 /* calculate optimal change in the material parameters */
 eps_true=calc_mat_change_test_SH(fwiSH.waveconv_rho,fwiSH.waveconv_u,fwiSH.waveconv_ts,fwiSH.prho_old,matSH.prho,fwiSH.pu_old,matSH.pu,fwiSH.ptaus_old,matSH.ptaus,iter,1,eps_scale,0);
 
-/* apply 2D Median filter to velocity and density model */
-if(MODEL_FILTER==1){
-    median_model(matSH.prho,FILT_SIZE);
-    median_model(matSH.pu,FILT_SIZE);
+if (MODEL_FILTER){
+/* smoothing the velocity models vp and vs */
+//	model(matPSV.ppi,matPSV.pu,matPSV.prho,iter);
 }
 
 if(MYID==0){	
@@ -879,21 +958,13 @@ iter_true++;
 } /* end of fullwaveform iteration loop*/
 /* ====================================== */
 
-/* Deallocate PCG vectors */
+} /* End of FWI-workflow loop */
+
 if(GRAD_METHOD==1){
   free_vector(PCG_old,1,PCG_vec);
   free_vector(PCG_new,1,PCG_vec);
   free_vector(PCG_dir,1,PCG_vec);
 }
-
-/* Deallocate EPRECOND matrices */
-if(EPRECOND==1 || EPRECOND==3){
-   free_matrix(Ws,1,NY,1,NX);
-   free_matrix(Wr,1,NY,1,NX);
-   free_matrix(We,1,NY,1,NX);
-}
-
-} /* End of FWI-workflow loop */
 
 /* deallocate memory for SH forward problem */
 dealloc_SH(&waveSH,&waveSH_PML);

@@ -224,11 +224,56 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 			/* store forward wavefield for density gradient */
 		        (*fwiSH).forward_prop_rho_z[imat2] = (*waveSH).pvzp1[j][i];
 
-			/* store forward wavefield for mu gradient */
-	 	        (*fwiSH).forward_prop_sxz[imat2] = (*waveSH).uzx[j][i];
-	 	        (*fwiSH).forward_prop_syz[imat2] = (*waveSH).uz[j][i];
+			/* store forward wavefield for mu and Taus gradient */
+	 	        (*fwiSH).forward_prop_sxz[imat2] = (*waveSH).uz[j][i];
+	 	        (*fwiSH).forward_prop_syz[imat2] = (*waveSH).uzx[j][i];
+
+			for (l=1;l<=L;l++){
+			    (*fwiSH).forward_prop_rxz[imat2][l] = (*waveSH).pr[j][i][l] + (*fwiSH).tausl[l] * (*fwiSH).rxzt[j][i][l];
+	 	            (*fwiSH).forward_prop_ryz[imat2][l] = (*waveSH).pq[j][i][l] + (*fwiSH).tausl[l] * (*fwiSH).ryzt[j][i][l];
+			}			
+
+			/* Compute Pseudo-Hessian main diagonal approximation */
+			if(EPRECOND==4){
+
+			   /* Pseudo-Hessian density */
+			   hess_rho = (*waveSH).pvz[j][i] * (*waveSH).pvzp1[j][i];			  
+
+			   /* Pseudo-Hessian Vs and Taus*/
+			   muss = (*matSH).prho[j][i] * (*matSH).pu[j][i] * (*matSH).pu[j][i];
+			   
+			   SUMr=SUMq=0.0;
+                           for (l=1;l<=L;l++){
+			       SUMr += (*fwiSH).Rxz[j][i][l];
+                               SUMq += (*fwiSH).Ryz[j][i][l];
+			   }
+			   
+			   P3 = (((*waveSH).psxz[j][i]-SUMr) * (*waveSH).uz[j][i]) + (((*waveSH).psyz[j][i]-SUMq) * (*waveSH).uzx[j][i]);
+			   P5 = 0.0;  			            
+		           for (l=1;l<=L;l++){
+			       P5 += ((*fwiSH).forward_prop_rxz[imat2][l] * (*fwiSH).Rxz[j][i][l]) + ((*fwiSH).forward_prop_ryz[imat2][l] * (*fwiSH).Ryz[j][i][l]); 
+			   }
+
+			   /* Pseudo-Hessian main-diagonal and non-diagonal elements */
+			   /* ------------------------------------------------------ */
+			   (*fwiSH).hess_rho2[j][i] += hess_rho * hess_rho;			   
+
+		           if(muss>0.0){
+			   
+			      hess_mu = - (*fwiSH).c1mu[j][i] * P3 + (*fwiSH).c4mu[j][i] * P5;
+			      hess_ts = - (*fwiSH).c1ts[j][i] * P3 + (*fwiSH).c4ts[j][i] * P5;
+			   			
+		                (*fwiSH).hess_mu2[j][i] += hess_mu * hess_mu;
+			        (*fwiSH).hess_ts2[j][i] += hess_ts * hess_ts;
+			       (*fwiSH).hess_muts[j][i] += hess_mu * hess_ts;
+			      (*fwiSH).hess_murho[j][i] += hess_mu * hess_rho;
+			      (*fwiSH).hess_tsrho[j][i] += hess_rho * hess_ts; 
+			       
+		           }			   			   			    		 
+
+			 }
 			 
-			imat2++;			 			 
+			 imat2++;			 			 
 		    
 		    }
 		}
@@ -252,11 +297,10 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	                
 		    for (i=1;i<=NX;i=i+IDXI){   
 			for (j=1;j<=NY;j=j+IDYI){ 
-		                 
-				 /* Density gradient */                  
-			   	(*fwiSH).waveconv_rho_shot[j][i] += (*waveSH).pvzp1[j][i] * (*fwiSH).forward_prop_rho_z[imat];
+		                                   
+			   	(*fwiSH).waveconv_rho_shot[j][i] += (*waveSH).pvz[j][i] * (*fwiSH).forward_prop_rho_z[imat];
 			
-				/* Vs-gradient (symmetrized stress-velocity formulation) */
+				/* Vs/Taus-gradient (symmetrized stress-velocity formulation) according to Fabien-Ouellet et al. (2017) */
 		                if(GRAD_FORM==2){			
 
 		           	    if(INVMAT1==1){
@@ -265,10 +309,20 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	           
 		           	    if(INVMAT1==3){
 		               	        muss = (*matSH).pu[j][i];
-				    }  
+				    }
+
+				    /* correlate forward and adjoint wavefields */
+				    P3 = ((*fwiSH).forward_prop_sxz[imat] * (*waveSH).uz[j][i]) + ((*fwiSH).forward_prop_syz[imat] * (*waveSH).uzx[j][i]);
+				    
+				    P5 = 0.0;  			            
+				    for (l=1;l<=L;l++){
+					P5 += ((*fwiSH).forward_prop_rxz[imat][l] * (*fwiSH).Rxz[j][i][l]) + ((*fwiSH).forward_prop_ryz[imat][l] * (*fwiSH).Ryz[j][i][l]); 
+				    }    
 
 				    if(muss>0.0){			
-				         (*fwiSH).waveconv_u_shot[j][i] += ((*fwiSH).forward_prop_syz[imat] * (*waveSH).psyz[j][i]) + ((*fwiSH).forward_prop_sxz[imat] * (*waveSH).psxz[j][i]);
+				         (*fwiSH).waveconv_u_shot[j][i] += - (*fwiSH).c1mu[j][i] * P3 + (*fwiSH).c4mu[j][i] * P5;
+			  		//(*fwiSH).waveconv_ts_shot[j][i] += - (*fwiSH).c1ts[j][i] * P3 + (*fwiSH).c4ts[j][i] * P5;
+					(*fwiSH).waveconv_ts_shot[j][i] = 0.0;
 				    } 		                  
 		                }			
 						                                                                                                     

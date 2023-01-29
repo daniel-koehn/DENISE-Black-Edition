@@ -141,7 +141,7 @@ mem_SH(nseismograms,ntr,ns,fdo3,nd,buffsize);
 alloc_SH(&waveSH,&waveSH_PML);
 
 /* calculate damping coefficients for CPMLs (SH problem)*/
-if(FW>0){PML_pro(waveSH_PML.d_x, waveSH_PML.K_x, waveSH_PML.alpha_prime_x, waveSH_PML.a_x, waveSH_PML.b_x, waveSH_PML.d_x_half, waveSH_PML.K_x_half, waveSH_PML.alpha_prime_x_half, waveSH_PML.a_x_half, 
+if(FW>0){PML_pro_SH(waveSH_PML.d_x, waveSH_PML.K_x, waveSH_PML.alpha_prime_x, waveSH_PML.a_x, waveSH_PML.b_x, waveSH_PML.d_x_half, waveSH_PML.K_x_half, waveSH_PML.alpha_prime_x_half, waveSH_PML.a_x_half, 
                  waveSH_PML.b_x_half, waveSH_PML.d_y, waveSH_PML.K_y, waveSH_PML.alpha_prime_y, waveSH_PML.a_y, waveSH_PML.b_y, waveSH_PML.d_y_half, waveSH_PML.K_y_half, waveSH_PML.alpha_prime_y_half, 
                  waveSH_PML.a_y_half, waveSH_PML.b_y_half);
 }

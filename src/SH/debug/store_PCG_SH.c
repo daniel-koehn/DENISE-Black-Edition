@@ -46,7 +46,20 @@ void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, f
                  h++;
 	   }
 	}
-	
+
+	/* ============================================================================================================================================================== */
+	/* ===================================================== GRADIENT rho =========================================================================================== */
+	/* ============================================================================================================================================================== */
+
+	/* store gradient */
+	for (i=1;i<=NX;i=i+IDX){
+	   for (j=1;j<=NY;j=j+IDY){
+
+		 PCG_old[h] = waveconv_ts[j][i];
+
+                 h++;
+	   }
+	}	
 
 	/* save Vs gradient */
 	/* ---------------- */
@@ -83,6 +96,25 @@ void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, f
         
         /* merge gradient file */ 
 	sprintf(jac,"%s_p_rho.old",JACOBIAN);
+	if (MYID==0) mergemod(jac,3);
+	//remove(jac1);
+
+	/* save Taus gradient */
+	/* ------------------ */
+        sprintf(jac1,"%s_p_taus.old.%i.%i",JACOBIAN,POS[1],POS[2]);
+	FP3=fopen(jac1,"wb");
+	
+	for (i=1;i<=NX;i=i+IDX){   
+           for (j=1;j<=NY;j=j+IDY){
+                 fwrite(&waveconv_ts[j][i],sizeof(float),1,FP3);
+	   }
+        }
+        
+	fclose(FP3);
+        MPI_Barrier(MPI_COMM_WORLD);
+        
+        /* merge gradient file */ 
+	sprintf(jac,"%s_p_taus.old",JACOBIAN);
 	if (MYID==0) mergemod(jac,3);
 	//remove(jac1);
 	
