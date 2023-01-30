@@ -160,15 +160,19 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 
         			}                                                  
 
-                           	if(GRAD_FORM==2){
+                          	if(GRAD_FORM==2){ /* FWI without data integration */
 
                                 	if(sw==0){
                                  		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
+					
+					if(sw==1){					
+						vzp1[j][i] = vz[j][i];					
+                                 	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
+                           	vz[j][i] += DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
 
       
 			}
@@ -230,16 +234,19 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 
         			}                                                  
 
-                           	if(GRAD_FORM==2){
+                          	if(GRAD_FORM==2){ /* FWI without data integration */
 
                                 	if(sw==0){
                                  		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
+					
+					if(sw==1){					
+						vzp1[j][i] = vz[j][i];					
+                                 	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
-
+                           	vz[j][i] += DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
       
 			}
 		}
@@ -303,16 +310,19 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 
         			}                       
 
-                           	if(GRAD_FORM==2){
+                          	if(GRAD_FORM==2){ /* FWI without data integration */
 
                                 	if(sw==0){
                                  		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
-                                 	} 
+                                 	}
+					
+					if(sw==1){					
+						vzp1[j][i] = vz[j][i];					
+                                 	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
-
+                           	vz[j][i] += DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
       
 			}
 		}
@@ -378,16 +388,19 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 
         			}                       
 
-                           	if(GRAD_FORM==2){
+                          	if(GRAD_FORM==2){ /* FWI without data integration */
 
                                 	if(sw==0){
                                  		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
+					
+					if(sw==1){					
+						vzp1[j][i] = vz[j][i];					
+                                 	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
-
+                           	vz[j][i] += DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
       
 			}
 		}
@@ -455,16 +468,19 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 
         			}                       
 
-                           	if(GRAD_FORM==2){
+                          	if(GRAD_FORM==2){ /* FWI without data integration */
 
                                 	if(sw==0){
                                  		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
                                  	}
+					
+					if(sw==1){					
+						vzp1[j][i] = vz[j][i];					
+                                 	}
 
                            	}
                            
-                           vz[j][i] += ADJ_SIGN * DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
-
+                           	vz[j][i] += DT * rhoi[j][i] * (sxz_x+syz_y) / DH;
       
 			}
 		}
@@ -490,7 +506,7 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 	     }
         }
 		
-	/* Backpropagation (sw==1) */
+	/* Adjoint Modelling (sw==1) */
 	if(sw==1){
 	    for (l=1;l<=nsrc;l++) {
 
