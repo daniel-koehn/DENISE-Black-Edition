@@ -14,7 +14,7 @@ void median_model(float ** waveconv, int filt_size)
 
         extern float DH;
 	extern int NX, NY, NXG, NYG, IDX, IDY;
-	extern int MYID, MYID_SHOT, POS[3], FILT_SIZE;
+	extern int MYID, MYID_SHOT, POS[3];
 	extern char JACOBIAN[STRING_SIZE];
 	
 	/* local variables */
@@ -55,20 +55,20 @@ void median_model(float ** waveconv, int filt_size)
 
 		if(MYID==0){			
 			
-			      	if (FILT_SIZE==0)	return;
-			      	if (!(FILT_SIZE % 2)) {
-			      	if (FILT_SIZE > 0)	FILT_SIZE += 1;
-			      	else			FILT_SIZE -= 1;
+			      	if (filt_size==0)	return;
+			      	if (!(filt_size % 2)) {
+			      	if (filt_size > 0)	filt_size += 1;
+			      	else			filt_size -= 1;
 			      	}				
 	  
-			      	hfs = abs(FILT_SIZE)/2;
+			      	hfs = abs(filt_size)/2;
 				sigma = hfs/2;
 				s = 2.0 * sigma * sigma;
 			      	printf("\n hfs: %d \n",hfs);				
 					      	
 			      	model_tmp = matrix(-hfs+1,NYG+hfs,-hfs+1,NXG+hfs);
 				model_median = matrix(1,NYG,1,NXG);
-				kernel = matrix(1,abs(FILT_SIZE),1,abs(FILT_SIZE));
+				kernel = matrix(1,abs(filt_size),1,abs(filt_size));
 		      		      
 				sprintf(jac_tmp,"%s_median.old",JACOBIAN);    
 	
@@ -133,7 +133,7 @@ void median_model(float ** waveconv, int filt_size)
 	          			}
 					
 					/* apply median filter */
-					model_median[j][i] = median2d(kernel,abs(FILT_SIZE),abs(FILT_SIZE));																				
+					model_median[j][i] = median2d(kernel,abs(filt_size),abs(filt_size));																				
 
 	      			    }
 				}
@@ -154,15 +154,15 @@ void median_model(float ** waveconv, int filt_size)
 			
 				free_matrix(model_tmp,-hfs+1,NYG+hfs,-hfs+1,NXG+hfs);
 				free_matrix(model_median,1,NYG,1,NXG);
-				free_matrix(kernel,1,abs(FILT_SIZE),1,abs(FILT_SIZE));
+				free_matrix(kernel,1,abs(filt_size),1,abs(filt_size));
 			
 			} /* end of if(MYID==0)*/
 		
 		
 		MPI_Barrier(MPI_COMM_WORLD);
-		smooth_meter=FILT_SIZE*DH;
+		smooth_meter=filt_size*DH;
 	
-		if(MYID==0){printf("\n \t ---- 2D Median is applied to gradient/model (filter length of %d gridpoints which is equivalent to %4.2f meter) \n",FILT_SIZE,smooth_meter);}
+		if(MYID==0){printf("\n \t ---- 2D Median is applied to gradient/model (filter length of %d gridpoints which is equivalent to %4.2f meter) \n",filt_size,smooth_meter);}
 	
 		/* distribute smoothed jacobian on computational nodes */
 		sprintf(jac_tmp,"%s_median.old",JACOBIAN);
