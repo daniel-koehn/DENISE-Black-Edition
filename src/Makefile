@@ -39,7 +39,7 @@ IFLAGS=-I./../libcseife -I$//gxfs_work1/cau/sungw331/fftw-3.3.4/include -I./../i
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
 #CC=mpicc
 #LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-#CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0
+#CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0 -fcommon
 #SFLAGS=-L./../libcseife
 #IFLAGS=-I./../libcseife -I./../include
 
