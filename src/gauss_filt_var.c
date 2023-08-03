@@ -258,8 +258,8 @@ void gauss_filt_var(float ** waveconv, float ** vel_mod)
 	if(MYID==0){printf("\n \t ---- Smoothed gradient is distributed on computational nodes ... ---- \n");}
 
         /* clean up temporary files*/
-        MPI_Barrier(MPI_COMM_WORLD);
+        /*MPI_Barrier(MPI_COMM_WORLD);
         sprintf(jac_tmp,"%s_gauss.old.%i.%i",JACOBIAN,POS[1],POS[2]);
-        remove(jac_tmp);
+        remove(jac_tmp);*/
 
 }

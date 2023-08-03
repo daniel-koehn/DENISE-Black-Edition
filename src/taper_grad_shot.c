@@ -16,7 +16,7 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
         extern float DH;
 	extern float SRTRADIUS;
 	extern int FREE_SURF, NX, NY, NXG, NYG;
-	extern int NPROCX, NPROCY, MYID_SHOT, POS[3];
+	extern int NPROCX, NPROCY, MYID_SHOT, POS[3], COLOR;
 	extern int SRTSHAPE, FILTSIZE;
         extern char TFILE[STRING_SIZE];
 	extern FILE *FP;
@@ -263,7 +263,7 @@ void taper_grad_shot(float ** waveconv,float ** taper_coeff, float **srcpos, int
  
 		
 	MPI_Barrier(SHOT_COMM);
-        sprintf(modfile,"%s_coeff_%i.bin",TFILE,ishot);
+        sprintf(modfile,"%s_coeff_%i_%i.bin",TFILE,ishot,COLOR);
         writemod(modfile,taper_coeff,3); 
         MPI_Barrier(SHOT_COMM);
         if (MYID_SHOT==0) mergemod(modfile,3); 
