@@ -7,6 +7,8 @@
 
 #include "fd.h"
 
+extern int L;
+
 void physics_SH(){
 
 	/* global variables */
@@ -19,7 +21,8 @@ void physics_SH(){
 
 	/* 2D SH Full Waveform Inversion */
 	if(MODE==1){
-	   FWI_SH();
+	   if(L==0){FWI_SH();}   /* elastic SH-FWI */
+	   if(L){FWI_SH_visc();} /* visco-elastic SH-FWI */
 	}
 
         /* 2D SH Reverse Time Migration */

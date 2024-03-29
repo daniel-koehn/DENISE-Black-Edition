@@ -15,7 +15,7 @@ void stf_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *
              float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
-        extern int QUELLART, ORDER, ORDER_SPIKE, TIME_FILT, RUN_MULTIPLE_SHOTS;
+        extern int QUELLART, ORDER, ORDER_SPIKE, TIME_FILT, RUN_MULTIPLE_SHOTS, L;
         extern float FC_SPIKE_1, FC_SPIKE_2;
         extern float FC, FC_START;
 
@@ -49,7 +49,11 @@ void stf_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *
 	
 	 
         /* forward problem */
-        sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+	if(L){
+           sh_visc(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+	}else{
+           sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+	}
 
         catseis((*seisSH).sectionvz, (*seisSH).fulldata_vz, (*acq).recswitch, ntr_glob, MPI_COMM_WORLD);	   
 

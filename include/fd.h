@@ -542,6 +542,8 @@ void alloc_SH(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML);
 
 void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter);
 
+void ass_gradSH_visc(struct fwiSH *fwiSH, struct matSH *matSH, int iter);
+
 void apply_inv_hessSH(struct fwiSH *fwiSH, struct matSH *matSH, int nshots);
 
 void av_mu_SH(float ** u, float ** uip, float ** ujp, float ** rho);
@@ -550,7 +552,10 @@ void init_grad_coeff(struct fwiSH *fwiSH, struct matSH *matSH);
 
 void inv_rho_SH(float ** rho, float ** rhoi);
 
-float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, float  **  waveconv_ts, float  **  rho, 
+float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, 
+			      float  **  rhonp1, float **  u, float **  unp1, int iter, int epstest, float eps_scale, int itest);
+
+float calc_mat_change_test_SH_visc(float  **  waveconv_rho, float  **  waveconv_u, float  **  waveconv_ts, float  **  rho, 
 			      float  **  rhonp1, float **  u, float **  unp1, float **  ts, float **  tsp1, int iter, 
 			      int epstest, float eps_scale, int itest);
 
@@ -572,9 +577,13 @@ void exchange_v_SH(float ** vz, float ** bufferlef_to_rig, float ** bufferrig_to
 		   float ** buffertop_to_bot, float ** bufferbot_to_top,
 	           MPI_Request * req_send, MPI_Request * req_rec);
 
-void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float ** waveconv_ts, float ** gradp_ts, float ** pu, float ** prho,  float ** ptaus, float * r_LBFGS);
+void extract_LBFGS_SH( int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float ** pu, float ** prho, float * r_LBFGS);
 
-void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
+void extract_LBFGS_SH_visc( int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, float ** gradp_rho, float ** waveconv_ts, float ** gradp_ts, float ** pu, float ** prho,  float ** ptaus, float * r_LBFGS);
+
+void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho);
+
+void extract_PCG_SH_visc(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
 
 void FD_SH();
 
@@ -582,7 +591,14 @@ void FD_grad_SH();
 
 void FWI_SH();
 
+void FWI_SH_visc();
+
 double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
+         int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
+         MPI_Request * req_send, MPI_Request * req_rec);
+
+double grad_obj_sh_visc(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec);
@@ -593,9 +609,13 @@ void matcopy_SH(float ** rho, float ** u, float ** taus);
 
 void mem_SH(int nseismograms,int ntr, int ns, int fdo3, int nd, float buffsize);
 
-void model_freq_out_SH(float  **  rho, float **  pu, float ** ptaus, int iter, float freq);
+void model_freq_out_SH(float  **  rho, float **  pu, int iter, float freq);
 
-void model_it_out_SH(float  **  rho, float **  pu, float **  ptaus, int nstage, int iter, float freq);
+void model_freq_out_SH_visc(float  **  rho, float **  pu, float ** ptaus, int iter, float freq);
+
+void model_it_out_SH(float  **  rho, float **  pu, int nstage, int iter, float freq);
+
+void model_it_out_SH_visc(float  **  rho, float **  pu, float **  ptaus, int nstage, int iter, float freq);
 
 double obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int nsrc, int nsrc_loc, int nsrc_glob, int ntr, 
@@ -630,6 +650,11 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
          int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);	  
 
+void sh_visc(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+         struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
+         int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec);	  
+
+
 float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, float * epst1, 
          double * L2t, int nsrc_glob, int nsrc_loc, int *step1, int *step3, int nxgrav, int nygrav, int ngrav, float **gravpos, float *gz_mod, int NZGRAV, int ntr_loc, 
@@ -640,10 +665,15 @@ void stf_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *
              float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec);
 
 void store_LBFGS_SH(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, 
+		    float ** gradp_rho, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float ** pu, float ** prho, int nxnyi, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
+
+void store_LBFGS_SH_visc(float ** taper_coeff, int nsrc, float ** srcpos, int ** recpos, int ntr_glob, int iter, float ** waveconv_u, float ** gradp_u, float ** waveconv_rho, 
                     float ** gradp_rho, float ** waveconv_ts, float ** gradp_ts, float * y_LBFGS, float * s_LBFGS, float * q_LBFGS, float ** pu, float ** prho, float **ptaus, 
 		    int nxnyi, int LBFGS_pointer, int NLBFGS, int NLBFGS_vec);
 
-void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
+void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho);
+
+void store_PCG_SH_visc(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts);
 
 void store_pseudo_hess_SH(struct fwiSH *fwiSH);
 

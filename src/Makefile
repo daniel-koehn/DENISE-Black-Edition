@@ -22,12 +22,11 @@ EXEC= ../bin
 # CC=cc
 
 # On Linux NEC-cluster with Intel-MPI
-CC=mpiicc
-LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
-CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict -no-multibyte-chars
-SFLAGS=-L./../libcseife -L$//gxfs_work1/cau/sungw331/fftw-3.3.4/lib
-IFLAGS=-I./../libcseife -I$//gxfs_work1/cau/sungw331/fftw-3.3.4/include -I./../include
-
+#CC=mpiicc
+#LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
+#CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict -no-multibyte-chars
+#SFLAGS=-L./../libcseife -L$//gxfs_work1/cau/sungw331/fftw-3.3.4/lib
+#IFLAGS=-I./../libcseife -I$//gxfs_work1/cau/sungw331/fftw-3.3.4/include -I./../include
 
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
 # CC=mpicc -Minfo=all -ta=multicore #tesla:cc60,managed
@@ -37,11 +36,11 @@ IFLAGS=-I./../libcseife -I$//gxfs_work1/cau/sungw331/fftw-3.3.4/include -I./../i
 # IFLAGS=-I./../libcseife -I./../include -I/scratch/dragon/amd/kazeiv/gpuhackathon2018/fftw_sw/fftw-3.3.7/include/
 
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
-#CC=mpicc
-#LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-#CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0 -fcommon
-#SFLAGS=-L./../libcseife
-#IFLAGS=-I./../libcseife -I./../include
+CC=mpicc
+LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0 -fcommon
+SFLAGS=-L./../libcseife
+IFLAGS=-I./../libcseife -I./../include
 
 # On HLRN system
 #CC=mpcc
@@ -198,11 +197,13 @@ DENISE += alloc_fwiSH.c \
 	  alloc_seisSHfwi.c \
 	  alloc_SH.c \
 	  ass_gradSH.c \
+	  ass_gradSH_visc.c \
 	  apply_inv_hessSH.c \
 	  av_mu_SH.c \
 	  init_grad_coeff.c \
 	  inv_rho_SH.c \
 	  calc_mat_change_test_SH.c \
+	  calc_mat_change_test_SH_visc.c \
 	  calc_res_SH.c \
 	  checkfd_elast_SH.c \
 	  checkfd_visc_SH.c \
@@ -211,16 +212,22 @@ DENISE += alloc_fwiSH.c \
 	  exchange_s_SH.c \
 	  exchange_v_SH.c \
 	  extract_LBFGS_SH.c \
+	  extract_LBFGS_SH_visc.c \
 	  extract_PCG_SH.c \
+	  extract_PCG_SH_visc.c \
 	  FD_SH.c \
 	  FD_grad_SH.c \
 	  FWI_SH.c \
+	  FWI_SH_visc.c \
 	  grad_obj_sh.c \
+	  grad_obj_sh_visc.c \
 	  matcopy_elastic_SH.c \
 	  matcopy_SH.c \
 	  mem_SH.c \
 	  model_freq_out_SH.c \
+	  model_freq_out_SH_visc.c \
 	  model_it_out_SH.c \
+	  model_it_out_SH_visc.c \
 	  obj_sh.c \
 	  outseis_SHfor.c \
 	  outseis_SHres.c \
@@ -233,10 +240,13 @@ DENISE += alloc_fwiSH.c \
 	  RTM_SH_out_shot.c \
 	  saveseis_glob_SH.c \
 	  sh.c \
+	  sh_visc.c \
           step_length_est_sh.c \
 	  stf_sh.c \
 	  store_LBFGS_SH.c \
+	  store_LBFGS_SH_visc.c \
 	  store_PCG_SH.c \
+	  store_PCG_SH_visc.c \
           store_pseudo_hess_SH.c \
 	  update_s_elastic_PML_SH.c \
 	  update_s_visc_PML_SH.c \

@@ -1,5 +1,5 @@
 /*
- * Full Waveform Inversion (2D SH problem)  
+ * Full Waveform Inversion (2D visco-elastic SH problem)  
  *
  * Daniel Koehn
  * Kiel, 12/12/2017
@@ -7,13 +7,13 @@
 
 #include "fd.h"
 
-void FWI_SH(){
+void FWI_SH_visc(){
 
 /* global variables */
 /* ---------------- */
 
 /* forward modelling */
-extern int MYID, FDORDER, NX, NY, NT, READMOD, QUELLART, RUN_MULTIPLE_SHOTS, TIME_FILT, READREC;
+extern int MYID, FDORDER, NX, NY, NT, L, READMOD, QUELLART, RUN_MULTIPLE_SHOTS, TIME_FILT, READREC;
 extern int LOG, SEISMO, N_STREAMER, FW, NXG, NYG, IENDX, IENDY, NTDTINV, IDXI, IDYI, NXNYI, INV_STF, DTINV;
 extern float FC_SPIKE_1, FC_SPIKE_2, FC, FC_START, TIME, DT;
 extern char LOG_FILE[STRING_SIZE], MFILE[STRING_SIZE];
@@ -266,7 +266,7 @@ alloc_mpiPSV(&mpiPSV);
 /* Variables for l-BFGS method */
 if(GRAD_METHOD==2){
 
-  NLBFGS_class = 2;                 /* number of parameter classes */ 
+  NLBFGS_class = 3;                 /* number of parameter classes */
 
   NLBFGS_vec = NLBFGS_class*NX*NY;  /* length of one LBFGS-parameter class */
   LBFGS_pointer = 1;                /* initiate pointer in the cyclic LBFGS-vectors */
@@ -286,7 +286,7 @@ if(GRAD_METHOD==2){
 /* Variables for PCG method */
 if(GRAD_METHOD==1){
 
-  PCG_class = 2;                 /* number of parameter classes */ 
+  PCG_class = 3;                 /* number of parameter classes */ 
   PCG_vec = PCG_class*NX*NY;  	 /* length of one PCG-parameter class */  
  
 }
@@ -313,11 +313,13 @@ nsrc_glob=nsrc;
 
 
 /* create model grids */
-if (READMOD) readmod_elastic_SH(matSH.prho,matSH.pu);
-/*else model_elastic(matPSV.prho,matPSV.ppi,matPSV.pu);*/
+if (READMOD) readmod_visc_SH(matSH.prho,matSH.pu,matSH.ptaus,matSH.peta);
+/*else model(matPSV.prho,matPSV.ppi,matPSV.pu,matPSV.ptaus,matPSV.ptaup,matPSV.peta);*/
+
 
 /* check if the FD run will be stable and free of numerical dispersion */
-checkfd_elast_SH(FP,matSH.prho,matSH.pu,hc);
+checkfd_visc_SH(FP,matSH.prho,matSH.pu,matSH.ptaus,matSH.peta,hc);
+
 
 if(GRAVITY==1 || GRAVITY==2){
  
@@ -438,12 +440,20 @@ if (MYID==0)
    they have to be averaged. For this, values lying at 0 and NX+1,
    for example, are required on the local grid. These are now copied from the
    neighbouring grids */
-matcopy_elastic_SH(matSH.prho,matSH.pu);
+
+matcopy_SH(matSH.prho,matSH.pu,matSH.ptaus);
+
 
 MPI_Barrier(MPI_COMM_WORLD);
 
 av_mu_SH(matSH.pu, matSH.puip, matSH.pujp, matSH.prho);
 inv_rho_SH(matSH.prho, matSH.prhoi);
+av_tau(matSH.ptaus,matSH.ptausipjp);
+
+/* Preparing memory variables for update_s (viscoelastic) */
+prepare_update_s_visc_SH(matSH.etajm, matSH.etaip, matSH.peta, matSH.fipjp, matSH.pujp, matSH.puip, 
+			 matSH.prho, matSH.ptaus, matSH.ptausipjp, matSH.f, matSH.g, matSH.bip, matSH.bjm, 
+			 matSH.cip, matSH.cjm, matSH.dip, matSH.d, matSH.e); 
 
 if(iter_true==1){
 
@@ -454,13 +464,17 @@ if(iter_true==1){
 	
 	  fwiSH.Vs0[j][i] = matSH.pu[j][i];
 	  fwiSH.Rho0[j][i] = matSH.prho[j][i];
+	  fwiSH.Taus0[j][i] = matSH.ptaus[j][i];
 
         }
-	                 		 
+	  
+                 
+		 
 	if(INVMAT1==2){
         
 	  fwiSH.Vs0[j][i] = sqrt(matSH.pu[j][i]*matSH.prho[j][i]);
 	  fwiSH.Rho0[j][i] = matSH.prho[j][i];
+	  fwiSH.Taus0[j][i] = matSH.ptaus[j][i];
 	
 	}
 	 
@@ -468,10 +482,11 @@ if(iter_true==1){
         
 	  fwiSH.Vs0[j][i] = matSH.pu[j][i];
 	  fwiSH.Rho0[j][i] = matSH.prho[j][i];
+	  fwiSH.Taus0[j][i] = matSH.ptaus[j][i];
 	
 	}  
 	
-    	}
+    }
     }
 
 /* ---------------------------------------------- */
@@ -480,9 +495,11 @@ if(iter_true==1){
 
 	Vs_max = 0.0;
 	rho_max = 0.0;
+	taus_max = 0.0;
 	
 	Vs_min = 1e10;
 	rho_min = 1e10;
+	taus_min = 1e10; 
 	
 	Vs_avg = 0.0;
 	rho_avg = 0.0; 
@@ -515,6 +532,17 @@ if(iter_true==1){
 		 
 		 /* calculate average rho value */
 		 rho_avg += matSH.prho[j][i];
+
+		 /* calculate maximum taus */
+		 if(matSH.ptaus[j][i] > taus_max){
+		     taus_max = matSH.ptaus[j][i];
+		 }
+
+		 /* calculate minimum taus */
+		 if(matSH.ptaus[j][i] < taus_min){
+		     taus_min = matSH.ptaus[j][i];
+		 }
+
 	
            }
         }
@@ -528,6 +556,10 @@ if(iter_true==1){
 	rho_sum = 0.0;
         MPI_Allreduce(&rho_min,&rho_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
         C_rho_min=rho_sum;
+
+	taus_sum = 0.0;
+        MPI_Allreduce(&taus_min,&taus_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+        C_taus_min=taus_sum;
 		
 	/*if(MYID==0){
            printf("Vs_min = %e \t rho_min = %e \t taus_min = %e \n ",C_vs_min, C_rho_min, C_taus_min);	
@@ -542,6 +574,10 @@ if(iter_true==1){
 	rho_sum = 0.0;
         MPI_Allreduce(&rho_max,&rho_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
         rho_max=rho_sum;
+
+	taus_sum = 0.0;
+        MPI_Allreduce(&taus_max,&taus_sum,1,MPI_FLOAT,MPI_MAX,MPI_COMM_WORLD);
+        taus_max=taus_sum;
 	
 	/* calculate average Vs, rho and taus of all CPUs*/
 	
@@ -551,7 +587,12 @@ if(iter_true==1){
 	
 	rho_sum = 0.0;
         MPI_Allreduce(&rho_avg,&rho_sum,1,MPI_FLOAT,MPI_SUM,MPI_COMM_WORLD);
-        rho_avg=rho_sum / (NXG*NYG);		
+        rho_avg=rho_sum / (NXG*NYG);
+
+		
+	/*if(MYID==0){
+           printf("Vs_max = %e \t rho_max = %e \t taus_max = %e \n ",Vs_max, rho_max, taus_max);	
+	}*/
 	
 	if(MYID==0){
            printf("Vs_avg = %e \t rho_max = %e \n ",Vs_avg, rho_avg);	
@@ -559,11 +600,13 @@ if(iter_true==1){
 	
 	/* scaling factor for gradients normalized relative to mininum and maximum values*/
 	/*C_vs = Vs_max - C_vs_min;
-	C_rho = rho_max - C_rho_min;*/
+	C_rho = rho_max - C_rho_min;
+	C_taus = taus_max - C_taus_min;*/
 	
 	/* scaling factor for gradients normalized relative to maximum values*/
 	/*C_vs = Vs_max;
-	C_rho = rho_max;*/
+	C_rho = rho_max;
+	C_taus = taus_max;*/
 	
 	/* scaling factor for gradients normalized relative to average values*/
 	C_vs = Vs_avg;
@@ -571,13 +614,16 @@ if(iter_true==1){
 	
 	C_vs_min = 0.0;
 	C_rho_min = 0.0;
+	C_taus_min = 0.0;
 
 	/* scaling factor for gradients not normalized */
 	/*C_vs = 1.0;
 	C_rho = 1.0;
+	C_taus = 1.0;
 	
 	C_vs_min = 0.0;
-	C_rho_min = 0.0;*/
+	C_rho_min = 0.0;
+	C_taus_min = 0.0;*/
 			       	
 }
 
@@ -613,7 +659,7 @@ if((IDXI>1)||(IDYI>1)){
 }
 
 /* assemble SH gradients */
-ass_gradSH(&fwiSH,&matSH,iter);
+ass_gradSH_visc(&fwiSH,&matSH,iter);
 
 /* Apply diagonal elements of inverse Pseudo-Hessian to gradients */
 /*if(EPRECOND==4){
@@ -649,16 +695,16 @@ if(GRAD_METHOD==1){
     descent(fwiSH.waveconv_rho,fwiSH.gradp_rho);
 
     /* store current gradients in PCG_new vector */
-    store_PCG_SH(PCG_new,fwiSH.gradp_u,fwiSH.gradp_rho);
+    store_PCG_SH_visc(PCG_new,fwiSH.gradp_u,fwiSH.gradp_rho,fwiSH.gradp_ts);
 
     /* apply PCG method */
     PCG(PCG_new,PCG_old,PCG_dir,PCG_class);
 
     /* extract CG-search directions */
-    extract_PCG_SH(PCG_dir,fwiSH.waveconv_u,fwiSH.waveconv_rho);
+    extract_PCG_SH_visc(PCG_dir,fwiSH.waveconv_u,fwiSH.waveconv_rho,fwiSH.waveconv_ts);
 
     /* store old gradients in PCG_old vector */
-    store_PCG_SH(PCG_old,fwiSH.gradp_u,fwiSH.gradp_rho);
+    store_PCG_SH_visc(PCG_old,fwiSH.gradp_u,fwiSH.gradp_rho,fwiSH.gradp_ts);
 
     /* steepest descent direction -> gradient direction */
     descent(fwiSH.waveconv_u,fwiSH.waveconv_u);
@@ -670,14 +716,14 @@ if(GRAD_METHOD==1){
 if(GRAD_METHOD==2){ 
 
     /* store models and gradients in l-BFGS vectors */
-    store_LBFGS_SH(taper_coeff, nsrc, acq.srcpos, acq.recpos, ntr_glob, iter, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, 
-		    fwiSH.gradp_rho, y_LBFGS, s_LBFGS, q_LBFGS, matSH.pu, matSH.prho, NXNYI, LBFGS_pointer, NLBFGS, NLBFGS_vec);
+    store_LBFGS_SH_visc(taper_coeff, nsrc, acq.srcpos, acq.recpos, ntr_glob, iter, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, 
+		    fwiSH.gradp_rho, fwiSH.waveconv_ts, fwiSH.gradp_ts, y_LBFGS, s_LBFGS, q_LBFGS, matSH.pu, matSH.prho, matSH.ptaus, NXNYI, LBFGS_pointer, NLBFGS, NLBFGS_vec);
 
     /* apply l-BFGS optimization */
     LBFGS(iter, y_LBFGS, s_LBFGS, rho_LBFGS, alpha_LBFGS, q_LBFGS, r_LBFGS, beta_LBFGS, LBFGS_pointer, NLBFGS, NLBFGS_vec);
 
     /* extract gradients and save old models/gradients for next l-BFGS iteration */
-    extract_LBFGS_SH(iter, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, fwiSH.gradp_rho, matSH.pu, matSH.prho, r_LBFGS);
+    extract_LBFGS_SH_visc(iter, fwiSH.waveconv_u, fwiSH.gradp_u, fwiSH.waveconv_rho, fwiSH.gradp_rho, fwiSH.waveconv_ts, fwiSH.gradp_ts, matSH.pu, matSH.prho, matSH.ptaus, r_LBFGS);
 
 }
 
@@ -741,7 +787,7 @@ L2_hist[iter]=L2t[4];
 s=0;
 
 /* calculate optimal change in the material parameters */
-eps_true=calc_mat_change_test_SH(fwiSH.waveconv_rho,fwiSH.waveconv_u,fwiSH.prho_old,matSH.prho,fwiSH.pu_old,matSH.pu,iter,1,eps_scale,0);
+eps_true=calc_mat_change_test_SH_visc(fwiSH.waveconv_rho,fwiSH.waveconv_u,fwiSH.waveconv_ts,fwiSH.prho_old,matSH.prho,fwiSH.pu_old,matSH.pu,fwiSH.ptaus_old,matSH.ptaus,iter,1,eps_scale,0);
 
 /* apply 2D Median filter to velocity and density model */
 if(MODEL_FILTER==1){
@@ -780,7 +826,7 @@ diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
         
         	/* output of the model at the end of given FWI stage */
 		if(INV_MOD_OUT==0){
-        	    model_freq_out_SH(matSH.prho,matSH.pu,nstage,FC);
+        	    model_freq_out_SH_visc(matSH.prho,matSH.pu,matSH.ptaus,nstage,FC);
 		}
 
 		s=1;
@@ -812,7 +858,7 @@ diff=fabs((L2_hist[iter-2]-L2_hist[iter])/L2_hist[iter-2]);
 
 /* output of the model after each FWI iteration */
 if(INV_MOD_OUT==1){
-    model_it_out_SH(matSH.prho,matSH.pu,nstage,iter,FC);
+    model_it_out_SH_visc(matSH.prho,matSH.pu,matSH.ptaus,nstage,iter,FC);
 }
 
 iter++;
@@ -844,6 +890,7 @@ dealloc_SH(&waveSH,&waveSH_PML);
 /* deallocation of memory */
 free_matrix(fwiSH.Vs0,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiSH.Rho0,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(fwiSH.Taus0,-nd+1,NY+nd,-nd+1,NX+nd);
 
 free_matrix(matSH.prho,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiSH.prho_old,-nd+1,NY+nd,-nd+1,NX+nd);
@@ -853,6 +900,8 @@ free_matrix(fwiSH.pu_old,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matSH.puipjp,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matSH.puip,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(matSH.pujp,-nd+1,NY+nd,-nd+1,NX+nd);
+
+free_matrix(fwiSH.ptaus_old,-nd+1,NY+nd,-nd+1,NX+nd);
 
 free_matrix(mpiPSV.bufferlef_to_rig,1,NY,1,fdo3);
 free_matrix(mpiPSV.bufferrig_to_lef,1,NY,1,fdo3);
@@ -873,17 +922,29 @@ free_matrix(fwiSH.waveconv_u,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiSH.waveconv_mu,-nd+1,NY+nd,-nd+1,NX+nd);
 free_matrix(fwiSH.waveconv_u_shot,-nd+1,NY+nd,-nd+1,NX+nd);
 
+free_matrix(fwiSH.gradg_ts,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(fwiSH.gradp_ts,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(fwiSH.waveconv_ts,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(fwiSH.waveconv_ts_s,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(fwiSH.waveconv_ts_shot,-nd+1,NY+nd,-nd+1,NX+nd);
+
 free_vector(fwiSH.forward_prop_sxz,1,NY*NX*NT);
 free_vector(fwiSH.forward_prop_syz,1,NY*NX*NT);
 free_vector(fwiSH.forward_prop_rho_z,1,NY*NX*NT);
 
+free_matrix(fwiSH.forward_prop_rxz,1,NY*NX*NT,1,L);
+free_matrix(fwiSH.forward_prop_ryz,1,NY*NX*NT,1,L);
+
 if(EPRECOND==4){
    free_matrix(fwiSH.hess_mu2,-nd+1,NY+nd,-nd+1,NX+nd);
    free_matrix(fwiSH.hess_rho2,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_ts2,-nd+1,NY+nd,-nd+1,NX+nd);
    free_matrix(fwiSH.hess_vs2,-nd+1,NY+nd,-nd+1,NX+nd);
    free_matrix(fwiSH.hess_rho2p,-nd+1,NY+nd,-nd+1,NX+nd);
    
-   free_matrix(fwiSH.hess_murho,-nd+1,NY+nd,-nd+1,NX+nd);  
+   free_matrix(fwiSH.hess_muts,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_murho,-nd+1,NY+nd,-nd+1,NX+nd);
+   free_matrix(fwiSH.hess_tsrho,-nd+1,NY+nd,-nd+1,NX+nd);   
 }
 
 if (nsrc_loc>0){	
@@ -939,6 +1000,24 @@ if (nsrc_loc>0){
  }
 
  free_ivector(DTINV_help,1,NT);
+ 
+ /* free memory for viscoelastic modeling variables */ 
+free_matrix(matSH.ptaus,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matSH.ptausipjp,-nd+1,NY+nd,-nd+1,NX+nd);
+free_vector(matSH.peta,1,L);
+free_vector(matSH.etaip,1,L);
+free_vector(matSH.etajm,1,L);
+free_vector(matSH.bip,1,L);
+free_vector(matSH.bjm,1,L);
+free_vector(matSH.cip,1,L);
+free_vector(matSH.cjm,1,L);
+free_matrix(matSH.f,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matSH.fipjp,-nd+1,NY+nd,-nd+1,NX+nd);
+free_matrix(matSH.g,-nd+1,NY+nd,-nd+1,NX+nd);
+free_f3tensor(matSH.dip,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
+free_f3tensor(matSH.d,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
+free_f3tensor(matSH.e,-nd+1,NY+nd,-nd+1,NX+nd,1,L);
+
 
 if(GRAVITY){
 
@@ -972,8 +1051,7 @@ if (MYID==0){
 	fprintf(FP," stress update:  \t %5.3f seconds  \n",time_av_s_update);
 	fprintf(FP," velocity exchange:  \t %5.3f seconds  \n",time_av_v_exchange);
 	fprintf(FP," stress exchange:  \t %5.3f seconds  \n",time_av_s_exchange);
-	fprintf(FP," timestep:  \t %5.3f seconds  \n",time_av_timestep);*/
-		
+	fprintf(FP," timestep:  \t %5.3f seconds  \n",time_av_timestep);*/		
 }
 
 fclose(FP);

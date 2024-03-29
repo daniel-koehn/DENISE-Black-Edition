@@ -8,7 +8,7 @@
 
 #include "fd.h"
 
-void extract_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho){
+void extract_PCG_SH_visc(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts){
 
 	extern int NX, NY, IDX, IDY;
 	int i, j, h;	

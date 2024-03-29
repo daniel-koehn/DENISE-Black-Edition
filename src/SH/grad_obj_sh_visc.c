@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------
- * Calculate gradient and objective function for SH problem
+ * Calculate gradient and objective function for visco-elastic SH problem
  *
  *
  * D. Koehn
@@ -9,7 +9,7 @@
 #include "fd.h"
 
 
-double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+double grad_obj_sh_visc(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int iter, int nsrc, int ns, int ntr, int ntr_glob, int nsrc_glob, 
          int nsrc_loc, int ntr_loc, int nstage, float **We, float **Ws, float **Wr, float ** taper_coeff, int hin, int *DTINV_help, 
          MPI_Request * req_send, MPI_Request * req_rec){
@@ -17,7 +17,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
         /* global variables */
 	extern int MYID, TIME_FILT, IDX, IDY, NX, NY, NT, RUN_MULTIPLE_SHOTS, INV_STF, QUELLART;
         extern int TESTSHOT_START, TESTSHOT_END, TESTSHOT_INCR, SEISMO, EPRECOND, LNORM, READREC;
-        extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG, NT;
+        extern int N_STREAMER, SWS_TAPER_CIRCULAR_PER_SHOT, QUELLTYPB, QUELLTYP, LOG, L, NT;
         extern int ORDER_SPIKE, ORDER, SHOTINC, RTM_SHOT, WRITE_STF, NTDTINV;
         extern float EPSILON, FC, FC_START, FC_SPIKE_1, FC_SPIKE_2;
         extern float C_vs, C_rho, C_taus, *FL;
@@ -41,14 +41,26 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	/* set gradient and preconditioning matrices 0 before next iteration*/
 	init_grad((*fwiSH).waveconv_rho);
 	init_grad((*fwiSH).waveconv_u);
+	init_grad((*fwiSH).waveconv_ts);
 	
 	if(EPRECOND==4){
 	   init_grad((*fwiSH).hess_mu2);
 	   init_grad((*fwiSH).hess_rho2);
+	   init_grad((*fwiSH).hess_ts2);
 	   init_grad((*fwiSH).hess_vs2);
 	   init_grad((*fwiSH).hess_rho2p);
 
-	   init_grad((*fwiSH).hess_murho);	   	   
+	   init_grad((*fwiSH).hess_muts);
+	   init_grad((*fwiSH).hess_murho);
+	   init_grad((*fwiSH).hess_tsrho);	   	   
+	}
+
+	/* calculate FWI gradient weighting coefficients */
+	init_grad_coeff(fwiSH,matSH);
+
+	/* calculate tausl */
+	for (l=1;l<=L;l++) {
+	    (*fwiSH).tausl[l] = 1.0/(2.0*PI*FL[l]);
 	}
 
 	itestshot=TESTSHOT_START;
@@ -63,6 +75,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	/*initialize gradient matrices for each shot with zeros*/
 	init_grad((*fwiSH).waveconv_u_shot);
 	init_grad((*fwiSH).waveconv_rho_shot);
+	init_grad((*fwiSH).waveconv_ts_shot);
 
 	if((EPRECOND==1)||(EPRECOND==3)){
 	   init_grad(Ws);
@@ -156,7 +169,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	}
 				                                                      
 	/* solve forward problem */	
-        sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
+        sh_visc(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,0,req_send,req_rec);
 
 
 	/* ===============================================
@@ -191,7 +204,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	}
 		                            
 	/* solve adjoint problem */	  
-        sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,1,req_send,req_rec);
+        sh_visc(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,ishot,nshots,nsrc_loc,ns,ntr,Ws,Wr,hin,DTINV_help,1,req_send,req_rec);
 
 	/* calculate gradients for normalized material parameters */
 	/*for(i=1;i<=NX;i=i+IDX){
@@ -212,7 +225,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 	  for(i=1;i<=NX;i=i+IDX){
 	      for(j=1;j<=NY;j=j+IDY){
 
-		       (*fwiSH).waveconv_u_shot[j][i] = (*fwiSH).waveconv_u_shot[j][i] / (We[j][i]*C_vs*C_vs);
+		     (*fwiSH).waveconv_u_shot[j][i] = (*fwiSH).waveconv_u_shot[j][i] / (We[j][i]*C_vs*C_vs);
 		     (*fwiSH).waveconv_rho_shot[j][i] = (*fwiSH).waveconv_rho_shot[j][i] / (We[j][i]*C_rho*C_rho);
 
 	      }
@@ -224,6 +237,7 @@ double grad_obj_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct 
 		/* applying the preconditioning */
 		taper_grad_shot((*fwiSH).waveconv_rho_shot,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,ishot);
 		taper_grad_shot((*fwiSH).waveconv_u_shot,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,ishot);
+		taper_grad_shot((*fwiSH).waveconv_ts_shot,taper_coeff,(*acq).srcpos,nsrc,(*acq).recpos,ntr_glob,ishot);
 	
 	} /* end of SWS_TAPER_CIRCULAR_PER_SHOT == 1 */
 

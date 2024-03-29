@@ -14,7 +14,7 @@ float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, s
          float **Ws, float **Wr, int hin, int *DTINV_help, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
-	extern int MYID,MIN_ITER,TIME_FILT,STEPMAX, GRAVITY, IDX, IDY, NX, NY, NXG, NYG, POS[3], MYID;
+	extern int MYID,MIN_ITER,TIME_FILT,STEPMAX, GRAVITY, IDX, IDY, NX, NY, NXG, NYG, POS[3], MYID, L;
 	extern char JACOBIAN[STRING_SIZE];
         extern float EPS_SCALE, SCALEFAC, LAM_GRAV, GAMMA_GRAV, L2_GRAV_IT1;
         extern float FC;
@@ -51,7 +51,12 @@ float step_length_est_sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, s
 	for (itest=itests;itest<=iteste;itest++){ /* calculate 3 L2 values */
 
         /* update material parameters for test step eps_scale */
-	tmp=calc_mat_change_test_SH((*fwiSH).waveconv_rho,(*fwiSH).waveconv_u,(*fwiSH).waveconv_ts,(*fwiSH).prho_old,(*matSH).prho,(*fwiSH).pu_old,(*matSH).pu,(*fwiSH).ptaus_old,(*matSH).ptaus,iter,1,eps_scale,1);
+
+	if(L){	
+	   tmp=calc_mat_change_test_SH_visc((*fwiSH).waveconv_rho,(*fwiSH).waveconv_u,(*fwiSH).waveconv_ts,(*fwiSH).prho_old,(*matSH).prho,(*fwiSH).pu_old,(*matSH).pu,(*fwiSH).ptaus_old,(*matSH).ptaus,iter,1,eps_scale,1);
+	}else{	
+	   tmp=calc_mat_change_test_SH((*fwiSH).waveconv_rho,(*fwiSH).waveconv_u,(*fwiSH).prho_old,(*matSH).prho,(*fwiSH).pu_old,(*matSH).pu,iter,1,eps_scale,1);
+	}
 
         (*seisSHfwi).L2 = obj_sh(waveSH,waveSH_PML,matSH,fwiSH,mpiPSV,seisSH,seisSHfwi,acq,hc,nsrc,nsrc_loc,nsrc_glob,ntr,ntr_glob,ns,itest,iter,Ws,Wr,hin,DTINV_help,eps_scale,req_send,req_rec);
         L2t[itest] = (*seisSHfwi).L2;

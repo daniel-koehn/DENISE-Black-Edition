@@ -1,5 +1,5 @@
 /*  --------------------------------------------------------------------------
- *   Solving the elastic 2D SH-forward problem by finite-differences 
+ *   Solving the visco-elastic 2D SH-forward problem by finite-differences 
  *   for a single shot 
  *
  *   mode = 0 - forward modelling only, STF estimation or FWI gradient calculation
@@ -14,13 +14,13 @@
 
 #include "fd.h"
 
-void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
+void sh_visc(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matSH, struct fwiSH *fwiSH, struct mpiPSV *mpiPSV, 
          struct seisSH *seisSH, struct seisSHfwi *seisSHfwi, struct acq *acq, float *hc, int ishot, int nshots, int nsrc_loc, 
          int ns, int ntr, float **Ws, float **Wr, int hin, int *DTINV_help, int mode, MPI_Request * req_send, MPI_Request * req_rec){
 
         /* global variables */
 	extern float DT, DH, TSNAP1, TSNAP2, TSNAPINC;
-	extern int MYID, FDORDER, FW, GRAD_FORM, FC_SPIKE_1, FC_SPIKE_2, ORDER_SPIKE;
+	extern int MYID, FDORDER, FW, L, GRAD_FORM, FC_SPIKE_1, FC_SPIKE_2, ORDER_SPIKE;
         extern int NX, NY, FREE_SURF, BOUNDARY, MODE, QUELLTYP, QUELLTYPB, QUELLART, FDORDER;
 	extern int NPROCX, NPROCY, POS[3], NDT, SEISMO, IDXI, IDYI, GRAD_FORM, DTINV;
         extern int SNAP, INVMAT1, INV_STF, EPRECOND, NTDTINV, NXNYI, NT, ADJ_SIGN;
@@ -29,7 +29,8 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
         /* local variables */
 	int i,j,l,nt,lsamp,lsnap,nsnap, nd, hin1, imat, imat1, imat2, infoout;
         float tmp, tmp1, muss, lamss, P3, P5;
-        float hess_rho, hess_mu;
+        float hess_rho, hess_mu, hess_ts;
+	float SUMr, SUMq;
 
         nd = FDORDER/2 + 1;
 
@@ -65,8 +66,10 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
         }	                                                        	
 		    
 	/* initialize SH wavefields with zero */
-	zero_denise_elast_SH(-nd+1,NY+nd,-nd+1,NX+nd, (*waveSH).pvz, (*waveSH).psxz, (*waveSH).psyz, (*waveSH).pvzm1, (*waveSH).pvzp1, (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y, (*waveSH_PML).psi_vzx,  (*waveSH_PML).psi_vzy);
-			                                                        	     
+	zero_denise_visc_SH(-nd+1,NY+nd,-nd+1,NX+nd, (*waveSH).pvz, (*waveSH).psxz, (*waveSH).psyz, (*waveSH).pvzm1, (*waveSH).pvzp1, 
+		            (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y, (*waveSH_PML).psi_vzx,  (*waveSH_PML).psi_vzy, 
+                            (*waveSH).pr, (*waveSH).pp, (*waveSH).pq, (*fwiSH).Rxz, (*fwiSH).Ryz);
+	                                                        	     
 	/*----------------------  loop over timesteps (forward model) ------------------*/
 
 	lsnap=iround(TSNAP1/DT);  
@@ -103,6 +106,7 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 
 	   if (MYID==0){
 	      if (infoout)  fprintf(FP,"\n Computing timestep %d of %d \n",nt,NT);
+	      /*time3=MPI_Wtime();*/
 	   }
 
 	      /* particle velocity update */
@@ -118,17 +122,18 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 			       (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half, (*waveSH_PML).psi_sxz_x, (*waveSH_PML).psi_syz_y);
               }
 		                 
-		                                           
-	      /* exchange of particle velocities between PEs */
-	      exchange_v_SH((*waveSH).pvz, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
-		                                                       
-                                                                                    	
 
-              /* stress update */
-	      update_s_elastic_PML_SH(1, NX, 1, NY, (*waveSH).pvz, (*waveSH).uz, (*waveSH).uzx, (*waveSH).psyz, (*waveSH).psxz, (*matSH).pujp, (*matSH).puip, (*matSH).prho, hc,infoout,
-				     (*waveSH_PML).K_x, (*waveSH_PML).a_x, (*waveSH_PML).b_x, (*waveSH_PML).K_x_half, (*waveSH_PML).a_x_half, (*waveSH_PML).b_x_half,
-        			     (*waveSH_PML).K_y, (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half,
-        			     (*waveSH_PML).psi_vzx, (*waveSH_PML).psi_vzy, mode);
+		                                           
+		/* exchange of particle velocities between PEs */
+		exchange_v_SH((*waveSH).pvz, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
+		                                                                                                                                            	
+                /* stress update */
+		update_s_visc_PML_SH(1, NX, 1, NY, (*waveSH).pvz, (*waveSH).uz, (*waveSH).uzx, (*waveSH).psyz, (*waveSH).psxz, (*matSH).pujp, (*matSH).puip, (*matSH).prho, hc, infoout,
+				    (*waveSH).pr, (*waveSH).pp, (*waveSH).pq, (*matSH).fipjp, (*matSH).f, (*matSH).g, (*matSH).bip, (*matSH).bjm, (*matSH).cip, (*matSH).cjm, (*matSH).d, 
+			            (*matSH).e, (*matSH).dip, (*waveSH_PML).K_x, (*waveSH_PML).a_x, (*waveSH_PML).b_x, (*waveSH_PML).K_x_half, (*waveSH_PML).a_x_half, (*waveSH_PML).b_x_half,
+        			    (*waveSH_PML).K_y, (*waveSH_PML).a_y, (*waveSH_PML).b_y, (*waveSH_PML).K_y_half, (*waveSH_PML).a_y_half, (*waveSH_PML).b_y_half,
+        			    (*waveSH_PML).psi_vzx, (*waveSH_PML).psi_vzy, fwiSH, mode);
+
 
 
 	   /*if ((FREE_SURF) && (POS[2]==0)){
@@ -142,15 +147,18 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	   }*/
 
 
-	   /* stress exchange between PEs */
-	   exchange_s_SH((*waveSH).psxz,(*waveSH).psyz, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
 
-		/* store amplitudes at receivers in section-arrays */
-		if (SEISMO && (mode==0 || mode==2)){
-			seismo_ssg(nt, ntr, (*acq).recpos_loc, (*seisSH).sectionvz, (*seisSH).sectionvz, (*seisSH).sectionvz, (*seisSH).sectionvz, (*seisSH).sectionvz, 
-				(*waveSH).pvz, (*waveSH).pvz, (*waveSH).pvz, (*waveSH).pvz, (*matSH).pu, (*matSH).pu, (*matSH).prho, hc);
+	   /* stress exchange between PEs */
+	   exchange_s_SH((*waveSH).psxz,(*waveSH).psyz, (*mpiPSV).bufferlef_to_rig, (*mpiPSV).bufferrig_to_lef, 
+	      (*mpiPSV).buffertop_to_bot, (*mpiPSV).bufferbot_to_top, req_send, req_rec);
+
+
+	   /* store amplitudes at receivers in section-arrays */
+	   if (SEISMO && (mode==0 || mode==2)){
+	       seismo_ssg(nt, ntr, (*acq).recpos_loc, (*seisSH).sectionvz, (*seisSH).sectionvz, (*seisSH).sectionvz, (*seisSH).sectionvz, (*seisSH).sectionvz, 
+			  (*waveSH).pvz, (*waveSH).pvz, (*waveSH).pvz, (*waveSH).pvz, (*matSH).pu, (*matSH).pu, (*matSH).prho, hc);
 			/*lsamp+=NDT;*/
-		}
+	   }
 
 	   /* WRITE SNAPSHOTS TO DISK */
 	   if ((SNAP) && (nt==lsnap) && (nt<=iround(TSNAP2/DT))){
@@ -158,7 +166,8 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 	      snap(FP,nt,++nsnap,(*waveSH).pvz,(*waveSH).pvz,(*waveSH).pvz,(*waveSH).pvz,(*matSH).pu,(*matSH).pu,hc);
 
 	      lsnap=lsnap+iround(TSNAPINC/DT);
-	   }	      
+	   }
+	      
 
 	if((nt==hin1)&&(mode==0)&&(MODE==1||MODE==2)){
 

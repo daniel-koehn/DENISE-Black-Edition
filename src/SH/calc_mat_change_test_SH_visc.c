@@ -7,28 +7,28 @@
  *  ---------------------------------------------------------------------*/
 
 #include "fd.h"
-float calc_mat_change_test_SH(float  **  waveconv_rho, float  **  waveconv_u, float  **  rho, float  **  rhonp1, float **  u, float **  unp1, int iter, int epstest, float eps_scale, int itest){
+float calc_mat_change_test_SH_visc(float  **  waveconv_rho, float  **  waveconv_u, float  **  waveconv_ts, float  **  rho, float  **  rhonp1, float **  u, float **  unp1, float **  ts, float **  tsnp1, int iter, int epstest, float eps_scale, int itest){
 
 
 	/*--------------------------------------------------------------------------*/
 	FILE *FP1;
 	/* extern variables */
 	extern float DH, DT;
-	extern float EPSILON, EPSILON_u, EPSILON_rho, MUN;
-	extern float C_vs, C_rho, C_vs_min, C_rho_min;
+	extern float EPSILON, EPSILON_u, EPSILON_rho, EPSILON_ts, MUN;
+	extern float C_vs, C_rho, C_taus, C_vs_min, C_rho_min, C_taus_min;
 	extern int NX, NY, NXG, NYG,  POS[3], MYID, INVMAT1;
 	
-	extern int INV_RHO_ITER, INV_VS_ITER;
+	extern int INV_RHO_ITER, INV_VS_ITER, INV_QS_ITER;
 	
 	extern char INV_MODELFILE[STRING_SIZE];
 	
-	extern float VSUPPERLIM, VSLOWERLIM, RHOUPPERLIM, RHOLOWERLIM;
+	extern float VSUPPERLIM, VSLOWERLIM, RHOUPPERLIM, RHOLOWERLIM, QSUPPERLIM, QSLOWERLIM;
 
 	/* local variables */
 
 	float Rho, Vs, Vsnp1, x, y, undf, r, K, mu, Zs, eps_true;
-	float rhomax, umax, gradmax_rho, gradmax_u, epsilon1, gradmaxr_u, umaxr;
-	float gradmaxr_rho, rhomaxr;
+	float rhomax, umax, tausmax, gradmax_rho, gradmax_u, gradmax_ts, epsilon1, gradmaxr_u, umaxr;
+	float gradmaxr_rho, rhomaxr, gradmaxr_ts, tausmaxr;
 	int i, j, ii, jj, testuplow;
 	char modfile[STRING_SIZE];		
 	

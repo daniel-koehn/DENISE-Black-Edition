@@ -35,6 +35,8 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 		fprintf(FP," Updating stress components ...");
 	}
 	
+	ADJ_SIGN = 1;
+	
 	switch (FDORDER){
 
 	case 2:
@@ -87,9 +89,9 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
-			if(mode==0){
-			  uz[j][i] = vzx/DT;
-			  uzx[j][i] = vzy/DT;
+			if(GRAD_FORM==2){
+			  uz[j][i] = vzy;
+			  uzx[j][i] = vzx;
 			}
 			
 		    }
@@ -146,9 +148,9 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
-			if(mode==0){
-			  uz[j][i] = vzx/DT;
-			  uzx[j][i] = vzy/DT;
+			if(GRAD_FORM==2){
+			  uz[j][i] = vzy;
+			  uzx[j][i] = vzx;
 			}
 
 		    }
@@ -205,9 +207,9 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
-			if(mode==0){
-			  uz[j][i] = vzx/DT;
-			  uzx[j][i] = vzy/DT;
+			if(GRAD_FORM==2){
+			  uz[j][i] = vzy;
+			  uzx[j][i] = vzx;
 			}
 
 		    }
@@ -270,9 +272,9 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
-			if(mode==0){
-			  uz[j][i] = vzx/DT;
-			  uzx[j][i] = vzy/DT;
+			if(GRAD_FORM==2){
+			  uz[j][i] = vzy;
+			  uzx[j][i] = vzx;
 			}
 
 		    }
@@ -338,9 +340,9 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
-			if(mode==0){
-			  uz[j][i] = vzx/DT;
-			  uzx[j][i] = vzy/DT;
+			if(GRAD_FORM==2){
+			  uz[j][i] = vzy;
+			  uzx[j][i] = vzx;
 			}
 
 		    }
@@ -408,9 +410,9 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
-			if(mode==0){
-			  uz[j][i] = vzx/DT;
-			  uzx[j][i] = vzy/DT;
+			if(GRAD_FORM==2){
+			  uz[j][i] = vzy;
+			  uzx[j][i] = vzx;
 			}
 
 		    }

@@ -8,7 +8,7 @@
 
 #include "fd.h"
 
-void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho, float ** waveconv_ts){
+void store_PCG_SH(float * PCG_old, float ** waveconv_u, float ** waveconv_rho){
 
 	extern int NX, NY, IDX, IDY;
 	extern int POS[3], MYID;
