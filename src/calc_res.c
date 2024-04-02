@@ -7,7 +7,7 @@
 double calc_res(float **sectiondata, float **section, float **sectiondiff, float **sectiondiffold, int ntr, int ns, int LNORM, double L2, int itest, int sws, int swstestshot, int ntr_glob, int **recpos, int **recpos_loc, float **srcpos, int nsrc_glob, int ishot, int iter){
 
 /* declaration of variables */
-extern float DT, DH, OFFSETC, FC, FC_START, FC_END, C_vp, C_rho;
+extern float DT, DH, OFFSETC, FC, FC_START, FC_END, C_vp, C_rho, GAMMA, TWLENGTH_MINUS;
 extern int REC1, REC2, MYID, MYID_SHOT, ORDER, COMP_WEIGHT;
 extern int TRKILL, GRAD_FORM, ENV, N_ORDER;
 extern char TRKILL_FILE[STRING_SIZE];
@@ -26,7 +26,7 @@ float **integrated_section=NULL, **integrated_sectiondata=NULL;
 float **integrated_sectiondata_envelope=NULL, **integrated_section_envelope=NULL, **integrated_section_hilbert=NULL;
 float ** agc_sectiondata = NULL;
 float **dummy_1=NULL, **dummy_2=NULL; 
-float EPS_LNORM, EPS_LNORM6, tmp, tmp1;
+float EPS_LNORM, EPS_LNORM6, tmp, tmp1, t0;
 
 /* NIM objective function parameters */
 float Qmod, Qtrue, Q1, Q2, Q3;
@@ -308,7 +308,7 @@ for(i=1;i<=ntr;i++){
     if((TRKILL==1)&&(kill_vector[i]==1))
     continue;
 
-    if(OFFSET_MUTE){
+    if(OFFSET_MUTE || (TIMEWIN==5)){
       
       /* calculate source and receiver positions */
       xr = recpos[1][recpos_loc[3][i]]*DH;
@@ -442,6 +442,12 @@ for(i=1;i<=ntr;i++){
                           }
 
 			  sectiondiff[i][invtime]=intseis;
+			  
+			  /* suppress surface waves */
+			  if(TIMEWIN==5){			  
+			      t0 = fabs(offset/TWLENGTH_MINUS); /* arrival time of surface wave */				
+			      if(j*DT>=t0){sectiondiff[i][invtime] *= exp(-GAMMA*pow(j*DT-t0,2));}			  
+			  }
 
 			}
 
