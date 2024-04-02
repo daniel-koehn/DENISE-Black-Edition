@@ -89,6 +89,12 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
+			if(GRAD_FORM==1){
+			  uz[j][i] = syz[j][i];
+			  uzx[j][i] = sxz[j][i];
+			}
+
+			/* save forward wavefield for gradient calculation */
 			if(GRAD_FORM==2){
 			  uz[j][i] = vzy;
 			  uzx[j][i] = vzx;
@@ -148,6 +154,12 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
+			if(GRAD_FORM==1){
+			  uz[j][i] = syz[j][i];
+			  uzx[j][i] = sxz[j][i];
+			}
+
+			/* save forward wavefield for gradient calculation */
 			if(GRAD_FORM==2){
 			  uz[j][i] = vzy;
 			  uzx[j][i] = vzx;
@@ -205,6 +217,12 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			/* update stress components */
 			sxz[j][i] += ADJ_SIGN*uip[j][i]*vzx;
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
+
+			/* save forward wavefield for gradient calculation */
+			if(GRAD_FORM==1){
+			  uz[j][i] = syz[j][i];
+			  uzx[j][i] = sxz[j][i];
+			}
 
 			/* save forward wavefield for gradient calculation */
 			if(GRAD_FORM==2){
@@ -270,6 +288,12 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			/* update stress components */
 			sxz[j][i] += ADJ_SIGN*uip[j][i]*vzx;
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
+
+			/* save forward wavefield for gradient calculation */
+			if(GRAD_FORM==1){
+			  uz[j][i] = syz[j][i];
+			  uzx[j][i] = sxz[j][i];
+			}
 
 			/* save forward wavefield for gradient calculation */
 			if(GRAD_FORM==2){
@@ -340,6 +364,12 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
 
 			/* save forward wavefield for gradient calculation */
+			if(GRAD_FORM==1){
+			  uz[j][i] = syz[j][i];
+			  uzx[j][i] = sxz[j][i];
+			}
+
+			/* save forward wavefield for gradient calculation */
 			if(GRAD_FORM==2){
 			  uz[j][i] = vzy;
 			  uzx[j][i] = vzx;
@@ -408,6 +438,12 @@ void update_s_elastic_PML_SH(int nx1, int nx2, int ny1, int ny2,
 			/* update stress components */
 			sxz[j][i] += ADJ_SIGN*uip[j][i]*vzx;
 			syz[j][i] += ADJ_SIGN*ujp[j][i]*vzy;
+
+			/* save forward wavefield for gradient calculation */
+			if(GRAD_FORM==1){
+			  uz[j][i] = syz[j][i];
+			  uzx[j][i] = sxz[j][i];
+			}
 
 			/* save forward wavefield for gradient calculation */
 			if(GRAD_FORM==2){

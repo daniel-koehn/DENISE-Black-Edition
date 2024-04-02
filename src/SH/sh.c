@@ -171,9 +171,16 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 			/* store forward wavefield for density gradient */
 		        (*fwiSH).forward_prop_rho_z[imat2] = (*waveSH).pvzp1[j][i];
 
-			/* store forward wavefield for mu gradient */
-	 	        (*fwiSH).forward_prop_sxz[imat2] = (*waveSH).uzx[j][i];
-	 	        (*fwiSH).forward_prop_syz[imat2] = (*waveSH).uz[j][i];
+			/* store forward wavefield for mu gradient */			
+			if(GRAD_FORM==1){
+	 	           (*fwiSH).forward_prop_sxz[imat2] = (*waveSH).psxz[j][i];
+	 	           (*fwiSH).forward_prop_syz[imat2] = (*waveSH).psyz[j][i];
+			}
+			
+			if(GRAD_FORM==2){
+	 	           (*fwiSH).forward_prop_sxz[imat2] = (*waveSH).uzx[j][i];
+	 	           (*fwiSH).forward_prop_syz[imat2] = (*waveSH).uz[j][i];
+			}									 
 			 
 			imat2++;			 			 
 		    
@@ -203,6 +210,22 @@ void sh(struct waveSH *waveSH, struct waveSH_PML *waveSH_PML, struct matSH *matS
 				 /* Density gradient */                  
 			   	(*fwiSH).waveconv_rho_shot[j][i] += (*waveSH).pvzp1[j][i] * (*fwiSH).forward_prop_rho_z[imat];
 			
+				/* Vs-gradient (stress-displacement formulation) */
+		                if(GRAD_FORM==1){			
+
+		           	    if(INVMAT1==1){
+		               	        muss = (*matSH).prho[j][i] * (*matSH).pu[j][i] * (*matSH).pu[j][i];
+	                   	    }
+	           
+		           	    if(INVMAT1==3){
+		               	        muss = (*matSH).pu[j][i];
+				    }  
+
+				    if(muss>0.0){			
+				         (*fwiSH).waveconv_u_shot[j][i] += ((*fwiSH).forward_prop_syz[imat] * (*waveSH).psyz[j][i]) + ((*fwiSH).forward_prop_sxz[imat] * (*waveSH).psxz[j][i]);
+				    } 		                  
+		                }
+				
 				/* Vs-gradient (symmetrized stress-velocity formulation) */
 		                if(GRAD_FORM==2){			
 

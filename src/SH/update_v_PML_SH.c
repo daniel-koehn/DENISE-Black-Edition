@@ -87,7 +87,20 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 
         				}
 				
-				}                                                  
+				}    
+				
+				if(GRAD_FORM==1){ /* FWI with data integration */
+
+                                	if(sw==0){
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
+                                 	}
+					
+					if(sw==1){					
+						vzp1[j][i] += vz[j][i] * DT;					
+                                 	}
+
+                           	}
+				                                              
 
                            	if(GRAD_FORM==2){ /* FWI without data integration */
 
@@ -159,6 +172,18 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 		            			   
 
         			}                                                  
+
+				if(GRAD_FORM==1){ /* FWI with data integration */
+
+                                	if(sw==0){
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
+                                 	}
+					
+					if(sw==1){					
+						vzp1[j][i] += vz[j][i] * DT;					
+                                 	}
+
+                           	}
 
                           	if(GRAD_FORM==2){ /* FWI without data integration */
 
@@ -234,6 +259,19 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 
         			}                                                  
 
+				if(GRAD_FORM==1){ /* FWI with data integration */
+
+                                	if(sw==0){
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
+                                 	}
+					
+					if(sw==1){					
+						vzp1[j][i] += vz[j][i] * DT;					
+                                 	}
+
+                           	}
+
+
                           	if(GRAD_FORM==2){ /* FWI without data integration */
 
                                 	if(sw==0){
@@ -308,8 +346,20 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 					syz_y = syz_y / K_y[h1] + psi_syz_y[h1][i]; 
 		            			   
 
-        			}                       
+        			}    
+				
+				if(GRAD_FORM==1){ /* FWI with data integration */
 
+                                	if(sw==0){
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
+                                 	}
+					
+					if(sw==1){					
+						vzp1[j][i] += vz[j][i] * DT;					
+                                 	}
+
+                           	}
+				                   
                           	if(GRAD_FORM==2){ /* FWI without data integration */
 
                                 	if(sw==0){
@@ -386,7 +436,20 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 					syz_y = syz_y / K_y[h1] + psi_syz_y[h1][i]; 
 		            			   
 
-        			}                       
+        			}
+				
+				if(GRAD_FORM==1){ /* FWI with data integration */
+
+                                	if(sw==0){
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
+                                 	}
+					
+					if(sw==1){					
+						vzp1[j][i] += vz[j][i] * DT;					
+                                 	}
+
+                           	}
+				                       
 
                           	if(GRAD_FORM==2){ /* FWI without data integration */
 
@@ -466,8 +529,20 @@ void update_v_PML_SH(int nx1, int nx2, int ny1, int ny2, int nt,
 					syz_y = syz_y / K_y[h1] + psi_syz_y[h1][i]; 
 		            			   
 
-        			}                       
+        			}
+				
+				if(GRAD_FORM==1){ /* FWI with data integration */
 
+                                	if(sw==0){
+                                 		vzp1[j][i] = rhoi[j][i] * (sxz_x+syz_y) / DH;    
+                                 	}
+					
+					if(sw==1){					
+						vzp1[j][i] += vz[j][i] * DT;					
+                                 	}
+
+                           	}
+				                       
                           	if(GRAD_FORM==2){ /* FWI without data integration */
 
                                 	if(sw==0){

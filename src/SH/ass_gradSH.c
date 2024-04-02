@@ -17,7 +17,7 @@ void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter){
 
 	/* local variables */
 	int i, j;
-        float muss, lamss;	
+        float muss, lamss, vs3, vs2rho2;	
 
 	/* calculate gradient for mu, Vs or Zs */
 	/* ----------------------------------- */
@@ -28,9 +28,21 @@ void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter){
       			/* calculate mu gradient */ 
       			(*fwiSH).waveconv_mu[j][i] = - DT * (*fwiSH).waveconv_u[j][i];
 		 
-      			if(INVMAT1==1){		
+      			if(INVMAT1==1){	
+			
+			    if(GRAD_FORM==1){	
+         			/* calculate Vs gradient */
+				if((*matSH).pu[j][i]>0.0){
+				     vs3 = (*matSH).pu[j][i] * (*matSH).pu[j][i] * (*matSH).pu[j][i];
+				    (*fwiSH).waveconv_u[j][i] = (2.0 / (*matSH).prho[j][i] * vs3) * (*fwiSH).waveconv_mu[j][i];
+				}    
+			    }
+			
+			    if(GRAD_FORM==2){	
          			/* calculate Vs gradient */
 				(*fwiSH).waveconv_u[j][i] = 2.0 * (*matSH).prho[j][i] * (*matSH).pu[j][i] * (*fwiSH).waveconv_mu[j][i];
+			    }
+			    			    	
       			}
 		 
       			if(INVMAT1==2){
@@ -59,8 +71,19 @@ void ass_gradSH(struct fwiSH *fwiSH, struct matSH *matSH, int iter){
        			(*fwiSH).waveconv_rho_s[j][i]= - DT * (*fwiSH).waveconv_rho[j][i];
 				 
        			if(INVMAT1==1){
-          			/* calculate density gradient */
-          			(*fwiSH).waveconv_rho[j][i] = ((*matSH).pu[j][i] * (*matSH).pu[j][i] * (*fwiSH).waveconv_mu[j][i]) + (*fwiSH).waveconv_rho_s[j][i];				 
+			
+				if(GRAD_FORM==1){
+          			   /* calculate density gradient */
+				   if((*matSH).pu[j][i]>0.0){
+				       vs2rho2 = 1.0 / ((*matSH).pu[j][i] * (*matSH).pu[j][i] * (*matSH).prho[j][i] * (*matSH).prho[j][i]);
+          			       (*fwiSH).waveconv_rho[j][i] = (vs2rho2 * (*fwiSH).waveconv_mu[j][i]) + (*fwiSH).waveconv_rho_s[j][i];
+				   }
+				}
+						
+				if(GRAD_FORM==2){
+          			   /* calculate density gradient */
+          			   (*fwiSH).waveconv_rho[j][i] = ((*matSH).pu[j][i] * (*matSH).pu[j][i] * (*fwiSH).waveconv_mu[j][i]) + (*fwiSH).waveconv_rho_s[j][i];
+				}				 
        			}
 		 
        			if(INVMAT1==3){

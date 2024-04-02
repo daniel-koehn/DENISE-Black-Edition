@@ -225,7 +225,7 @@ mem_fwiPSV(nseismograms,ntr,ns,fdo3,nd,buffsize,ntr_glob);
 
 /* Define gradient formulation */
 /* GRAD_FORM = 2 - stress-velocity gradients for symmetrized impedance matrix */
-GRAD_FORM = 2;
+/*GRAD_FORM = 2;*/
 
 if(GRAVITY==1 || GRAVITY==2){
   
