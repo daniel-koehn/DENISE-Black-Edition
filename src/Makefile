@@ -21,7 +21,14 @@ EXEC= ../bin
 # On CRAY T3E
 # CC=cc
 
-# On Linux NEC-cluster with Intel-MPI
+# On Linux NEC-cluster with OpenMPI and gcc 12.3.0
+CC=mpicc
+LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0 -fcommon
+SFLAGS=-L./../libcseife
+IFLAGS=-I./../libcseife -I./../include
+
+# On Linux NEC-cluster with Intel-MPI (Pre-2023)
 #CC=mpiicc
 #LFLAGS=-lm -lcseife -lfftw3 -ftz -lstdc++
 #CFLAGS=-O3 -xAVX -ipo -fno-fnalias -restrict -no-multibyte-chars
@@ -36,11 +43,11 @@ EXEC= ../bin
 # IFLAGS=-I./../libcseife -I./../include -I/scratch/dragon/amd/kazeiv/gpuhackathon2018/fftw_sw/fftw-3.3.7/include/
 
 # On Desktop computer with LinuxMint 17, OpenMPI and gcc 4.8.2
-CC=mpicc
-LFLAGS=-lm -lcseife -lfftw3 -lstdc++
-CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0 -fcommon
-SFLAGS=-L./../libcseife
-IFLAGS=-I./../libcseife -I./../include
+#CC=mpicc
+#LFLAGS=-lm -lcseife -lfftw3 -lstdc++
+#CFLAGS=-O3 -w -fno-stack-protector -D_FORTIFY_SOURCE=0 -fcommon
+#SFLAGS=-L./../libcseife
+#IFLAGS=-I./../libcseife -I./../include
 
 # On HLRN system
 #CC=mpcc
